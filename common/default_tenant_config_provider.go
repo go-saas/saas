@@ -7,7 +7,14 @@ type DefaultTenantConfigProvider struct {
 	ts TenantStore
 }
 
-func (d *DefaultTenantConfigProvider) get(ctx context.Context) (TenantConfig,error) {
+func NewDefaultTenantConfigProvider(tr TenantResolver,ts TenantStore) TenantConfigProvider  {
+	return &DefaultTenantConfigProvider{
+		tr: tr,
+		ts: ts,
+	}
+}
+
+func (d *DefaultTenantConfigProvider) Get(ctx context.Context) (TenantConfig,error) {
 	//TODO how to cache??
 	rr := d.tr.Resolve(ctx)
 	if rr.TenantIdOrName!=""{

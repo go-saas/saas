@@ -10,10 +10,16 @@ type DefaultTenantResolver struct {
 	
 }
 
+func NewDefaultTenantResolver(o TenantResolveOption) TenantResolver {
+	return &DefaultTenantResolver{
+		o:o,
+	}
+}
+
 func (d DefaultTenantResolver) Resolve(_ context.Context) TenantResolveResult {
 	res := TenantResolveResult{}
 	trCtx := TenantResolveContext{}
-	for _, resolver := range d.o.resolvers {
+	for _, resolver := range d.o.Resolvers {
 		resolver.Resolve(&trCtx)
 		res.AppliedResolvers=append(res.AppliedResolvers, resolver.Name())
 		if trCtx.HasResolved() {
