@@ -9,7 +9,7 @@ go framework for saas(multi-tenancy). `go-saas` targets to provide saas solution
   * [ ] Hybrid tenancy models are also available.
 * Domain driven design (DDD)
 * Support multiple web framework
-    * [*] gin
+    * [x] gin
     * [ ] iris
 * Support multiple orms
     * [ ] gorm
