@@ -6,10 +6,7 @@ import (
 	"github.com/goxiaoy/go-saas/common/http"
 )
 
-func MultiTenancy(key string,hmtOptF http.PatchHttpMultiTenancyOption,trOptF common.PatchTenantResolveOption,ts *common.TenantStore) gin.HandlerFunc {
-	if key == ""{
-		key="_tenant"
-	}
+func MultiTenancy(hmtOptF http.PatchHttpMultiTenancyOption,trOptF common.PatchTenantResolveOption,ts common.TenantStore) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
 		hmtOpt := http.NewMultiTenancyOption("")
@@ -29,7 +26,7 @@ func MultiTenancy(key string,hmtOptF http.PatchHttpMultiTenancyOption,trOptF com
 			trOptF(trOpt)
 		}
 		//get tenant config
-		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(*trOpt),*ts)
+		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(*trOpt),ts)
 		tenantConfig,err := tenantConfigProvider.Get(context)
 		if err!=nil{
 			//not found
@@ -41,7 +38,7 @@ func MultiTenancy(key string,hmtOptF http.PatchHttpMultiTenancyOption,trOptF com
 		//cancel
 		defer cancel()
 		//with newContext
-		context.Request.WithContext(newContext)
+		context.Request=context.Request.WithContext(newContext)
 		//next
 		context.Next()
 	}
