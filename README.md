@@ -4,21 +4,22 @@ go framework for saas(multi-tenancy). `go-saas` targets to provide saas solution
 # Overview
 
 * Different database architecture
-    -[ ] Single-tenancy:  Each database stores data from only one tenant.
-    -[ ] Multi-tenancy:  Each database stores data from multiple separate tenants (with mechanisms to protect data privacy).
-    -[ ] Hybrid tenancy models are also available.
+  * [ ] Single-tenancy:  Each database stores data from only one tenant.
+  * [ ] Multi-tenancy:  Each database stores data from multiple separate tenants (with mechanisms to protect data privacy).
+  * [ ] Hybrid tenancy models are also available.
 * Domain driven design (DDD)
 * Support multiple web framework
-    -[ ] gin
-    -[ ] iris
+    * [*] gin
+    * [ ] iris
 * Support multiple orms
-    -[ ] gorm
+    * [ ] gorm
 * Customizable tenant resolver
-    -[ ] Query String
-    -[ ] Form parameters
-    -[ ] Header
-    -[ ] Cookie
-    -[ ] Domain format
+    * [x] Query String
+    * [x] Form parameters
+    * [x] Header
+    * [x] Cookie
+    * [ ] Route
+    * [ ] Domain format
 
 
 
