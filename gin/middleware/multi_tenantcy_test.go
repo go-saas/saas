@@ -21,8 +21,10 @@ func SetUp()  *gin.Engine {
 	r.GET("/", func(c *gin.Context) {
 		currentTenant:=common.ContextCurrentTenant{}
 		rCtx := c.Request.Context()
+		trR := common.FromTenantResolveRes(rCtx)
 		c.JSON(200, gin.H{
 			"tenantId": currentTenant.Id(rCtx),
+			"resolvers":trR.AppliedResolvers,
 		})
 	})
 	return r
@@ -41,7 +43,7 @@ func TestHostMultiTenancy(t *testing.T) {
 	w := getW("/", func(r *http.Request) {
 	})
 	assert.Equal(t, http.StatusOK, w.Code)
-	var response map[string]string
+	var response map[string]interface{}
 	err := json.Unmarshal([]byte(w.Body.String()), &response)
 	value, exists := response["tenantId"]
 	assert.True(t, exists)
@@ -73,11 +75,13 @@ func TestCookieMultiTenancy(t *testing.T) {
 		})
 	})
 	assert.Equal(t, http.StatusOK, w.Code)
-	var response map[string]string
+	var response map[string]interface{}
 	err := json.Unmarshal([]byte(w.Body.String()), &response)
 	value, exists := response["tenantId"]
 	assert.True(t, exists)
 	assert.Equal(t, "1", value)
+	r:=response["resolvers"].([]interface{})
+	assert.Equal(t,"Cookie",r[len(r)-1])
 	assert.Nil(t, err)
 }
 
@@ -86,10 +90,12 @@ func TestHeaderMultiTenancy(t *testing.T) {
 		r.Header.Set("__tenant","1")
 	})
 	assert.Equal(t, http.StatusOK, w.Code)
-	var response map[string]string
+	var response map[string]interface{}
 	err := json.Unmarshal([]byte(w.Body.String()), &response)
 	value, exists := response["tenantId"]
 	assert.True(t, exists)
 	assert.Equal(t, "1", value)
+	r:=response["resolvers"].([]interface{})
+	assert.Equal(t,"Header",r[len(r)-1])
 	assert.Nil(t, err)
 }

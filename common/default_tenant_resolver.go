@@ -25,6 +25,7 @@ func (d DefaultTenantResolver) Resolve(_ context.Context) TenantResolveResult {
 		if trCtx.HasResolved() {
 			//set
 			res.TenantIdOrName=trCtx.TenantIdOrName
+			break
 		}
 	}
 	return res

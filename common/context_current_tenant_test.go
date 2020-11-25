@@ -60,7 +60,7 @@ func TestContextCurrentTenant_Id(t *testing.T) {
 		want string
 	}{
 		{"HostGetCurrent",args{ctx: context.Background()},""},
-		{"TenantGetCurrent",args{ctx: context.WithValue(context.Background(),TenantIdKey,*NewBasicTenantInfo("1","Test"))},"1"},
+		{"TenantGetCurrent",args{ctx: NewCurrentTenant(context.Background(),"1","Test") },"1"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -82,7 +82,7 @@ func TestContextCurrentTenant_IsAvailable(t *testing.T) {
 		want bool
 	}{
 		{"HostGetCurrent",args{ctx: context.Background()},false},
-		{"TenantGetCurrent",args{ctx: context.WithValue(context.Background(),TenantIdKey,*NewBasicTenantInfo("1","Test"))},true},
+		{"TenantGetCurrent",args{ctx: NewCurrentTenant(context.Background(),"1","Test") },true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -104,7 +104,7 @@ func Test_getCurrent(t *testing.T) {
 		want BasicTenantInfo
 	}{
 		{"HostGetCurrent",args{ctx: context.Background()},BasicTenantInfo{}},
-		{"TenantGetCurrent",args{ctx: context.WithValue(context.Background(),TenantIdKey,*NewBasicTenantInfo("1","Test"))},*NewBasicTenantInfo("1","Test")},
+		{"TenantGetCurrent",args{ctx: NewCurrentTenant(context.Background(),"1","Test") },*NewBasicTenantInfo("1","Test")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -27,14 +27,14 @@ func MultiTenancy(hmtOptF http.PatchHttpMultiTenancyOption,trOptF common.PatchTe
 		}
 		//get tenant config
 		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(*trOpt),ts)
-		tenantConfig,err := tenantConfigProvider.Get(context)
+		tenantConfig,trCtx,err := tenantConfigProvider.Get(context,true)
 		if err!=nil{
 			//not found
 			context.AbortWithError(404,err)
 		}
 		//set current tenant
 		currentTenant :=common.ContextCurrentTenant{}
-		newContext,cancel := currentTenant.Change(context,tenantConfig.Id,tenantConfig.Name)
+		newContext,cancel := currentTenant.Change(trCtx,tenantConfig.Id,tenantConfig.Name)
 		//cancel
 		defer cancel()
 		//with newContext

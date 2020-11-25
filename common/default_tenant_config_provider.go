@@ -14,20 +14,24 @@ func NewDefaultTenantConfigProvider(tr TenantResolver,ts TenantStore) TenantConf
 	}
 }
 
-func (d *DefaultTenantConfigProvider) Get(ctx context.Context) (TenantConfig,error) {
-	//TODO how to cache??
+func (d *DefaultTenantConfigProvider) Get(ctx context.Context,store bool) (TenantConfig,context.Context,error) {
 	rr := d.tr.Resolve(ctx)
+	rc := ctx
+	if store{
+		//store into context
+		rc = NewTenantResolveRes(ctx,&rr)
+	}
 	if rr.TenantIdOrName!=""{
 		//tenant side
 		//get config from tenant store
 		cfg,err := d.ts.getByNameOrId(rr.TenantIdOrName)
 		if err!=nil{
-			return TenantConfig{},err
+			return TenantConfig{},rc,err
 		}
-		return cfg,nil
+		return cfg,rc,nil
 		//check error
 	}
-	return TenantConfig{},nil
+	return TenantConfig{},rc,nil
 
 }
 
