@@ -19,7 +19,7 @@ func (g *GormTenantRepo)Db(ctx context.Context) *g.DB {
 
 func (g *GormTenantRepo) FindByIdOrName(ctx context.Context, idOrName string) (*domain.Tenant,error) {
 	var t *domain.Tenant
-	var tDb *e.Tenant
+	var tDb = new(e.Tenant)
 	//parse
 	if idOrName==""{
 		return t,nil
@@ -45,9 +45,10 @@ func (g *GormTenantRepo) GetPaged(ctx context.Context, p common.Pagination) (c i
 }
 
 func (g *GormTenantRepo) Create(ctx context.Context, t domain.Tenant)error {
-	var tDb *e.Tenant
+	var tDb =new(e.Tenant)
 	common.Copy(&t,tDb)
-	ret := g.Db(ctx).Create(tDb)
+	d := g.Db(ctx)
+	ret := d.Create(tDb)
 	return ret.Error
 
 }

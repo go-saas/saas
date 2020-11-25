@@ -92,6 +92,7 @@ func (d DefaultDbProvider) Get(ctx context.Context, key string) *gorm.DB {
 			//TODO performance issue
 			closeDb(newDb)
 		}
+		g,_ = gv.(*gorm.DB)
 	}else{
 		//in this map
 		g,_ = gv.(*gorm.DB)

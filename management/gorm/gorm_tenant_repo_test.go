@@ -7,6 +7,7 @@ import (
 	"github.com/goxiaoy/go-saas/data"
 	"github.com/goxiaoy/go-saas/gorm"
 	"github.com/goxiaoy/go-saas/management/domain"
+	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	g "gorm.io/gorm"
 	"os"
@@ -32,6 +33,11 @@ func TestMain(m *testing.M) {
 		Conn: conn,
 	})
 	r ,close := gorm.NewDefaultDbProvider(mr,cfg)
+	db := GetDb(context.Background(),r)
+	err :=AutoMigrate(nil,db)
+	if err!=nil{
+		panic(err)
+	}
 	tenantRepo = GormTenantRepo{
 		DbProvider: r,
 	}
@@ -63,7 +69,8 @@ func TestGormTenantRepo_Create(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tenantRepo.Create(tt.args.ctx,tt.args.t)
+			err :=tenantRepo.Create(tt.args.ctx,tt.args.t)
+			assert.NoError(t,err)
 		})
 	}
 }
