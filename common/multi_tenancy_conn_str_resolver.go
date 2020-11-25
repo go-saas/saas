@@ -11,6 +11,14 @@ type MultiTenancyConnStrResolver struct {
 	*data.DefaultConnStrResolver
 }
 
+func NewMultiTenancyConnStrResolver(currentTenant CurrentTenant,ts TenantStore,opt data.ConnStrOption) *MultiTenancyConnStrResolver {
+	return &MultiTenancyConnStrResolver{
+		currentTenant:          currentTenant,
+		ts:                     ts,
+		DefaultConnStrResolver: &data.DefaultConnStrResolver{Opt: opt},
+	}
+}
+
 
 //direct return value from option value
 func (m MultiTenancyConnStrResolver) Resolve(ctx context.Context, key string) string {
@@ -19,7 +27,7 @@ func (m MultiTenancyConnStrResolver) Resolve(ctx context.Context, key string) st
 		//use default
 		return m.DefaultConnStrResolver.Resolve(ctx,key)
 	}
-	tenant,_ := m.ts.getByNameOrId(id)
+	tenant,_ := m.ts.GetByNameOrId(id)
 	if tenant.Conn ==nil{
 		//not found
 		//use default

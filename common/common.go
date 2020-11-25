@@ -2,6 +2,7 @@ package common
 
 import (
 	"github.com/google/wire"
+	"github.com/goxiaoy/go-saas/data"
 )
 
 var CommonSet=wire.NewSet(
@@ -14,5 +15,8 @@ var CommonSet=wire.NewSet(
 	wire.Struct(new(DefaultTenantConfigProvider),"*"),
 	wire.Bind(new(TenantConfigProvider),new(*DefaultTenantConfigProvider)),
 	wire.Struct(new(ContextCurrentTenant)),
+
 	wire.Bind(new(CurrentTenant),new(*ContextCurrentTenant)),
+	wire.Struct(new(MultiTenancyConnStrResolver),"*"),
+	wire.Bind(new(data.ConnStrResolver),new(*MultiTenancyConnStrResolver)),
 )
