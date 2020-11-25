@@ -37,3 +37,7 @@ func NewMultiTenancyOption(opts ...option) *MultiTenancyOption {
 	}
 	return  &option
 }
+
+func DefaultMultiTenancyOption() *MultiTenancyOption {
+	return NewMultiTenancyOption(WithEnabled(true),WithDatabaseStyle(Multi))
+}

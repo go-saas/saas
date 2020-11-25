@@ -6,11 +6,11 @@ import (
 )
 
 type RouteTenantResolveContributor struct {
-	opt     MultiTenancyOption
+	opt     WebMultiTenancyOption
 	request *http.Request
 }
 
-func NewRouteTenantResolveContributor(opt MultiTenancyOption,r *http.Request) * RouteTenantResolveContributor  {
+func NewRouteTenantResolveContributor(opt WebMultiTenancyOption,r *http.Request) * RouteTenantResolveContributor  {
 	return &RouteTenantResolveContributor{
 		opt: opt,
 		request: r,

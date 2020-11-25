@@ -6,11 +6,11 @@ import (
 )
 
 type HeaderTenantResolveContributor struct {
-	opt     MultiTenancyOption
+	opt     WebMultiTenancyOption
 	request *http.Request
 }
 
-func NewHeaderTenantResolveContributor(opt MultiTenancyOption,r *http.Request) * HeaderTenantResolveContributor  {
+func NewHeaderTenantResolveContributor(opt WebMultiTenancyOption,r *http.Request) * HeaderTenantResolveContributor  {
 	return &HeaderTenantResolveContributor{
 		opt: opt,
 		request: r,

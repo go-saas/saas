@@ -6,11 +6,11 @@ import (
 )
 
 type FormTenantResolveContributor struct {
-	opt     MultiTenancyOption
+	opt     WebMultiTenancyOption
 	request *http.Request
 }
 
-func NewFormTenantResolveContributor(opt MultiTenancyOption,r *http.Request) * FormTenantResolveContributor  {
+func NewFormTenantResolveContributor(opt WebMultiTenancyOption,r *http.Request) * FormTenantResolveContributor  {
 	return &FormTenantResolveContributor{
 		opt: opt,
 		request: r,

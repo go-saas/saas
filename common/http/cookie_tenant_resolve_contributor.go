@@ -6,11 +6,11 @@ import (
 )
 
 type CookieTenantResolveContributor struct {
-	opt     MultiTenancyOption
+	opt     WebMultiTenancyOption
 	request *http.Request
 }
 
-func NewCookieTenantResolveContributor(opt MultiTenancyOption,r *http.Request) * CookieTenantResolveContributor  {
+func NewCookieTenantResolveContributor(opt WebMultiTenancyOption,r *http.Request) * CookieTenantResolveContributor  {
 	return &CookieTenantResolveContributor{
 		opt: opt,
 		request: r,

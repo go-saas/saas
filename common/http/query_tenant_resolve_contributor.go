@@ -6,11 +6,11 @@ import (
 )
 
 type QueryTenantResolveContributor struct {
-	opt     MultiTenancyOption
+	opt     WebMultiTenancyOption
 	request *http.Request
 }
 
-func NewQueryTenantResolveContributor(opt MultiTenancyOption,r *http.Request) * QueryTenantResolveContributor  {
+func NewQueryTenantResolveContributor(opt WebMultiTenancyOption,r *http.Request) * QueryTenantResolveContributor  {
 	return &QueryTenantResolveContributor{
 		opt: opt,
 		request: r,

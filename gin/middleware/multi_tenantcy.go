@@ -9,7 +9,7 @@ import (
 func MultiTenancy(hmtOptF http.PatchHttpMultiTenancyOption,trOptF common.PatchTenantResolveOption,ts common.TenantStore) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
-		hmtOpt := http.NewMultiTenancyOption("")
+		hmtOpt := http.DefaultWebMultiTenancyOption()
 		if hmtOptF != nil{
 			//patch
 			hmtOptF(hmtOpt)

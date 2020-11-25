@@ -7,12 +7,12 @@ import (
 )
 
 type DomainTenantResolveContributor struct {
-	opt     MultiTenancyOption
+	opt     WebMultiTenancyOption
 	request *http.Request
-	format string
+	format  string
 }
 
-func NewDomainTenantResolveContributor(opt MultiTenancyOption,r *http.Request,f string) * DomainTenantResolveContributor  {
+func NewDomainTenantResolveContributor(opt WebMultiTenancyOption,r *http.Request,f string) * DomainTenantResolveContributor  {
 	return &DomainTenantResolveContributor{
 		opt: opt,
 		request: r,
