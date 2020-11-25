@@ -12,12 +12,12 @@ func NewMemoryTenantStore(t []TenantConfig) *MemoryTenantStore {
 	}
 }
 
-func (m MemoryTenantStore) getByNameOrId(nameOrId string) (TenantConfig, error) {
+func (m MemoryTenantStore) getByNameOrId(nameOrId string) (*TenantConfig, error) {
 	for _, config := range m.TenantConfig {
 		if config.Id==nameOrId||config.Name==nameOrId {
-			return config,nil
+			return &config,nil
 		}
 	}
-	return TenantConfig{},errors.New("tenant not found")
+	return nil,errors.New("tenant not found")
 }
 

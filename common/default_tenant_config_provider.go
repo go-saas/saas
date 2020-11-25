@@ -28,7 +28,7 @@ func (d *DefaultTenantConfigProvider) Get(ctx context.Context,store bool) (Tenan
 		if err!=nil{
 			return TenantConfig{},rc,err
 		}
-		return cfg,rc,nil
+		return *cfg,rc,nil
 		//check error
 	}
 	return TenantConfig{},rc,nil
