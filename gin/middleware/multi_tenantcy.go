@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/goxiaoy/go-saas/common"
 	"github.com/goxiaoy/go-saas/common/http"
+	"github.com/goxiaoy/go-saas/data"
 )
 
 func MultiTenancy(hmtOptF http.PatchHttpMultiTenancyOption,trOptF common.PatchTenantResolveOption,ts common.TenantStore) gin.HandlerFunc {
@@ -35,10 +36,12 @@ func MultiTenancy(hmtOptF http.PatchHttpMultiTenancyOption,trOptF common.PatchTe
 		//set current tenant
 		currentTenant :=common.ContextCurrentTenant{}
 		newContext,cancel := currentTenant.Change(trCtx,tenantConfig.Id,tenantConfig.Name)
+		//data filter
+		dataFilterCtx := data.NewEnableMultiTenancyDataFilter(newContext)
 		//cancel
 		defer cancel()
 		//with newContext
-		context.Request=context.Request.WithContext(newContext)
+		context.Request=context.Request.WithContext(dataFilterCtx)
 		//next
 		context.Next()
 	}

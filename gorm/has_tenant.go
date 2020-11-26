@@ -7,6 +7,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas/data"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -66,6 +67,7 @@ func (sd HasTenantQueryClause) MergeClause(*clause.Clause) {
 
 func (sd HasTenantQueryClause) ModifyStatement(stmt *gorm.Statement) {
 	t := common.FromCurrentTenant(stmt.Context)
+	e := data.FromMultiTenancyDataFilter(stmt.Context)
 	if _, ok := stmt.Clauses["multi_tenancy_enabled"]; !ok {
 		if c, ok := stmt.Clauses["WHERE"]; ok {
 			if where, ok := c.Expression.(clause.Where); ok && len(where.Exprs) > 1 {
@@ -79,10 +81,17 @@ func (sd HasTenantQueryClause) ModifyStatement(stmt *gorm.Statement) {
 				}
 			}
 		}
-
-		stmt.AddClause(clause.Where{Exprs: []clause.Expression{
-			clause.Eq{Column: clause.Column{Table: clause.CurrentTable, Name: sd.Field.DBName}, Value: t.Id},
-		}})
+		if e{
+			var v interface{}
+			if t.Id==""{
+				v = nil
+			}else{
+				v = t.Id
+			}
+			stmt.AddClause(clause.Where{Exprs: []clause.Expression{
+				clause.Eq{Column: clause.Column{Table: clause.CurrentTable, Name: sd.Field.DBName}, Value: v},
+			}})
+		}
 		stmt.Clauses["multi_tenancy_enabled"] = clause.Clause{}
 	}
 }
