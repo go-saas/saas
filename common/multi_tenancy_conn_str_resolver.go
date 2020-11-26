@@ -27,7 +27,7 @@ func (m MultiTenancyConnStrResolver) Resolve(ctx context.Context, key string) st
 		//use default
 		return m.DefaultConnStrResolver.Resolve(ctx,key)
 	}
-	tenant,_ := m.ts.GetByNameOrId(id)
+	tenant,_ := m.ts.GetByNameOrId(ctx,id)
 	if tenant.Conn ==nil{
 		//not found
 		//use default

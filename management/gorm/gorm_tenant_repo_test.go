@@ -4,38 +4,16 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/goxiaoy/go-saas/common"
-	"github.com/goxiaoy/go-saas/gorm"
 	"github.com/goxiaoy/go-saas/management/domain"
+	"github.com/goxiaoy/go-saas/management/gorm/entity"
 	"github.com/stretchr/testify/assert"
-	g "gorm.io/gorm"
-	"os"
-	"reflect"
+	"strconv"
+	"sync"
 	"testing"
 )
 
-var tenantRepo GormTenantRepo
 
-func TestMain(m *testing.M) {
-
-	r ,close := GetProvider()
-
-	db := GetDb(context.Background(),r)
-	err :=AutoMigrate(nil,db)
-	if err!=nil{
-		panic(err)
-	}
-	tenantRepo = GormTenantRepo{
-		DbProvider: r,
-	}
-	exitCode := m.Run()
-
-	close()
-	// 退出
-	os.Exit(exitCode)
-
-}
-
-func TestGormTenantRepo_Create(t *testing.T) {
+func TestGormTestTenantRepo_Create(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		t   domain.Tenant
@@ -55,146 +33,129 @@ func TestGormTenantRepo_Create(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err :=tenantRepo.Create(tt.args.ctx,tt.args.t)
+			err :=TestTenantRepo.Create(tt.args.ctx,tt.args.t)
 			assert.NoError(t,err)
+			var tDb entity.Tenant
+			err =TestDb.Model(&entity.Tenant{}).Where("id = ?",tt.args.t.ID).First(&tDb).Error
+			assert.NoError(t,err)
+			var dt = new(domain.Tenant)
+			common.Copy(tDb,dt)
+			assert.Equal(t,tt.args.t.ID,dt.ID)
+			assert.Equal(t,tt.args.t.Name,dt.Name)
+			assert.Equal(t,tt.args.t.DisplayName,dt.DisplayName)
+			assert.Equal(t,tt.args.t.Region,dt.Region)
 		})
 	}
 }
 
-func TestGormTenantRepo_Db(t *testing.T) {
-	type fields struct {
-		DbProvider gorm.DbProvider
+
+func TestGormTestTenantRepo_FindByIdOrName(t *testing.T) {
+
+	//insert
+	id :=  uuid.New().String()
+
+	es := []entity.Tenant{
+		{
+			ID:          id,
+			Name:        "Test"+id,
+		},
+		{
+			ID:          uuid.New().String(),
+			Name:        "Test2",
+		},
 	}
-	type args struct {
-		ctx context.Context
+	for _, e := range es {
+		err:=TestDb.Model(&entity.Tenant{}).Create(&e).Error
+		assert.NoError(t,err)
 	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   *g.DB
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			g := &GormTenantRepo{
-				DbProvider: tt.fields.DbProvider,
-			}
-			if got := g.Db(tt.args.ctx); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Db() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	e,err :=TestTenantRepo.FindByIdOrName(context.Background(),id)
+	assert.NoError(t,err)
+	assert.Equal(t,e.ID,es[0].ID)
+	assert.Equal(t,e.Name,es[0].Name)
+
+	e,err =TestTenantRepo.FindByIdOrName(context.Background(),"Test"+id)
+	assert.NoError(t,err)
+	assert.Equal(t,e.ID,es[0].ID)
+	assert.Equal(t,e.Name,es[0].Name)
+
+	e,err =TestTenantRepo.FindByIdOrName(context.Background(),uuid.New().String())
+	assert.NoError(t,err)
+	assert.Equal(t,true,e==nil)
+
+
 }
 
-func TestGormTenantRepo_FindByIdOrName(t *testing.T) {
-	type fields struct {
-		DbProvider gorm.DbProvider
+func TestGormTestTenantRepo_GetCount(t *testing.T) {
+
+	preCount ,err:=TestTenantRepo.GetCount(context.Background())
+	assert.NoError(t,err)
+
+	es := []entity.Tenant{
+		{
+			ID:           uuid.New().String(),
+			Name:        "Test",
+		},
+		{
+			ID:          uuid.New().String(),
+			Name:        "Test2",
+		},
 	}
-	type args struct {
-		ctx      context.Context
-		idOrName string
+	for _, e := range es {
+		err:=TestDb.Model(&entity.Tenant{}).Create(&e).Error
+		assert.NoError(t,err)
 	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   *domain.Tenant
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			g := &GormTenantRepo{
-				DbProvider: tt.fields.DbProvider,
-			}
-			if got,_ := g.FindByIdOrName(tt.args.ctx, tt.args.idOrName); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FindByIdOrName() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	newCount ,err :=TestTenantRepo.GetCount(context.Background())
+	assert.NoError(t,err)
+	assert.Equal(t,int64(2),newCount-preCount)
 }
 
-func TestGormTenantRepo_GetCount(t *testing.T) {
-	type fields struct {
-		DbProvider gorm.DbProvider
+func TestGormTestTenantRepo_GetPaged(t *testing.T) {
+	//get count
+	var count int64
+	err:=TestDb.Model(&entity.Tenant{}).Count(&count).Error
+	assert.NoError(t,err)
+	wg :=sync.WaitGroup{}
+	wg.Add(200)
+	for i:=0;i<200;i++ {
+		go func(i int) {
+			e:=entity.Tenant{
+					ID:           uuid.New().String(),
+					Name:        "Test"+strconv.Itoa(i),
+				}
+			err:=TestDb.Model(&entity.Tenant{}).Create(&e).Error
+			assert.NoError(t,err)
+			wg.Done()
+		}(i)
 	}
-	type args struct {
-		ctx context.Context
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   int
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			g := &GormTenantRepo{
-				DbProvider: tt.fields.DbProvider,
-			}
-			if got,_ := g.GetCount(tt.args.ctx); got != tt.want {
-				t.Errorf("GetCount() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	wg.Wait()
+	c,d,err:=TestTenantRepo.GetPaged(context.Background(),common.Pagination{
+		Offset: 10,
+		Limit:  20,
+	})
+	assert.NoError(t,err)
+	assert.Equal(t,int64(200),c-count)
+	assert.Equal(t,20,len(d))
 }
 
-func TestGormTenantRepo_GetPaged(t *testing.T) {
-	type fields struct {
-		DbProvider gorm.DbProvider
+func TestGormTestTenantRepo_Update(t *testing.T) {
+	id :=  uuid.New().String()
+	es := []entity.Tenant{
+		{
+			ID:           id,
+			Name:        "Test",
+		},
 	}
-	type args struct {
-		ctx context.Context
-		p   common.Pagination
+	for _, e := range es {
+		err:=TestDb.Model(&entity.Tenant{}).Create(&e).Error
+		assert.NoError(t,err)
 	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		wantC  int64
-		wantT  []*domain.Tenant
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			g := &GormTenantRepo{
-				DbProvider: tt.fields.DbProvider,
-			}
-			gotC, gotT,_ := g.GetPaged(tt.args.ctx, tt.args.p)
-			if gotC != tt.wantC {
-				t.Errorf("GetPaged() gotC = %v, want %v", gotC, tt.wantC)
-			}
-			if !reflect.DeepEqual(gotT, tt.wantT) {
-				t.Errorf("GetPaged() gotT = %v, want %v", gotT, tt.wantT)
-			}
-		})
-	}
-}
-
-func TestGormTenantRepo_Update(t *testing.T) {
-	type fields struct {
-		DbProvider gorm.DbProvider
-	}
-	type args struct {
-		ctx context.Context
-		id  string
-		t   domain.Tenant
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-
-		})
-	}
+	TestTenantRepo.Update(context.Background(),id,domain.Tenant{
+		Name:        "TestNew",
+		DisplayName: "",
+	})
+	var tenant entity.Tenant
+	err:=TestDb.Model(&entity.Tenant{}).Where("id = ?",id).First(&tenant).Error
+	assert.NoError(t,err)
+	assert.Equal(t,"TestNew",tenant.Name)
+	assert.Equal(t,id,tenant.ID)
 }

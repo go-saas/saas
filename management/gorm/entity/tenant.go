@@ -20,3 +20,5 @@ type Tenant struct {
 	Features []TenantFeature `gorm:"foreignKey:TenantId"`
 
 }
+
+type Tenants []*Tenant

@@ -1,6 +1,9 @@
 package gorm
 
-import "gorm.io/gorm"
+import (
+	"github.com/goxiaoy/go-saas/common"
+	"gorm.io/gorm"
+)
 
 type DialectFunc func(s string)gorm.Dialector
 
@@ -13,4 +16,8 @@ type Config struct {
 	MaxLifetime  int
 	MaxOpenConns int
 	MaxIdleConns int
+}
+
+func BuildPage(db *gorm.DB,p common.Pagination) *gorm.DB  {
+	return db.Offset(p.Offset).Limit(p.Limit)
 }

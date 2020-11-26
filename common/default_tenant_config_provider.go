@@ -24,7 +24,7 @@ func (d *DefaultTenantConfigProvider) Get(ctx context.Context,store bool) (Tenan
 	if rr.TenantIdOrName!=""{
 		//tenant side
 		//get config from tenant store
-		cfg,err := d.ts.GetByNameOrId(rr.TenantIdOrName)
+		cfg,err := d.ts.GetByNameOrId(ctx,rr.TenantIdOrName)
 		if err!=nil{
 			return TenantConfig{},rc,err
 		}

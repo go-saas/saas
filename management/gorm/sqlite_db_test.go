@@ -1,12 +1,43 @@
 package gorm
 
 import (
+	"context"
 	"github.com/goxiaoy/go-saas/common"
 	"github.com/goxiaoy/go-saas/data"
 	"github.com/goxiaoy/go-saas/gorm"
 	"gorm.io/driver/sqlite"
 	g "gorm.io/gorm"
+	"os"
+	"testing"
 )
+
+
+var TestDb *g.DB
+var TestDbProvider *gorm.DefaultDbProvider
+var TestTenantRepo *GormTenantRepo
+var TestGormTenantStore *GormTenantStore
+func TestMain(m *testing.M) {
+
+	TestDbProvider ,close := GetProvider()
+
+	TestDb = GetDb(context.Background(),TestDbProvider)
+	err :=AutoMigrate(nil,TestDb)
+	if err!=nil{
+		panic(err)
+	}
+	TestTenantRepo = &GormTenantRepo{
+		DbProvider: TestDbProvider,
+	}
+	TestGormTenantStore =&GormTenantStore{
+		tr: TestTenantRepo,
+	}
+	exitCode := m.Run()
+
+	close()
+	// 退出
+	os.Exit(exitCode)
+
+}
 
 func GetProvider() (*gorm.DefaultDbProvider, gorm.DbClean) {
 	cfg := gorm.Config{

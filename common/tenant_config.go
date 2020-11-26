@@ -9,3 +9,11 @@ type TenantConfig struct {
 	//Connection string map
 	Conn data.ConnStrings
 }
+
+func NewTenantConfig(id string,name string) *TenantConfig {
+	return &TenantConfig{
+		Id:   id,
+		Name: name,
+		Conn: make(data.ConnStrings),
+	}
+}

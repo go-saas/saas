@@ -1,6 +1,9 @@
 package common
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 type MemoryTenantStore struct {
 	TenantConfig []TenantConfig
@@ -12,7 +15,7 @@ func NewMemoryTenantStore(t []TenantConfig) *MemoryTenantStore {
 	}
 }
 
-func (m MemoryTenantStore) GetByNameOrId(nameOrId string) (*TenantConfig, error) {
+func (m MemoryTenantStore) GetByNameOrId(_ context.Context,nameOrId string) (*TenantConfig, error) {
 	for _, config := range m.TenantConfig {
 		if config.Id==nameOrId||config.Name==nameOrId {
 			return &config,nil
