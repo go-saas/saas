@@ -66,7 +66,7 @@ func TestContextCurrentTenant_Id(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c := ContextCurrentTenant{}
 			if got := c.Id(tt.args.ctx); got != tt.want {
-				t.Errorf("Id() = %v, want %v", got, tt.want)
+				t.Errorf("ID() = %v, want %v", got, tt.want)
 			}
 		})
 	}

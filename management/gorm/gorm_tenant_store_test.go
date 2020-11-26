@@ -26,7 +26,7 @@ func TestGormTenantStore_GetByNameOrId(t *testing.T) {
 	assert.NoError(t,err)
 	tc,err:=TestGormTenantStore.GetByNameOrId(context.Background(),id)
 	assert.NoError(t,err)
-	assert.Equal(t,id,tc.Id)
+	assert.Equal(t,id,tc.ID)
 	assert.Equal(t,"Test",tc.Name)
 	assert.Equal(t,"A",tc.Conn.Default())
 	assert.Equal(t,"A",tc.Conn.GetOrDefault("Nil"))

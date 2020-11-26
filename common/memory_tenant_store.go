@@ -17,7 +17,7 @@ func NewMemoryTenantStore(t []TenantConfig) *MemoryTenantStore {
 
 func (m MemoryTenantStore) GetByNameOrId(_ context.Context,nameOrId string) (*TenantConfig, error) {
 	for _, config := range m.TenantConfig {
-		if config.Id==nameOrId||config.Name==nameOrId {
+		if config.ID ==nameOrId||config.Name==nameOrId {
 			return &config,nil
 		}
 	}

@@ -15,8 +15,8 @@ func SetUp()  *gin.Engine {
 	r := gin.Default()
 	r.Use(MultiTenancy(nil,nil,common.NewMemoryTenantStore(
 		[]common.TenantConfig{
-			{Id: "1",Name: "Test1"},
-			{Id: "2",Name: "Test3"},
+			{ID: "1",Name: "Test1"},
+			{ID: "2",Name: "Test3"},
 		})))
 	r.GET("/", func(c *gin.Context) {
 		currentTenant:=common.ContextCurrentTenant{}

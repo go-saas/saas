@@ -35,7 +35,7 @@ func MultiTenancy(hmtOptF http.PatchHttpMultiTenancyOption,trOptF common.PatchTe
 		}
 		//set current tenant
 		currentTenant :=common.ContextCurrentTenant{}
-		newContext,cancel := currentTenant.Change(trCtx,tenantConfig.Id,tenantConfig.Name)
+		newContext,cancel := currentTenant.Change(trCtx,tenantConfig.ID,tenantConfig.Name)
 		//data filter
 		dataFilterCtx := data.NewEnableMultiTenancyDataFilter(newContext)
 		//cancel

@@ -3,8 +3,8 @@ package common
 import "github.com/goxiaoy/go-saas/data"
 
 type TenantConfig struct {
-	//Id of this tenant
-	Id string
+	//ID of this tenant
+	ID   string
 	Name string
 	//Connection string map
 	Conn data.ConnStrings
@@ -12,7 +12,7 @@ type TenantConfig struct {
 
 func NewTenantConfig(id string,name string) *TenantConfig {
 	return &TenantConfig{
-		Id:   id,
+		ID:   id,
 		Name: name,
 		Conn: make(data.ConnStrings),
 	}

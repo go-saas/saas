@@ -13,11 +13,11 @@ const (
 // Deprecated: application should set value self
 func AutoSetTenant(db *gorm.DB)  {
 	//t := common.FromCurrentTenant(db.Statement.Context)
-	//tId := t.Id
+	//tId := t.ID
 }
 
 // Deprecated: Use custom data type
 func AutoFilterCurrentTenant(db *gorm.DB)  {
 	//t := common.FromCurrentTenant(db.Statement.Context)
-	//tId := t.Id
+	//tId := t.ID
 }
