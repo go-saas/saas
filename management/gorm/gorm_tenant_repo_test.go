@@ -4,11 +4,9 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/goxiaoy/go-saas/common"
-	"github.com/goxiaoy/go-saas/data"
 	"github.com/goxiaoy/go-saas/gorm"
 	"github.com/goxiaoy/go-saas/management/domain"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
 	g "gorm.io/gorm"
 	"os"
 	"reflect"
@@ -18,21 +16,9 @@ import (
 var tenantRepo GormTenantRepo
 
 func TestMain(m *testing.M) {
-	cfg := gorm.Config{
-		Debug:        true,
-		Dialect: func(s string) g.Dialector {
-			return sqlite.Open(s)
-		},
-		Cfg:          nil,
-	}
-	ct := common.ContextCurrentTenant{}
-	ts := GormTenantStore{}
-	conn := make(data.ConnStrings,1)
-	conn.SetDefault("file::memory:?cache=shared")
-	mr := common.NewMultiTenancyConnStrResolver(ct,ts,data.ConnStrOption{
-		Conn: conn,
-	})
-	r ,close := gorm.NewDefaultDbProvider(mr,cfg)
+
+	r ,close := GetProvider()
+
 	db := GetDb(context.Background(),r)
 	err :=AutoMigrate(nil,db)
 	if err!=nil{

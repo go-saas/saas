@@ -55,6 +55,10 @@ func NewDB(c *Config,s string) (*gorm.DB, error) {
 	sqlDB.SetMaxIdleConns(c.MaxIdleConns)
 	sqlDB.SetMaxOpenConns(c.MaxOpenConns)
 	sqlDB.SetConnMaxLifetime(time.Duration(c.MaxLifetime) * time.Second)
+	//register callback
+	db.Callback().Create().Before("gorm:create").Register(MultiTenantBeforeCreateName, AutoSetTenant)
+	db.Callback().Query().Register(MultiTenantQueryName,AutoFilterCurrentTenant)
+
 	return db, nil
 }
 
@@ -98,6 +102,6 @@ func (d DefaultDbProvider) Get(ctx context.Context, key string) *gorm.DB {
 		g,_ = gv.(*gorm.DB)
 
 	}
-	return g
+	return g.WithContext(ctx)
 }
 
