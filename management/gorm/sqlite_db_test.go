@@ -28,9 +28,7 @@ func TestMain(m *testing.M) {
 	TestTenantRepo = &GormTenantRepo{
 		DbProvider: TestDbProvider,
 	}
-	TestGormTenantStore =&GormTenantStore{
-		tr: TestTenantRepo,
-	}
+	TestGormTenantStore =NewGormTenantStore(TestTenantRepo)
 	exitCode := m.Run()
 
 	close()
@@ -52,10 +50,11 @@ func GetProvider() (*gorm.DefaultDbProvider, gorm.DbClean) {
 		MaxIdleConns: 1,
 	}
 	ct := common.ContextCurrentTenant{}
-	ts := GormTenantStore{}
 	conn := make(data.ConnStrings,1)
 	conn.SetDefault("file::memory:?cache=shared")
-	mr := common.NewMultiTenancyConnStrResolver(ct,ts,data.ConnStrOption{
+	mr := common.NewMultiTenancyConnStrResolver(ct, func() common.TenantStore {
+		return *TestGormTenantStore
+	},data.ConnStrOption{
 		Conn: conn,
 	})
 	r ,close := gorm.NewDefaultDbProvider(mr,cfg)

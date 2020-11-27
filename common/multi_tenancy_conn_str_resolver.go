@@ -5,16 +5,20 @@ import (
 	"github.com/goxiaoy/go-saas/data"
 )
 
+type TenantStoreCreator func()TenantStore
+
 type MultiTenancyConnStrResolver struct {
 	currentTenant CurrentTenant
-	ts TenantStore
+	//use creator to prevent circular dependency
+	tsc TenantStoreCreator
 	*data.DefaultConnStrResolver
 }
 
-func NewMultiTenancyConnStrResolver(currentTenant CurrentTenant,ts TenantStore,opt data.ConnStrOption) *MultiTenancyConnStrResolver {
+//i should be type of TenantStoreCreator
+func NewMultiTenancyConnStrResolver(currentTenant CurrentTenant,tsc TenantStoreCreator,opt data.ConnStrOption) *MultiTenancyConnStrResolver {
 	return &MultiTenancyConnStrResolver{
 		currentTenant:          currentTenant,
-		ts:                     ts,
+		tsc:                     tsc,
 		DefaultConnStrResolver: &data.DefaultConnStrResolver{Opt: opt},
 	}
 }
@@ -27,7 +31,8 @@ func (m MultiTenancyConnStrResolver) Resolve(ctx context.Context, key string) st
 		//use default
 		return m.DefaultConnStrResolver.Resolve(ctx,key)
 	}
-	tenant,_ := m.ts.GetByNameOrId(ctx,id)
+	ts := m.tsc()
+	tenant,_ := ts.GetByNameOrId(ctx,id)
 	if tenant.Conn ==nil{
 		//not found
 		//use default

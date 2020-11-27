@@ -28,7 +28,9 @@ func GetProvider() (*DefaultDbProvider, DbClean) {
 		})
 	conn := make(data.ConnStrings,1)
 	conn.SetDefault("file::memory:?cache=shared")
-	mr := common.NewMultiTenancyConnStrResolver(ct,ts,data.ConnStrOption{
+	mr := common.NewMultiTenancyConnStrResolver(ct, func() common.TenantStore {
+		return ts
+	},data.ConnStrOption{
 		Conn: conn,
 	})
 	r ,close := NewDefaultDbProvider(mr,cfg)

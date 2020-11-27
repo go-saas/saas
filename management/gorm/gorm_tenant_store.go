@@ -9,6 +9,11 @@ import (
 type GormTenantStore struct {
 	tr domain.TenantRepo
 }
+func NewGormTenantStore(tr domain.TenantRepo)*GormTenantStore{
+	return &GormTenantStore{
+		tr: tr,
+	}
+}
 
 func (g GormTenantStore) GetByNameOrId(_ context.Context,nameOrId string) (*common.TenantConfig, error) {
 	//change to host side
