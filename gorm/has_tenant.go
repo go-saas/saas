@@ -3,6 +3,7 @@
 package gorm
 
 import (
+	"context"
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
@@ -14,6 +15,7 @@ import (
 )
 
 type HasTenant sql.NullString
+
 
 func NewTenantId(s string) HasTenant  {
 	if s==""{
@@ -28,6 +30,25 @@ func NewTenantId(s string) HasTenant  {
 	}
 }
 
+
+func (t HasTenant) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
+	ct := common.FromCurrentTenant(ctx)
+	if ct.Id != t.String{
+		//mismatch
+		at := data.FromAutoSetTenantId(ctx)
+		if at && ct.Id!=""{
+			if !t.Valid||t.String==""{
+				//tenant want to insert self
+				return clause.Expr{SQL: "?", Vars: []interface{}{ct.Id}}
+			}else{
+				//tenant wnt to insert others
+				//force reset
+				return clause.Expr{SQL: "?", Vars: []interface{}{ct.Id}}
+			}
+		}
+	}
+	return clause.Expr{SQL: "?", Vars: []interface{}{t}}
+}
 
 // Scan implements the Scanner interface.
 func (n *HasTenant) Scan(value interface{}) error {
