@@ -18,6 +18,11 @@ type Config struct {
 	MaxIdleConns int
 }
 
+//struct for multi-tenancy entity
+type MultiTenancy struct {
+	TenantId HasTenant `gorm:"index"`
+}
+
 func BuildPage(db *gorm.DB,p common.Pagination) *gorm.DB  {
 	return db.Offset(p.Offset).Limit(p.Limit)
 }

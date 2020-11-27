@@ -13,8 +13,7 @@ import (
 
 type TestEntity struct {
 	ID string
-	//custom field
-	TenantId HasTenant
+	MultiTenancy
 }
 
 func GetDb(ctx context.Context, provider DbProvider) *g.DB {
@@ -51,28 +50,12 @@ func TestCustomField(t *testing.T) {
 
 	//insert records
 	i := []TestEntity{
-		{ID: "Host1", TenantId: HasTenant{
-			Valid: false,
-		}},
-		{ID: "Host2", TenantId: HasTenant{
-			Valid: false,
-		}},
-		{ID: "TenantA1", TenantId: HasTenant{
-			String: "A",
-			Valid: true,
-		}},
-		{ID: "TenantA2", TenantId: HasTenant{
-			String: "A",
-			Valid: true,
-		}},
-		{ID: "TenantB1", TenantId: HasTenant{
-			String: "B",
-			Valid: true,
-		}},
-		{ID: "TenantB2", TenantId: HasTenant{
-			String: "B",
-			Valid: true,
-		}},
+		{ID: "Host1", MultiTenancy: MultiTenancy{NewTenantId("")} },
+		{ID: "Host2", MultiTenancy: MultiTenancy{ NewTenantId("")}},
+		{ID: "TenantA1", MultiTenancy: MultiTenancy{ NewTenantId("A")}},
+		{ID: "TenantA2", MultiTenancy: MultiTenancy{ NewTenantId("A")}},
+		{ID: "TenantB1", MultiTenancy: MultiTenancy{NewTenantId("B")}},
+		{ID: "TenantB2", MultiTenancy: MultiTenancy{ NewTenantId("B")}},
 	}
 	wg := sync.WaitGroup{}
 	wg.Add(len(i))

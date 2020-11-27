@@ -15,6 +15,20 @@ import (
 
 type HasTenant sql.NullString
 
+func NewTenantId(s string) HasTenant  {
+	if s==""{
+		return HasTenant{
+			Valid: false,
+		}
+	}else{
+		return  HasTenant{
+			String: s,
+			Valid: true,
+		}
+	}
+}
+
+
 // Scan implements the Scanner interface.
 func (n *HasTenant) Scan(value interface{}) error {
 	return (*sql.NullString)(n).Scan(value)
