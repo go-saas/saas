@@ -20,7 +20,14 @@ go framework for saas(multi-tenancy). `go-saas` targets to provide saas solution
     * [x] Cookie
     * [ ] Route
     * [x] Domain format
+    
+    
+# Sample Project
 
+ * [gin-vue-admin](https://github.com/Goxiaoy/gin-vue-admin) This is a fork repo from original one, which uses `go-saas` to build `saas` pattern
+ 
+# Documentation
+ Refer to [wiki](https://github.com/Goxiaoy/go-saas/wiki)
 
 
 #Referene
