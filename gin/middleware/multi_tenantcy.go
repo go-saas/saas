@@ -15,13 +15,18 @@ func MultiTenancy(hmtOptF http.PatchHttpMultiTenancyOption,trOptF common.PatchTe
 			//patch
 			hmtOptF(hmtOpt)
 		}
-		trOpt := common.NewTenantResolveOption(
+		df:= []common.TenantResolveContributor{
 			//TODO route
 			http.NewCookieTenantResolveContributor(*hmtOpt,context.Request),
 			http.NewFormTenantResolveContributor(*hmtOpt,context.Request),
 			http.NewHeaderTenantResolveContributor(*hmtOpt,context.Request),
 			http.NewQueryTenantResolveContributor(*hmtOpt,context.Request),
-			)
+		}
+		if hmtOpt.DomainFormat!=""{
+			df := append(df[:1], df[0:]...)
+			df[0]= http.NewDomainTenantResolveContributor(*hmtOpt,context.Request,hmtOpt.DomainFormat)
+		}
+		trOpt := common.NewTenantResolveOption(df...)
 		if trOptF != nil{
 			//patch
 			trOptF(trOpt)

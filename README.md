@@ -19,7 +19,7 @@ go framework for saas(multi-tenancy). `go-saas` targets to provide saas solution
     * [x] Header
     * [x] Cookie
     * [ ] Route
-    * [ ] Domain format
+    * [x] Domain format
 
 
 
