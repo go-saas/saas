@@ -5,6 +5,7 @@ import (
 	"github.com/goxiaoy/go-saas/data"
 	"gorm.io/gorm"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -13,6 +14,7 @@ type DefaultDbProvider struct {
 	m sync.Map
 	cs data.ConnStrResolver
 	c Config
+	createCounter uint32
 }
 
 type DbClean func()
@@ -77,7 +79,7 @@ func closeDb(d *gorm.DB) error  {
 }
 
 
-func (d DefaultDbProvider) Get(ctx context.Context, key string) *gorm.DB {
+func (d *DefaultDbProvider) Get(ctx context.Context, key string) *gorm.DB {
 	//resolve connection string
 	s := d.cs.Resolve(ctx,key)
 	//try get db object from map
@@ -86,6 +88,7 @@ func (d DefaultDbProvider) Get(ctx context.Context, key string) *gorm.DB {
 	if !ok{
 		//not found
 		newDb,err := NewDB(&d.c,s)
+		atomic.AddUint32(&d.createCounter,1)
 		if err!=nil{
 			//
 			panic(err)
