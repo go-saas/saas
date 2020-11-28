@@ -22,7 +22,7 @@ func (g GormTenantStore) GetByNameOrId(_ context.Context,nameOrId string) (*comm
 	if err!=nil{
 		return nil, err
 	}
-	ret:=common.NewTenantConfig(t.ID,t.Name)
+	ret:=common.NewTenantConfig(t.ID,t.Name,t.Region)
 	for _, conn := range t.Conn {
 		ret.Conn[conn.Key]=conn.Value
 	}
