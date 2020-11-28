@@ -54,7 +54,9 @@ func GetProvider() (*DefaultDbProvider, DbClean) {
 	ts := common.NewMemoryTenantStore(
 		[]common.TenantConfig{
 			{ID: TenantId1,Name: "Test1"},
-			{ID: TenantId2,Name: "Test2"},
+			{ID: TenantId2,Name: "Test2",Conn: map[string]string{
+				data.Default:":memory:?cache=shared",
+			} },
 		})
 	conn := make(data.ConnStrings,1)
 	conn.SetDefault("file::memory:?cache=shared")
