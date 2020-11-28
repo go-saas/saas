@@ -5,11 +5,10 @@ import (
 	"github.com/jinzhu/copier"
 )
 
-
-func getMultiTenantSide(ctx context.Context,ct CurrentTenant)MultiTenancySide  {
-	if ct.Id(ctx) ==""{
+func getMultiTenantSide(ctx context.Context, ct CurrentTenant) MultiTenancySide {
+	if ct.Id(ctx) == "" {
 		return Host
-	}else{
+	} else {
 		return Tenant
 	}
 }

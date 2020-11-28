@@ -1,6 +1,6 @@
 package common
 
 type TenantResolveResult struct {
-	TenantIdOrName string
+	TenantIdOrName   string
 	AppliedResolvers []string
 }

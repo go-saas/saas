@@ -10,9 +10,9 @@ type CookieTenantResolveContributor struct {
 	request *http.Request
 }
 
-func NewCookieTenantResolveContributor(opt WebMultiTenancyOption,r *http.Request) * CookieTenantResolveContributor  {
+func NewCookieTenantResolveContributor(opt WebMultiTenancyOption, r *http.Request) *CookieTenantResolveContributor {
 	return &CookieTenantResolveContributor{
-		opt: opt,
+		opt:     opt,
 		request: r,
 	}
 }
@@ -22,14 +22,13 @@ func (h *CookieTenantResolveContributor) Name() string {
 }
 
 func (h *CookieTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) {
-	v,err :=h.request.Cookie(h.opt.TenantKey)
-	if err!=nil{
+	v, err := h.request.Cookie(h.opt.TenantKey)
+	if err != nil {
 		//no cookie
 		return
 	}
-	if v.Value == ""{
+	if v.Value == "" {
 		return
 	}
 	trCtx.TenantIdOrName = v.Value
 }
-

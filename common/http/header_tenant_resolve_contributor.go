@@ -10,9 +10,9 @@ type HeaderTenantResolveContributor struct {
 	request *http.Request
 }
 
-func NewHeaderTenantResolveContributor(opt WebMultiTenancyOption,r *http.Request) * HeaderTenantResolveContributor  {
+func NewHeaderTenantResolveContributor(opt WebMultiTenancyOption, r *http.Request) *HeaderTenantResolveContributor {
 	return &HeaderTenantResolveContributor{
-		opt: opt,
+		opt:     opt,
 		request: r,
 	}
 }
@@ -22,10 +22,9 @@ func (h *HeaderTenantResolveContributor) Name() string {
 }
 
 func (h *HeaderTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) {
-	v :=h.request.Header.Get(h.opt.TenantKey)
-	if v == ""{
+	v := h.request.Header.Get(h.opt.TenantKey)
+	if v == "" {
 		return
 	}
 	trCtx.TenantIdOrName = v
 }
-

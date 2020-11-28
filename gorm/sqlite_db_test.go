@@ -34,15 +34,13 @@ func TestMain(m *testing.M) {
 
 }
 
-
 func GetProvider() (*DefaultDbProvider, DbClean) {
 	cfg := Config{
-		Debug:        true,
+		Debug: true,
 		Dialect: func(s string) g.Dialector {
 			return sqlite.Open(s)
 		},
-		Cfg:&g.Config{
-		},
+		Cfg: &g.Config{},
 		//https://github.com/go-gorm/gorm/issues/2875
 		MaxOpenConns: 1,
 		MaxIdleConns: 1,
@@ -53,18 +51,18 @@ func GetProvider() (*DefaultDbProvider, DbClean) {
 	TenantId2 = uuid.New().String()
 	ts := common.NewMemoryTenantStore(
 		[]common.TenantConfig{
-			{ID: TenantId1,Name: "Test1"},
-			{ID: TenantId2,Name: "Test2",Conn: map[string]string{
-				data.Default:":memory:?cache=shared",
-			} },
+			{ID: TenantId1, Name: "Test1"},
+			{ID: TenantId2, Name: "Test2", Conn: map[string]string{
+				data.Default: ":memory:?cache=shared",
+			}},
 		})
-	conn := make(data.ConnStrings,1)
+	conn := make(data.ConnStrings, 1)
 	conn.SetDefault("file::memory:?cache=shared")
 	mr := common.NewMultiTenancyConnStrResolver(ct, func() common.TenantStore {
 		return ts
-	},data.ConnStrOption{
+	}, data.ConnStrOption{
 		Conn: conn,
 	})
-	r ,close := NewDefaultDbProvider(mr,cfg)
-	return r,close
+	r, close := NewDefaultDbProvider(mr, cfg)
+	return r, close
 }

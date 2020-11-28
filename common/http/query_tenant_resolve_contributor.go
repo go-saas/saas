@@ -10,9 +10,9 @@ type QueryTenantResolveContributor struct {
 	request *http.Request
 }
 
-func NewQueryTenantResolveContributor(opt WebMultiTenancyOption,r *http.Request) * QueryTenantResolveContributor  {
+func NewQueryTenantResolveContributor(opt WebMultiTenancyOption, r *http.Request) *QueryTenantResolveContributor {
 	return &QueryTenantResolveContributor{
-		opt: opt,
+		opt:     opt,
 		request: r,
 	}
 }
@@ -22,10 +22,9 @@ func (h *QueryTenantResolveContributor) Name() string {
 }
 
 func (h *QueryTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) {
-	v :=h.request.URL.Query().Get(h.opt.TenantKey)
-	if v == ""{
+	v := h.request.URL.Query().Get(h.opt.TenantKey)
+	if v == "" {
 		return
 	}
 	trCtx.TenantIdOrName = v
 }
-

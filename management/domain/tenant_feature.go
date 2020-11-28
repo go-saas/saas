@@ -7,7 +7,7 @@ type TenantFeature struct {
 	//key of feature
 	Key string
 	//value
-	Value string
+	Value     string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

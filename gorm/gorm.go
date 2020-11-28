@@ -5,14 +5,14 @@ import (
 	"gorm.io/gorm"
 )
 
-type DialectFunc func(s string)gorm.Dialector
+type DialectFunc func(s string) gorm.Dialector
 
 // Config 配置参数
 type Config struct {
-	Debug        bool
+	Debug bool
 	//Dialect
 	Dialect      DialectFunc
-	Cfg *gorm.Config
+	Cfg          *gorm.Config
 	MaxLifetime  int
 	MaxOpenConns int
 	MaxIdleConns int
@@ -23,6 +23,6 @@ type MultiTenancy struct {
 	TenantId HasTenant `gorm:"index"`
 }
 
-func BuildPage(db *gorm.DB,p common.Pagination) *gorm.DB  {
+func BuildPage(db *gorm.DB, p common.Pagination) *gorm.DB {
 	return db.Offset(p.Offset).Limit(p.Limit)
 }

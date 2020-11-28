@@ -7,33 +7,30 @@ type DefaultTenantConfigProvider struct {
 	ts TenantStore
 }
 
-func NewDefaultTenantConfigProvider(tr TenantResolver,ts TenantStore) TenantConfigProvider  {
+func NewDefaultTenantConfigProvider(tr TenantResolver, ts TenantStore) TenantConfigProvider {
 	return &DefaultTenantConfigProvider{
 		tr: tr,
 		ts: ts,
 	}
 }
 
-func (d *DefaultTenantConfigProvider) Get(ctx context.Context,store bool) (TenantConfig,context.Context,error) {
+func (d *DefaultTenantConfigProvider) Get(ctx context.Context, store bool) (TenantConfig, context.Context, error) {
 	rr := d.tr.Resolve(ctx)
 	rc := ctx
-	if store{
+	if store {
 		//store into context
-		rc = NewTenantResolveRes(ctx,&rr)
+		rc = NewTenantResolveRes(ctx, &rr)
 	}
-	if rr.TenantIdOrName!=""{
+	if rr.TenantIdOrName != "" {
 		//tenant side
 		//get config from tenant store
-		cfg,err := d.ts.GetByNameOrId(ctx,rr.TenantIdOrName)
-		if err!=nil{
-			return TenantConfig{},rc,err
+		cfg, err := d.ts.GetByNameOrId(ctx, rr.TenantIdOrName)
+		if err != nil {
+			return TenantConfig{}, rc, err
 		}
-		return *cfg,rc,nil
+		return *cfg, rc, nil
 		//check error
 	}
-	return TenantConfig{},rc,nil
+	return TenantConfig{}, rc, nil
 
 }
-
-
-

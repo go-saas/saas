@@ -7,46 +7,46 @@ import (
 	"github.com/goxiaoy/go-saas/data"
 )
 
-func MultiTenancy(hmtOptF http.PatchHttpMultiTenancyOption,trOptF common.PatchTenantResolveOption,ts common.TenantStore) gin.HandlerFunc {
+func MultiTenancy(hmtOptF http.PatchHttpMultiTenancyOption, trOptF common.PatchTenantResolveOption, ts common.TenantStore) gin.HandlerFunc {
 	return func(context *gin.Context) {
 
 		hmtOpt := http.DefaultWebMultiTenancyOption()
-		if hmtOptF != nil{
+		if hmtOptF != nil {
 			//patch
 			hmtOptF(hmtOpt)
 		}
-		df:= []common.TenantResolveContributor{
+		df := []common.TenantResolveContributor{
 			//TODO route
-			http.NewCookieTenantResolveContributor(*hmtOpt,context.Request),
-			http.NewFormTenantResolveContributor(*hmtOpt,context.Request),
-			http.NewHeaderTenantResolveContributor(*hmtOpt,context.Request),
-			http.NewQueryTenantResolveContributor(*hmtOpt,context.Request),
+			http.NewCookieTenantResolveContributor(*hmtOpt, context.Request),
+			http.NewFormTenantResolveContributor(*hmtOpt, context.Request),
+			http.NewHeaderTenantResolveContributor(*hmtOpt, context.Request),
+			http.NewQueryTenantResolveContributor(*hmtOpt, context.Request),
 		}
-		if hmtOpt.DomainFormat!=""{
+		if hmtOpt.DomainFormat != "" {
 			df := append(df[:1], df[0:]...)
-			df[0]= http.NewDomainTenantResolveContributor(*hmtOpt,context.Request,hmtOpt.DomainFormat)
+			df[0] = http.NewDomainTenantResolveContributor(*hmtOpt, context.Request, hmtOpt.DomainFormat)
 		}
 		trOpt := common.NewTenantResolveOption(df...)
-		if trOptF != nil{
+		if trOptF != nil {
 			//patch
 			trOptF(trOpt)
 		}
 		//get tenant config
-		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(*trOpt),ts)
-		tenantConfig,trCtx,err := tenantConfigProvider.Get(context,true)
-		if err!=nil{
+		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(*trOpt), ts)
+		tenantConfig, trCtx, err := tenantConfigProvider.Get(context, true)
+		if err != nil {
 			//not found
-			context.AbortWithError(404,err)
+			context.AbortWithError(404, err)
 		}
 		//set current tenant
-		currentTenant :=common.ContextCurrentTenant{}
-		newContext,cancel := currentTenant.Change(trCtx,tenantConfig.ID,tenantConfig.Name)
+		currentTenant := common.ContextCurrentTenant{}
+		newContext, cancel := currentTenant.Change(trCtx, tenantConfig.ID, tenantConfig.Name)
 		//data filter
 		dataFilterCtx := data.NewEnableMultiTenancyDataFilter(newContext)
 		//cancel
 		defer cancel()
 		//with newContext
-		context.Request=context.Request.WithContext(dataFilterCtx)
+		context.Request = context.Request.WithContext(dataFilterCtx)
 		//next
 		context.Next()
 	}

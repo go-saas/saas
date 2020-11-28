@@ -8,7 +8,7 @@ type TenantConn struct {
 	//key of connection string
 	Key string
 	//connection string
-	Value string
+	Value     string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

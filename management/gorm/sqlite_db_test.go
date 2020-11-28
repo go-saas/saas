@@ -11,24 +11,24 @@ import (
 	"testing"
 )
 
-
 var TestDb *g.DB
 var TestDbProvider *gorm.DefaultDbProvider
 var TestTenantRepo *GormTenantRepo
 var TestGormTenantStore *GormTenantStore
+
 func TestMain(m *testing.M) {
 
-	TestDbProvider ,close := GetProvider()
+	TestDbProvider, close := GetProvider()
 
-	TestDb = GetDb(context.Background(),TestDbProvider)
-	err :=AutoMigrate(nil,TestDb)
-	if err!=nil{
+	TestDb = GetDb(context.Background(), TestDbProvider)
+	err := AutoMigrate(nil, TestDb)
+	if err != nil {
 		panic(err)
 	}
 	TestTenantRepo = &GormTenantRepo{
 		DbProvider: TestDbProvider,
 	}
-	TestGormTenantStore =NewGormTenantStore(TestTenantRepo)
+	TestGormTenantStore = NewGormTenantStore(TestTenantRepo)
 	exitCode := m.Run()
 
 	close()
@@ -39,24 +39,23 @@ func TestMain(m *testing.M) {
 
 func GetProvider() (*gorm.DefaultDbProvider, gorm.DbClean) {
 	cfg := gorm.Config{
-		Debug:        true,
+		Debug: true,
 		Dialect: func(s string) g.Dialector {
 			return sqlite.Open(s)
 		},
-		Cfg:&g.Config{
-		},
+		Cfg: &g.Config{},
 		//https://github.com/go-gorm/gorm/issues/2875
 		MaxOpenConns: 1,
 		MaxIdleConns: 1,
 	}
 	ct := common.ContextCurrentTenant{}
-	conn := make(data.ConnStrings,1)
+	conn := make(data.ConnStrings, 1)
 	conn.SetDefault("file::memory:?cache=shared")
 	mr := common.NewMultiTenancyConnStrResolver(ct, func() common.TenantStore {
 		return *TestGormTenantStore
-	},data.ConnStrOption{
+	}, data.ConnStrOption{
 		Conn: conn,
 	})
-	r ,close := gorm.NewDefaultDbProvider(mr,cfg)
-	return r,close
+	r, close := gorm.NewDefaultDbProvider(mr, cfg)
+	return r, close
 }

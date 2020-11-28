@@ -6,4 +6,3 @@ import "database/sql"
 //TODO how to handle orm unrelated stuff
 // Deprecated: can not handle orm unrelated
 type HasTenant sql.NullString
-

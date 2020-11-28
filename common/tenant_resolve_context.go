@@ -6,7 +6,7 @@ type TenantResolveContext struct {
 	HasHandled bool
 }
 
-func (t TenantResolveContext)HasResolved() bool  {
+func (t TenantResolveContext) HasResolved() bool {
 	return t.TenantIdOrName != "" || t.HasHandled
 }
 

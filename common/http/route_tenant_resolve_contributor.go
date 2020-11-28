@@ -10,9 +10,9 @@ type RouteTenantResolveContributor struct {
 	request *http.Request
 }
 
-func NewRouteTenantResolveContributor(opt WebMultiTenancyOption,r *http.Request) * RouteTenantResolveContributor  {
+func NewRouteTenantResolveContributor(opt WebMultiTenancyOption, r *http.Request) *RouteTenantResolveContributor {
 	return &RouteTenantResolveContributor{
-		opt: opt,
+		opt:     opt,
 		request: r,
 	}
 }
@@ -25,4 +25,3 @@ func (h *RouteTenantResolveContributor) Resolve(trCtx *common.TenantResolveConte
 	//TODO
 	panic("NotImplemented")
 }
-

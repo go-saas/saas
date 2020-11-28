@@ -7,5 +7,5 @@ import (
 
 type DbProvider interface {
 	//get db
-	Get(ctx context.Context,key string)*gorm.DB
+	Get(ctx context.Context, key string) *gorm.DB
 }

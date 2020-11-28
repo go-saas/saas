@@ -9,12 +9,12 @@ import (
 
 const ConnKey = "Tenant"
 
-func GetDb(ctx context.Context,provider gorm.DbProvider) *g.DB {
-	return provider.Get(ctx,ConnKey)
+func GetDb(ctx context.Context, provider gorm.DbProvider) *g.DB {
+	return provider.Get(ctx, ConnKey)
 }
 
-func AutoMigrate(f func(*g.DB),db *g.DB) error {
-	if f!=nil{
+func AutoMigrate(f func(*g.DB), db *g.DB) error {
+	if f != nil {
 		f(db)
 	}
 	return db.AutoMigrate(
@@ -24,8 +24,8 @@ func AutoMigrate(f func(*g.DB),db *g.DB) error {
 	)
 }
 
-func AutoMigrateMySQL(f func(*g.DB),db *g.DB) error  {
-	if f!=nil{
+func AutoMigrateMySQL(f func(*g.DB), db *g.DB) error {
+	if f != nil {
 		f(db)
 	}
 	db.Set("gorm:table_options", "ENGINE=InnoDB")

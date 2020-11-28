@@ -9,8 +9,6 @@ type DefaultSeeder struct {
 func (d DefaultSeeder) Seed(ctx context.Context, sCtx SeedContext) {
 	//create seeder
 	for _, contributor := range d.opt.Contributors {
-		contributor.Seed(ctx,sCtx)
+		contributor.Seed(ctx, sCtx)
 	}
 }
-
-

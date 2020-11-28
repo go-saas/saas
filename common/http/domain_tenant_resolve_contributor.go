@@ -12,11 +12,11 @@ type DomainTenantResolveContributor struct {
 	format  string
 }
 
-func NewDomainTenantResolveContributor(opt WebMultiTenancyOption,r *http.Request,f string) * DomainTenantResolveContributor  {
+func NewDomainTenantResolveContributor(opt WebMultiTenancyOption, r *http.Request, f string) *DomainTenantResolveContributor {
 	return &DomainTenantResolveContributor{
-		opt: opt,
+		opt:     opt,
 		request: r,
-		format: f,
+		format:  f,
 	}
 }
 
@@ -26,12 +26,11 @@ func (h *DomainTenantResolveContributor) Name() string {
 
 func (h *DomainTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) {
 	host := h.request.Host
-	r:=regexp.MustCompile(h.format)
+	r := regexp.MustCompile(h.format)
 	f := r.FindAllStringSubmatch(host, -1)
-	if f ==nil{
+	if f == nil {
 		//no match
 		return
 	}
-	trCtx.TenantIdOrName=f[0][1]
+	trCtx.TenantIdOrName = f[0][1]
 }
-
