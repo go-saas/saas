@@ -11,7 +11,7 @@ import (
 
 type DefaultDbProvider struct {
 	//TODO performance issue
-	m             sync.Map
+	m             *sync.Map
 	cs            data.ConnStrResolver
 	c             Config
 	createCounter uint32
@@ -32,7 +32,7 @@ func NewDefaultDbProvider(cs data.ConnStrResolver, c Config) (d *DefaultDbProvid
 		})
 	}
 	d = &DefaultDbProvider{
-		m:  m,
+		m:  &m,
 		cs: cs,
 		c:  c,
 	}
