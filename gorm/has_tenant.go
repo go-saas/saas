@@ -39,7 +39,7 @@ func (t HasTenant) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr
 				//tenant want to insert self
 				return clause.Expr{SQL: "?", Vars: []interface{}{ct.Id}}
 			} else {
-				//tenant wnt to insert others
+				//tenant want to insert others
 				//force reset
 				return clause.Expr{SQL: "?", Vars: []interface{}{ct.Id}}
 			}
@@ -49,33 +49,33 @@ func (t HasTenant) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr
 }
 
 // Scan implements the Scanner interface.
-func (n *HasTenant) Scan(value interface{}) error {
-	return (*sql.NullString)(n).Scan(value)
+func (t *HasTenant) Scan(value interface{}) error {
+	return (*sql.NullString)(t).Scan(value)
 }
 
 // Value implements the driver Valuer interface.
-func (n HasTenant) Value() (driver.Value, error) {
-	if !n.Valid {
+func (t HasTenant) Value() (driver.Value, error) {
+	if !t.Valid {
 		return nil, nil
 	}
-	return n.String, nil
+	return t.String, nil
 }
 
-func (n HasTenant) MarshalJSON() ([]byte, error) {
-	if n.Valid {
-		return json.Marshal(n.String)
+func (t HasTenant) MarshalJSON() ([]byte, error) {
+	if t.Valid {
+		return json.Marshal(t.String)
 	}
 	return json.Marshal(nil)
 }
 
-func (n *HasTenant) UnmarshalJSON(b []byte) error {
+func (t *HasTenant) UnmarshalJSON(b []byte) error {
 	if string(b) == "null" {
-		n.Valid = false
+		t.Valid = false
 		return nil
 	}
-	err := json.Unmarshal(b, &n.String)
+	err := json.Unmarshal(b, &t.String)
 	if err == nil {
-		n.Valid = true
+		t.Valid = true
 	}
 	return err
 }

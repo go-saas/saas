@@ -5,22 +5,9 @@ import (
 )
 
 type (
-	//soft delete status
-	softDeleteCtx    struct{}
 	currentTenantCtx struct{}
 	tenantResolveRes struct{}
 )
-
-func NewSoftDelete(ctx context.Context) context.Context {
-	return context.WithValue(ctx, softDeleteCtx{}, true)
-}
-func NewNoSoftDelete(ctx context.Context) context.Context {
-	return context.WithValue(ctx, softDeleteCtx{}, false)
-}
-func FromSoftDelete(ctx context.Context) bool {
-	v := ctx.Value(softDeleteCtx{})
-	return v != nil && v.(bool)
-}
 
 func NewCurrentTenant(ctx context.Context, id string, name string) context.Context {
 	newInfo := NewBasicTenantInfo(id, name)
