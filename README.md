@@ -3,6 +3,12 @@ go framework for saas(multi-tenancy). `go-saas` targets to provide saas solution
 
 # Overview
 
+install
+
+```
+go get github.com/goxiaoy/go-saas
+```
+
 * Different database architecture
   * [x] Single-tenancy:  Each database stores data from only one tenant.
   * [x] Multi-tenancy:  Each database stores data from multiple separate tenants (with mechanisms to protect data privacy).
