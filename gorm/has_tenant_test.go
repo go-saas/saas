@@ -23,7 +23,7 @@ func AutoMigrate(f func(*g.DB), db *g.DB) error {
 	if f != nil {
 		f(db)
 	}
-	return TestDb.AutoMigrate(
+	return db.AutoMigrate(
 		new(TestEntity),
 	)
 }

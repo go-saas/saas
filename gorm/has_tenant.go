@@ -45,7 +45,11 @@ func (t HasTenant) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr
 			}
 		}
 	}
-	return clause.Expr{SQL: "?", Vars: []interface{}{t}}
+	if t.Valid {
+		return clause.Expr{SQL: "?", Vars: []interface{}{t.String}}
+	} else {
+		return clause.Expr{SQL: "?", Vars: []interface{}{nil}}
+	}
 }
 
 // Scan implements the Scanner interface.
