@@ -2,7 +2,7 @@ package common
 
 import "context"
 
-type CancelFunc func() context.Context
+type CancelFunc func(context.Context) context.Context
 type CurrentTenant interface {
 	IsAvailable(ctx context.Context) bool
 	Id(ctx context.Context) string

@@ -43,11 +43,12 @@ func MultiTenancy(hmtOptF http.PatchHttpMultiTenancyOption, trOptF common.PatchT
 		newContext, cancel := currentTenant.Change(trCtx, tenantConfig.ID, tenantConfig.Name)
 		//data filter
 		dataFilterCtx := data.NewEnableMultiTenancyDataFilter(newContext)
-		//cancel
-		defer cancel()
+
 		//with newContext
 		context.Request = context.Request.WithContext(dataFilterCtx)
 		//next
 		context.Next()
+		//cancel
+		context.Request = context.Request.WithContext(cancel(dataFilterCtx))
 	}
 }

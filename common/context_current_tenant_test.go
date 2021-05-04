@@ -37,12 +37,12 @@ func TestContextCurrentTenant_Change(t *testing.T) {
 			//cancel
 			for i := len(cancelSlice) - 1; i > 0; i-- {
 				//cancel
-				newCtx := cancelSlice[i]()
+				newCtx := cancelSlice[i](currentContext)
 				if !reflect.DeepEqual(getCurrent(newCtx), changeSlice[i-1]) {
 					t.Errorf("Change() cancel got = %v, want %v", getCurrent(newCtx), changeSlice[i])
 				}
 			}
-			newCtx := cancelSlice[0]()
+			newCtx := cancelSlice[0](currentContext)
 			if !reflect.DeepEqual(getCurrent(newCtx), getCurrent(tt.args.ctx)) {
 				t.Errorf("Change() cancel got = %v, want %v", getCurrent(newCtx), getCurrent(tt.args.ctx))
 			}

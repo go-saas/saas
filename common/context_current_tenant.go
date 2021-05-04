@@ -20,7 +20,7 @@ func (c ContextCurrentTenant) Id(ctx context.Context) string {
 func (c ContextCurrentTenant) Change(ctx context.Context, id string, name string) (context.Context, CancelFunc) {
 	current := getCurrent(ctx)
 	newCtx := NewCurrentTenant(ctx, id, name)
-	return newCtx, func() context.Context {
+	return newCtx, func(ctx context.Context) context.Context {
 		return NewCurrentTenant(ctx, current.Id, current.Name)
 	}
 }

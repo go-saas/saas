@@ -50,7 +50,7 @@ func (m *MultiTenancy) Middleware(next netHttp.Handler) netHttp.Handler {
 		//data filter
 		dataFilterCtx := data.NewEnableMultiTenancyDataFilter(newContext)
 		//cancel
-		defer cancel()
+		defer cancel(dataFilterCtx)
 		next.ServeHTTP(w, r.WithContext(dataFilterCtx))
 	})
 }
