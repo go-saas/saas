@@ -13,7 +13,7 @@ import (
 
 var TestDb *g.DB
 var TestDbProvider *gorm.DefaultDbProvider
-var TestTenantRepo *GormTenantRepo
+var TestTenantRepo *TenantRepo
 var TestGormTenantStore *GormTenantStore
 
 func TestMain(m *testing.M) {
@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-	TestTenantRepo = &GormTenantRepo{
+	TestTenantRepo = &TenantRepo{
 		DbProvider: TestDbProvider,
 	}
 	TestGormTenantStore = NewGormTenantStore(TestTenantRepo)

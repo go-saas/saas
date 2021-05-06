@@ -11,11 +11,11 @@ import (
 	gg "gorm.io/gorm"
 )
 
-type GormTenantRepo struct {
+type TenantRepo struct {
 	DbProvider gorm.DbProvider
 }
 
-func (g *GormTenantRepo) Db(ctx context.Context, preload bool) *gg.DB {
+func (g *TenantRepo) Db(ctx context.Context, preload bool) *gg.DB {
 	ret := GetDb(ctx, g.DbProvider)
 	if preload {
 		ret = ret.Preload("Conn").Preload("Features")
@@ -23,7 +23,7 @@ func (g *GormTenantRepo) Db(ctx context.Context, preload bool) *gg.DB {
 	return ret
 }
 
-func (g *GormTenantRepo) FindByIdOrName(ctx context.Context, idOrName string) (*domain.Tenant, error) {
+func (g *TenantRepo) FindByIdOrName(ctx context.Context, idOrName string) (*domain.Tenant, error) {
 	var t = new(domain.Tenant)
 	var tDb e.Tenant
 	//parse
@@ -48,14 +48,14 @@ func (g *GormTenantRepo) FindByIdOrName(ctx context.Context, idOrName string) (*
 	return t, err
 }
 
-func (g *GormTenantRepo) GetCount(ctx context.Context) (int64, error) {
+func (g *TenantRepo) GetCount(ctx context.Context) (int64, error) {
 	var count int64
 	//check count
 	tx := g.Db(ctx, false).Model(&e.Tenant{}).Count(&count)
 	return count, tx.Error
 }
 
-func (g *GormTenantRepo) GetPaged(ctx context.Context, p common.Pagination) (c int64, t []*domain.Tenant, err error) {
+func (g *TenantRepo) GetPaged(ctx context.Context, p common.Pagination) (c int64, t []*domain.Tenant, err error) {
 	err = g.Db(ctx, false).Model(&e.Tenant{}).Count(&c).Error
 	var tDb e.Tenants
 	if err != nil {
@@ -67,7 +67,7 @@ func (g *GormTenantRepo) GetPaged(ctx context.Context, p common.Pagination) (c i
 	return
 }
 
-func (g *GormTenantRepo) Create(ctx context.Context, t domain.Tenant) error {
+func (g *TenantRepo) Create(ctx context.Context, t domain.Tenant) error {
 	var tDb = new(e.Tenant)
 	common.Copy(&t, tDb)
 	d := g.Db(ctx, true)
@@ -76,7 +76,7 @@ func (g *GormTenantRepo) Create(ctx context.Context, t domain.Tenant) error {
 
 }
 
-func (g *GormTenantRepo) Update(ctx context.Context, id string, t domain.Tenant) error {
+func (g *TenantRepo) Update(ctx context.Context, id string, t domain.Tenant) error {
 	var tDb = new(e.Tenant)
 	common.Copy(&t, tDb)
 	d := g.Db(ctx, true)
