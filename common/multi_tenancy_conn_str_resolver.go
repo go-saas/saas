@@ -14,16 +14,15 @@ type MultiTenancyConnStrResolver struct {
 	*data.DefaultConnStrResolver
 }
 
-//i should be type of TenantStoreCreator
-func NewMultiTenancyConnStrResolver(currentTenant CurrentTenant, tsc TenantStoreCreator, opt data.ConnStrOption) *MultiTenancyConnStrResolver {
+// NewMultiTenancyConnStrResolver from tenant
+func NewMultiTenancyConnStrResolver(currentTenant CurrentTenant, tsc TenantStoreCreator, opt *data.ConnStrOption) *MultiTenancyConnStrResolver {
 	return &MultiTenancyConnStrResolver{
 		currentTenant:          currentTenant,
 		tsc:                    tsc,
-		DefaultConnStrResolver: &data.DefaultConnStrResolver{Opt: opt},
+		DefaultConnStrResolver: data.NewDefaultConnStrResolver(opt),
 	}
 }
 
-//direct return value from option value
 func (m MultiTenancyConnStrResolver) Resolve(ctx context.Context, key string) string {
 	id := m.currentTenant.Id(ctx)
 	if !m.currentTenant.IsAvailable(ctx) {

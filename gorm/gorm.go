@@ -18,7 +18,7 @@ type Config struct {
 	MaxIdleConns int
 }
 
-//struct for multi-tenancy entity
+// MultiTenancy entity
 type MultiTenancy struct {
 	TenantId HasTenant `gorm:"index"`
 }
