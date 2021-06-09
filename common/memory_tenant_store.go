@@ -2,7 +2,6 @@ package common
 
 import (
 	"context"
-	"errors"
 )
 
 type MemoryTenantStore struct {
@@ -21,5 +20,5 @@ func (m MemoryTenantStore) GetByNameOrId(_ context.Context, nameOrId string) (*T
 			return &config, nil
 		}
 	}
-	return nil, errors.New("tenant not found")
+	return nil, ErrTenantNotFound
 }

@@ -42,8 +42,8 @@ func GetProvider() (*DefaultDbProvider, DbClean) {
 		},
 		Cfg: &g.Config{},
 		//https://github.com/go-gorm/gorm/issues/2875
-		MaxOpenConns: 1,
-		MaxIdleConns: 1,
+		MaxOpenConn: 1,
+		MaxIdleConn: 1,
 	}
 	ct := common.ContextCurrentTenant{}
 	//use memory store
@@ -60,9 +60,7 @@ func GetProvider() (*DefaultDbProvider, DbClean) {
 	conn.SetDefault("file::memory:?cache=shared")
 	mr := common.NewMultiTenancyConnStrResolver(ct, func() common.TenantStore {
 		return ts
-	}, data.ConnStrOption{
-		Conn: conn,
-	})
+	}, data.NewConnStrOption(conn))
 	r, close := NewDefaultDbProvider(mr, cfg)
 	return r, close
 }

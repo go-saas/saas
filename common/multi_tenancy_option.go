@@ -15,15 +15,15 @@ type MultiTenancyOption struct {
 
 type option func(tenancyOption *MultiTenancyOption)
 
-//set enable status
+// WithEnabled enable status
 func WithEnabled(isEnabled bool) option {
 	return func(tenancyOption *MultiTenancyOption) {
 		tenancyOption.IsEnabled = isEnabled
 	}
 }
 
-//set database style
-// support Single/PerTenant/Multi
+//
+// WithDatabaseStyle database style, support Single/PerTenant/Multi
 func WithDatabaseStyle(databaseStyle DatabaseStyleType) option {
 	return func(tenancyOption *MultiTenancyOption) {
 		tenancyOption.DatabaseStyle = databaseStyle

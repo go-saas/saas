@@ -13,7 +13,7 @@ func GetMultiTenantSide(ctx context.Context, ct CurrentTenant) MultiTenancySide 
 	}
 }
 
-// Copy
+// Copy deeply
 func Copy(s, ts interface{}) error {
 	return copier.Copy(ts, s)
 }

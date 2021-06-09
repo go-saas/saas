@@ -6,7 +6,6 @@ require (
 	github.com/gin-gonic/gin v1.7.1
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/uuid v1.2.0
-	github.com/google/wire v0.5.0
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/jinzhu/copier v0.3.0
 	github.com/json-iterator/go v1.1.10 // indirect

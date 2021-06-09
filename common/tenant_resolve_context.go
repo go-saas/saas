@@ -2,7 +2,7 @@ package common
 
 type TenantResolveContext struct {
 	TenantIdOrName string
-	//Has handled field to handle host side unresolved or resolved
+	// HasHandled field to handle host side unresolved or resolved
 	HasHandled bool
 }
 

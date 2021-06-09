@@ -5,13 +5,13 @@ type ConnStrings map[string]string
 const Default = "Default"
 
 type ConnStrOption struct {
-	//connection string map
+	// Conn string map
 	Conn ConnStrings
 }
 
-func NewConnStrOption() *ConnStrOption {
+func NewConnStrOption(cs ConnStrings) *ConnStrOption {
 	return &ConnStrOption{
-		Conn: make(ConnStrings),
+		Conn: cs,
 	}
 }
 

@@ -19,7 +19,6 @@ type DefaultDbProvider struct {
 
 type DbClean func()
 
-//create db provider and close function
 func NewDefaultDbProvider(cs data.ConnStrResolver, c Config) (d *DefaultDbProvider, close DbClean) {
 	var m sync.Map
 	close = func() {
@@ -54,8 +53,8 @@ func NewDB(c *Config, s string) (*gorm.DB, error) {
 		return db, err
 	}
 
-	sqlDB.SetMaxIdleConns(c.MaxIdleConns)
-	sqlDB.SetMaxOpenConns(c.MaxOpenConns)
+	sqlDB.SetMaxIdleConns(c.MaxIdleConn)
+	sqlDB.SetMaxOpenConns(c.MaxOpenConn)
 	sqlDB.SetConnMaxLifetime(time.Duration(c.MaxLifetime) * time.Second)
 
 	return db, nil
