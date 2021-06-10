@@ -2,40 +2,33 @@ package gorm
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/goxiaoy/go-saas/common"
 	"github.com/goxiaoy/go-saas/data"
+	"github.com/goxiaoy/uow"
+	"github.com/goxiaoy/uow/gorm"
 	"gorm.io/driver/sqlite"
 	g "gorm.io/gorm"
 	"os"
+	"strings"
 	"testing"
 )
 
 var TestDb *g.DB
 var TestDbProvider *DefaultDbProvider
-var close DbClean
+var c DbClean
 var TenantId1 string
 var TenantId2 string
+var TestDbOpener DbOpener
+
+var TestUnitOfWorkManager uow.Manager
 
 func TestMain(m *testing.M) {
 
-	TestDbProvider, close = GetProvider()
-
-	TestDb = GetDb(context.Background(), TestDbProvider)
-	err := AutoMigrate(nil, TestDb)
-	if err != nil {
-		panic(err)
-	}
-
-	exitCode := m.Run()
-	close()
-	// 退出
-	os.Exit(exitCode)
-
-}
-
-func GetProvider() (*DefaultDbProvider, DbClean) {
-	cfg := Config{
+	TestDbOpener, c = NewDbOpener()
+	cfg := &Config{
 		Debug: true,
 		Dialect: func(s string) g.Dialector {
 			return sqlite.Open(s)
@@ -45,6 +38,34 @@ func GetProvider() (*DefaultDbProvider, DbClean) {
 		MaxOpenConn: 1,
 		MaxIdleConn: 1,
 	}
+	TestUnitOfWorkManager = uow.NewManager(func(ctx context.Context, key string) uow.TransactionalDb {
+		if strings.HasPrefix(key, "gorm_") {
+			db, err := TestDbOpener.Open(cfg, strings.TrimLeft(key, "gorm_"))
+			if err != nil {
+				panic(err)
+			}
+			return gorm.NewTransactionDb(db)
+		}
+		panic(errors.New(fmt.Sprintf("can not resolve %s", key)))
+	})
+
+	TestDbProvider = GetProvider(cfg)
+
+	TestDb = GetDb(context.Background(), TestDbProvider)
+	err := AutoMigrate(nil, TestDb)
+	if err != nil {
+		panic(err)
+	}
+
+	exitCode := m.Run()
+	c()
+	// 退出
+	os.Exit(exitCode)
+
+}
+
+func GetProvider(cfg *Config) *DefaultDbProvider {
+
 	ct := common.ContextCurrentTenant{}
 	//use memory store
 	TenantId1 = uuid.New().String()
@@ -61,6 +82,6 @@ func GetProvider() (*DefaultDbProvider, DbClean) {
 	mr := common.NewMultiTenancyConnStrResolver(ct, func() common.TenantStore {
 		return ts
 	}, data.NewConnStrOption(conn))
-	r, close := NewDefaultDbProvider(mr, cfg)
-	return r, close
+	r := NewDefaultDbProvider(mr, cfg, TestUnitOfWorkManager, TestDbOpener)
+	return r
 }

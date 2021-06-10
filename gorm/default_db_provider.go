@@ -2,103 +2,52 @@ package gorm
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/goxiaoy/go-saas/data"
+	"github.com/goxiaoy/uow"
+	gorm2 "github.com/goxiaoy/uow/gorm"
 	"gorm.io/gorm"
-	"sync"
-	"sync/atomic"
-	"time"
 )
 
 type DefaultDbProvider struct {
-	//TODO performance issue
-	m             *sync.Map
-	cs            data.ConnStrResolver
-	c             Config
-	createCounter uint32
+	cs     data.ConnStrResolver
+	um     uow.Manager
+	c      *Config
+	opener DbOpener
 }
 
-type DbClean func()
-
-func NewDefaultDbProvider(cs data.ConnStrResolver, c Config) (d *DefaultDbProvider, close DbClean) {
-	var m sync.Map
-	close = func() {
-		m.Range(func(key, value interface{}) bool {
-			d, ok := value.(*gorm.DB)
-			if ok {
-				closeDb(d)
-			}
-			return true
-		})
-	}
+func NewDefaultDbProvider(cs data.ConnStrResolver, c *Config, um uow.Manager, opener DbOpener) (d *DefaultDbProvider) {
 	d = &DefaultDbProvider{
-		m:  &m,
-		cs: cs,
-		c:  c,
+		cs:     cs,
+		c:      c,
+		um:     um,
+		opener: opener,
 	}
 	return
-}
-
-func NewDB(c *Config, s string) (*gorm.DB, error) {
-	db, err := gorm.Open(c.Dialect(s), c.Cfg)
-	if err != nil {
-		//error
-		return nil, err
-	}
-	if c.Debug {
-		db = db.Debug()
-	}
-	sqlDB, err := db.DB()
-	if err != nil {
-		//error
-		return db, err
-	}
-
-	sqlDB.SetMaxIdleConns(c.MaxIdleConn)
-	sqlDB.SetMaxOpenConns(c.MaxOpenConn)
-	sqlDB.SetConnMaxLifetime(time.Duration(c.MaxLifetime) * time.Second)
-
-	return db, nil
-}
-
-func closeDb(d *gorm.DB) error {
-	sqlDB, err := d.DB()
-	if err != nil {
-		return err
-	}
-	cErr := sqlDB.Close()
-	if cErr != nil {
-		//todo logging
-		//logger.Errorf("Gorm db close error: %s", err.Error())
-		return cErr
-	}
-	return nil
 }
 
 func (d *DefaultDbProvider) Get(ctx context.Context, key string) *gorm.DB {
 	//resolve connection string
 	s := d.cs.Resolve(ctx, key)
-	//try get db object from map
+	fk := fmt.Sprintf("gorm_%s", s)
+	u, ok := uow.FromCurrentUow(ctx)
 	var g *gorm.DB
-	gv, ok := d.m.Load(s)
-	if !ok {
-		//not found
-		newDb, err := NewDB(&d.c, s)
-		atomic.AddUint32(&d.createCounter, 1)
+	if ok {
+		// get transaction db form current unit of work
+		tx, err := u.GetTxDb(ctx, fk)
 		if err != nil {
-			//
 			panic(err)
 		}
-		gv, ok = d.m.LoadOrStore(s, newDb)
-		if ok {
-			//indicate loaded, should close newDb
-			//TODO performance issue
-			closeDb(newDb)
+		g, ok := tx.(*gorm2.TransactionDb)
+		if !ok {
+			panic(errors.New(fmt.Sprintf("%s is not a *gorm.DB instance", fk)))
 		}
-		g, _ = gv.(*gorm.DB)
-	} else {
-		//in this map
-		g, _ = gv.(*gorm.DB)
-
+		return g.WithContext(ctx)
+	}
+	g, err := d.opener.Open(d.c, s)
+	if err != nil {
+		panic(err)
 	}
 	return g.WithContext(ctx)
 }

@@ -12,7 +12,7 @@ type DefaultConnStrResolver struct {
 	Opt *ConnStrOption
 }
 
-func NewDefaultConnStrResolver(c *ConnStrOption) *DefaultConnStrResolver{
+func NewDefaultConnStrResolver(c *ConnStrOption) *DefaultConnStrResolver {
 	return &DefaultConnStrResolver{
 		Opt: c,
 	}

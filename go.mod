@@ -6,7 +6,8 @@ require (
 	github.com/gin-gonic/gin v1.7.1
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/uuid v1.2.0
-	github.com/gorilla/mux v1.8.0 // indirect
+	github.com/gorilla/mux v1.8.0
+	github.com/goxiaoy/uow v0.0.0-20210610160342-4e88a6b6090c // indirect
 	github.com/jinzhu/copier v0.3.0
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
@@ -20,5 +21,5 @@ require (
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gorm.io/driver/sqlite v1.1.4
-	gorm.io/gorm v1.21.9
+	gorm.io/gorm v1.21.10
 )

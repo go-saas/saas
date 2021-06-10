@@ -9,10 +9,10 @@ type DialectFunc func(s string) gorm.Dialector
 
 // Config 配置参数
 type Config struct {
-	Debug bool
-	Dialect      DialectFunc
-	Cfg          *gorm.Config
-	MaxLifetime  int
+	Debug       bool
+	Dialect     DialectFunc
+	Cfg         *gorm.Config
+	MaxLifetime int
 	MaxOpenConn int
 	MaxIdleConn int
 }

@@ -6,7 +6,7 @@ type TenantConfig struct {
 	ID     string
 	Name   string
 	Region string
-	Conn data.ConnStrings
+	Conn   data.ConnStrings
 }
 
 func NewTenantConfig(id string, name string, region string) *TenantConfig {
