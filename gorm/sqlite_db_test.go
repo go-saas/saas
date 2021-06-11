@@ -38,7 +38,7 @@ func TestMain(m *testing.M) {
 		MaxOpenConn: 1,
 		MaxIdleConn: 1,
 	}
-	TestUnitOfWorkManager = uow.NewManager(func(ctx context.Context, key string) uow.TransactionalDb {
+	TestUnitOfWorkManager = uow.NewManager(&uow.Config{SupportNestedTransaction: false},func(ctx context.Context, key string) uow.TransactionalDb {
 		if strings.HasPrefix(key, "gorm_") {
 			db, err := TestDbOpener.Open(cfg, strings.TrimLeft(key, "gorm_"))
 			if err != nil {

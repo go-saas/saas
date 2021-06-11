@@ -2,13 +2,17 @@ package gorm
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/goxiaoy/go-saas/common"
 	"github.com/goxiaoy/go-saas/data"
 	"github.com/goxiaoy/go-saas/gorm"
 	"github.com/goxiaoy/uow"
+	gorm2 "github.com/goxiaoy/uow/gorm"
 	"gorm.io/driver/sqlite"
 	g "gorm.io/gorm"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -33,6 +37,16 @@ func TestMain(m *testing.M) {
 		MaxOpenConn: 1,
 		MaxIdleConn: 1,
 	}
+	TestUnitOfWorkManager = uow.NewManager(&uow.Config{SupportNestedTransaction: false},func(ctx context.Context, key string) uow.TransactionalDb {
+		if strings.HasPrefix(key, "gorm_") {
+			db, err := TestDbOpener.Open(cfg, strings.TrimLeft(key, "gorm_"))
+			if err != nil {
+				panic(err)
+			}
+			return gorm2.NewTransactionDb(db)
+		}
+		panic(errors.New(fmt.Sprintf("can not resolve %s", key)))
+	})
 	TestDbProvider := GetProvider(cfg)
 
 	TestDb = GetDb(context.Background(), TestDbProvider)

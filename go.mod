@@ -7,7 +7,7 @@ require (
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/mux v1.8.0
-	github.com/goxiaoy/uow v0.0.0-20210610160342-4e88a6b6090c // indirect
+	github.com/goxiaoy/uow v0.0.0-20210611072146-494d317f3690 // indirect
 	github.com/jinzhu/copier v0.3.0
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/kr/pretty v0.1.0 // indirect

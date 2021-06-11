@@ -32,7 +32,6 @@ func (d *DefaultDbProvider) Get(ctx context.Context, key string) *gorm.DB {
 	s := d.cs.Resolve(ctx, key)
 	fk := fmt.Sprintf("gorm_%s", s)
 	u, ok := uow.FromCurrentUow(ctx)
-	var g *gorm.DB
 	if ok {
 		// get transaction db form current unit of work
 		tx, err := u.GetTxDb(ctx, fk)
@@ -43,7 +42,7 @@ func (d *DefaultDbProvider) Get(ctx context.Context, key string) *gorm.DB {
 		if !ok {
 			panic(errors.New(fmt.Sprintf("%s is not a *gorm.DB instance", fk)))
 		}
-		return g.WithContext(ctx)
+		return g.DB
 	}
 	g, err := d.opener.Open(d.c, s)
 	if err != nil {

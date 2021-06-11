@@ -58,6 +58,12 @@ github.com/goxiaoy/uow v0.0.0-20210610152413-1ea6f0c7d59c h1:pIvlju1YELzZos5DSC/
 github.com/goxiaoy/uow v0.0.0-20210610152413-1ea6f0c7d59c/go.mod h1:fF1hZ5tWEl8jpu6gTNf9wojyOGh9b/4Sm8ceW7wSbFI=
 github.com/goxiaoy/uow v0.0.0-20210610160342-4e88a6b6090c h1:22H0Ol1HzTvvLV059X7qOgqN0gc4YVi2foCmujgkxYs=
 github.com/goxiaoy/uow v0.0.0-20210610160342-4e88a6b6090c/go.mod h1:fF1hZ5tWEl8jpu6gTNf9wojyOGh9b/4Sm8ceW7wSbFI=
+github.com/goxiaoy/uow v0.0.0-20210611031244-76f0089e8de7 h1:wHfdyBQGH+nBGN6m8ThUiBw/TfghoD88A+5PQo+GB3w=
+github.com/goxiaoy/uow v0.0.0-20210611031244-76f0089e8de7/go.mod h1:fF1hZ5tWEl8jpu6gTNf9wojyOGh9b/4Sm8ceW7wSbFI=
+github.com/goxiaoy/uow v0.0.0-20210611033040-e68271077130 h1:lffAmNE3f3155PquODj0STH4NgyWs61YdbiJ7g5STPg=
+github.com/goxiaoy/uow v0.0.0-20210611033040-e68271077130/go.mod h1:fF1hZ5tWEl8jpu6gTNf9wojyOGh9b/4Sm8ceW7wSbFI=
+github.com/goxiaoy/uow v0.0.0-20210611072146-494d317f3690 h1:gnM5ZZx7nlipLEn8WojtyXGnEj773oft6968rcBBTmo=
+github.com/goxiaoy/uow v0.0.0-20210611072146-494d317f3690/go.mod h1:fF1hZ5tWEl8jpu6gTNf9wojyOGh9b/4Sm8ceW7wSbFI=
 github.com/jinzhu/copier v0.3.0 h1:P5zN9OYSxmtzZmwgcVmt5Iu8egfP53BGMPAFgEksKPI=
 github.com/jinzhu/copier v0.3.0/go.mod h1:24xnZezI2Yqac9J61UC6/dG/k76ttpq0DdJI3QmUvro=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
