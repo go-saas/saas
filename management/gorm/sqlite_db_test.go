@@ -19,7 +19,7 @@ import (
 var TestDb *g.DB
 var TestDbProvider *gorm.DefaultDbProvider
 var TestTenantRepo *TenantRepo
-var TestGormTenantStore *GormTenantStore
+var TestGormTenantStore *TenantStore
 var c gorm.DbClean
 var TestDbOpener gorm.DbOpener
 

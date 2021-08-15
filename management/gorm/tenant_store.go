@@ -6,17 +6,17 @@ import (
 	"github.com/goxiaoy/go-saas/management/domain"
 )
 
-type GormTenantStore struct {
+type TenantStore struct {
 	tr domain.TenantRepo
 }
 
-func NewGormTenantStore(tr domain.TenantRepo) *GormTenantStore {
-	return &GormTenantStore{
+func NewGormTenantStore(tr domain.TenantRepo) *TenantStore {
+	return &TenantStore{
 		tr: tr,
 	}
 }
 
-func (g GormTenantStore) GetByNameOrId(_ context.Context, nameOrId string) (*common.TenantConfig, error) {
+func (g TenantStore) GetByNameOrId(_ context.Context, nameOrId string) (*common.TenantConfig, error) {
 	//change to host side
 	newCtx := common.NewCurrentTenant(context.Background(), "", "")
 	t, err := g.tr.FindByIdOrName(newCtx, nameOrId)
