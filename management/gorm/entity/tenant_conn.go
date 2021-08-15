@@ -2,7 +2,7 @@ package entity
 
 import "time"
 
-//tenant connection string info
+// TenantConn connection string info
 type TenantConn struct {
 	TenantId string `gorm:"column:tenant_id;primary_key;size:36;"`
 	//key of connection string
