@@ -10,3 +10,7 @@ func NewTenantResolveOption(c ...TenantResolveContributor) *TenantResolveOption 
 		Resolvers: c,
 	}
 }
+
+func (opt *TenantResolveOption)AppendContributors(c ...TenantResolveContributor)  {
+	opt.Resolvers = append(opt.Resolvers, c...)
+}
