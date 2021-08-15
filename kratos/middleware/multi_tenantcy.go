@@ -31,11 +31,11 @@ func MultiTenancy(hmtOptF shttp.PatchHttpMultiTenancyOption, trOptF common.Patch
 					}
 					if hmtOpt.DomainFormat != "" {
 						df := append(df[:1], df[0:]...)
-						df[0] = shttp.NewDomainTenantResolveContributor(*hmtOpt,r, hmtOpt.DomainFormat)
+						df[0] = shttp.NewDomainTenantResolveContributor(*hmtOpt, r, hmtOpt.DomainFormat)
 					}
 					trOpt.AppendContributors(df...)
-				}else{
-					trOpt.AppendContributors(NewHeaderTenantResolveContributor(*hmtOpt,tr))
+				} else {
+					trOpt.AppendContributors(NewHeaderTenantResolveContributor(*hmtOpt, tr))
 				}
 				if trOptF != nil {
 					//patch
@@ -55,7 +55,7 @@ func MultiTenancy(hmtOptF shttp.PatchHttpMultiTenancyOption, trOptF common.Patch
 				//data filter
 				dataFilterCtx := data.NewEnableMultiTenancyDataFilter(newContext)
 
-				return handler(dataFilterCtx,req)
+				return handler(dataFilterCtx, req)
 			}
 			return handler(ctx, req)
 		}

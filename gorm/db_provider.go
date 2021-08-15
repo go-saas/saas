@@ -10,6 +10,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const GormDbKind = "gorm"
+
 type DbProvider interface {
 	// Get gorm db instance by key
 	Get(ctx context.Context, key string) *gorm.DB
@@ -35,17 +37,16 @@ func NewDefaultDbProvider(cs data.ConnStrResolver, c *Config, um uow.Manager, op
 func (d *DefaultDbProvider) Get(ctx context.Context, key string) *gorm.DB {
 	//resolve connection string
 	s := d.cs.Resolve(ctx, key)
-	fk := fmt.Sprintf("gorm_%s", s)
 	u, ok := uow.FromCurrentUow(ctx)
 	if ok {
 		// get transaction db form current unit of work
-		tx, err := u.GetTxDb(ctx, fk)
+		tx, err := u.GetTxDb(ctx, GormDbKind, s)
 		if err != nil {
 			panic(err)
 		}
 		g, ok := tx.(*gorm2.TransactionDb)
 		if !ok {
-			panic(errors.New(fmt.Sprintf("%s is not a *gorm.DB instance", fk)))
+			panic(errors.New(fmt.Sprintf("%s is not a *gorm.DB instance", s)))
 		}
 		return g.DB
 	}

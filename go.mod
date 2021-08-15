@@ -8,7 +8,7 @@ require (
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
-	github.com/goxiaoy/uow v0.0.0-20210611072146-494d317f3690
+	github.com/goxiaoy/uow v0.0.0-20210815151702-b0032203778a // indirect
 	github.com/jinzhu/copier v0.3.2
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/mattn/go-isatty v0.0.13 // indirect

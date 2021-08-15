@@ -11,6 +11,6 @@ func NewTenantResolveOption(c ...TenantResolveContributor) *TenantResolveOption 
 	}
 }
 
-func (opt *TenantResolveOption)AppendContributors(c ...TenantResolveContributor)  {
+func (opt *TenantResolveOption) AppendContributors(c ...TenantResolveContributor) {
 	opt.Resolvers = append(opt.Resolvers, c...)
 }

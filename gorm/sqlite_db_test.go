@@ -12,7 +12,6 @@ import (
 	"gorm.io/driver/sqlite"
 	g "gorm.io/gorm"
 	"os"
-	"strings"
 	"testing"
 )
 
@@ -38,9 +37,9 @@ func TestMain(m *testing.M) {
 		MaxOpenConn: 1,
 		MaxIdleConn: 1,
 	}
-	TestUnitOfWorkManager = uow.NewManager(&uow.Config{SupportNestedTransaction: false}, func(ctx context.Context, key string) uow.TransactionalDb {
-		if strings.HasPrefix(key, "gorm_") {
-			db, err := TestDbOpener.Open(cfg, strings.TrimLeft(key, "gorm_"))
+	TestUnitOfWorkManager = uow.NewManager(&uow.Config{SupportNestedTransaction: false}, func(ctx context.Context, kind, key string) uow.TransactionalDb {
+		if kind == GormDbKind {
+			db, err := TestDbOpener.Open(cfg, key)
 			if err != nil {
 				panic(err)
 			}

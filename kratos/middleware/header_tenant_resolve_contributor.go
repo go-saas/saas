@@ -7,13 +7,13 @@ import (
 )
 
 type HeaderTenantResolveContributor struct {
-	opt     http.WebMultiTenancyOption
+	opt         http.WebMultiTenancyOption
 	transporter transport.Transporter
 }
 
 func NewHeaderTenantResolveContributor(opt http.WebMultiTenancyOption, transporter transport.Transporter) *HeaderTenantResolveContributor {
 	return &HeaderTenantResolveContributor{
-		opt: opt,
+		opt:         opt,
 		transporter: transporter,
 	}
 }
@@ -28,4 +28,3 @@ func (h *HeaderTenantResolveContributor) Resolve(trCtx *common.TenantResolveCont
 	}
 	trCtx.TenantIdOrName = v
 }
-
