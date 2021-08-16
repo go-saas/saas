@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/http"
@@ -47,7 +48,7 @@ func MultiTenancy(hmtOptF shttp.PatchHttpMultiTenancyOption, trOptF common.Patch
 				tenantConfig, trCtx, err := tenantConfigProvider.Get(ctx, true)
 				if err != nil {
 					//not found
-					// TODO return not found
+					return nil, errors.NotFound("TENANT",err.Error())
 				}
 				//set current tenant
 				currentTenant := common.ContextCurrentTenant{}
