@@ -10,6 +10,7 @@ type DbClean func()
 
 type DbOpener interface {
 	Open(c *Config, s string) (*gorm.DB, error)
+	Close()
 }
 
 type dbOpener struct {
@@ -18,15 +19,10 @@ type dbOpener struct {
 }
 
 func NewDbOpener() (DbOpener, DbClean) {
-	m := make(map[string]*gorm.DB)
-	close := func() {
-		for _, d := range m {
-			closeDb(d)
-		}
+	ret :=&dbOpener{
+		db: make(map[string]*gorm.DB),
 	}
-	return &dbOpener{
-		db: m,
-	}, close
+	return ret, ret.Close
 }
 
 func (d *dbOpener) Open(c *Config, s string) (*gorm.DB, error) {
@@ -58,6 +54,15 @@ func (d *dbOpener) Open(c *Config, s string) (*gorm.DB, error) {
 
 	d.db[s] = db
 	return db, nil
+}
+
+func (d *dbOpener) Close(){
+	d.mtx.Lock()
+	defer d.mtx.Unlock()
+	for _, d := range d.db {
+		closeDb(d)
+	}
+
 }
 
 func closeDb(d *gorm.DB) error {
