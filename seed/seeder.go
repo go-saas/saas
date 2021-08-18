@@ -6,8 +6,10 @@ import (
 )
 
 type Seeder interface {
-	Seed(ctx context.Context)
+	Seed(ctx context.Context) error
 }
+
+var _ Seeder = (*DefaultSeeder)(nil)
 
 type DefaultSeeder struct {
 	extra map[string]interface{}
