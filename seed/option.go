@@ -1,10 +1,10 @@
 package seed
 
-type SeedOption struct {
-	Contributors []SeedContributor
+type Option struct {
+	Contributors []Contributor
 	TenantIds    []string
 }
 
-func NewSeedOption(opt ...SeedContributor) *SeedOption {
-	return &SeedOption{Contributors: opt, TenantIds: make([]string, 0)}
+func NewSeedOption(opt ...Contributor) *Option {
+	return &Option{Contributors: opt, TenantIds: make([]string, 0)}
 }
