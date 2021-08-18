@@ -17,7 +17,6 @@ import (
 
 var TestDb *g.DB
 var TestDbProvider *DefaultDbProvider
-var c DbClean
 var TenantId1 string
 var TenantId2 string
 var TestDbOpener DbOpener
@@ -25,7 +24,7 @@ var TestDbOpener DbOpener
 var TestUnitOfWorkManager uow.Manager
 
 func TestMain(m *testing.M) {
-
+	var c func()
 	TestDbOpener, c = NewDbOpener()
 	cfg := &Config{
 		Debug: true,

@@ -19,12 +19,13 @@ var TestDb *g.DB
 var TestDbProvider *gorm.DefaultDbProvider
 var TestTenantRepo *TenantRepo
 var TestGormTenantStore *TenantStore
-var c gorm.DbClean
+
 var TestDbOpener gorm.DbOpener
 
 var TestUnitOfWorkManager uow.Manager
 
 func TestMain(m *testing.M) {
+	var c func()
 	TestDbOpener, c = gorm.NewDbOpener()
 	cfg := &gorm.Config{
 		Debug: true,

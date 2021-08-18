@@ -6,8 +6,6 @@ import (
 	"time"
 )
 
-type DbClean func()
-
 type DbOpener interface {
 	Open(c *Config, s string) (*gorm.DB, error)
 	Close()
@@ -18,8 +16,8 @@ type dbOpener struct {
 	db  map[string]*gorm.DB
 }
 
-func NewDbOpener() (DbOpener, DbClean) {
-	ret :=&dbOpener{
+func NewDbOpener() (DbOpener, func()) {
+	ret := &dbOpener{
 		db: make(map[string]*gorm.DB),
 	}
 	return ret, ret.Close
@@ -56,7 +54,7 @@ func (d *dbOpener) Open(c *Config, s string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func (d *dbOpener) Close(){
+func (d *dbOpener) Close() {
 	d.mtx.Lock()
 	defer d.mtx.Unlock()
 	for _, d := range d.db {
