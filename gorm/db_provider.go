@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const GormDbKind = "gorm"
+const DbKind = "gorm"
 
 type DbProvider interface {
 	// Get gorm db instance by key
@@ -40,7 +40,7 @@ func (d *DefaultDbProvider) Get(ctx context.Context, key string) *gorm.DB {
 	u, ok := uow.FromCurrentUow(ctx)
 	if ok {
 		// get transaction db form current unit of work
-		tx, err := u.GetTxDb(ctx, GormDbKind, s)
+		tx, err := u.GetTxDb(ctx, DbKind, s)
 		if err != nil {
 			panic(err)
 		}

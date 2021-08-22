@@ -37,7 +37,7 @@ func TestMain(m *testing.M) {
 		MaxIdleConn: 1,
 	}
 	TestUnitOfWorkManager = uow.NewManager(&uow.Config{SupportNestedTransaction: false}, func(ctx context.Context, kind, key string) uow.TransactionalDb {
-		if kind == GormDbKind {
+		if kind == DbKind {
 			db, err := TestDbOpener.Open(cfg, key)
 			if err != nil {
 				panic(err)
