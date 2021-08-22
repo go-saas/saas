@@ -30,9 +30,8 @@ go get github.com/goxiaoy/go-saas
     
     
 # Sample Project
+* [go-saas-kit](https://github.com/Goxiaoy/go-saas-kit) Microservice architecture starter kit for golang sass project
 
- * [gin-vue-admin](https://github.com/Goxiaoy/gin-vue-admin) This is a fork repo from original one, which uses `go-saas` to build `saas` pattern
- 
 # Documentation
  Refer to [wiki](https://github.com/Goxiaoy/go-saas/wiki)
 
