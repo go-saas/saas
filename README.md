@@ -17,6 +17,7 @@ go get github.com/goxiaoy/go-saas
 * Support multiple web framework
     * [x] [gin](https://github.com/gin-gonic/gin)
     * [x] [mux](https://github.com/gorilla/mux)
+    * [x] [kratos](https://github.com/go-kratos/kratos)
 * Support multiple orms
     * [x] [gorm](https://github.com/go-gorm/gorm)
 * Customizable tenant resolver
