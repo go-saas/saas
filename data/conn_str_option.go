@@ -2,7 +2,7 @@ package data
 
 type ConnStrings map[string]string
 
-const Default = "Default"
+const Default = "default"
 
 type ConnStrOption struct {
 	// Conn string map

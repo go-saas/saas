@@ -7,7 +7,7 @@ import (
 	g "gorm.io/gorm"
 )
 
-const ConnKey = "Tenant"
+const ConnKey = "tenant"
 
 func GetDb(ctx context.Context, provider gorm.DbProvider) *g.DB {
 	return provider.Get(ctx, ConnKey)
