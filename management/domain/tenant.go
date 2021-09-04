@@ -1,6 +1,10 @@
 package domain
 
-import "time"
+import (
+	"context"
+	"github.com/goxiaoy/go-saas/common"
+	"time"
+)
 
 type Tenant struct {
 	// unique id
@@ -19,4 +23,12 @@ type Tenant struct {
 	Conn []TenantConn
 	//edition
 	Features []TenantFeature
+}
+
+type TenantRepo interface {
+	FindByIdOrName(ctx context.Context, idOrName string) (*Tenant, error)
+	GetCount(ctx context.Context) (int64, error)
+	GetPaged(ctx context.Context, p common.Pagination) (c int64, t []*Tenant, err error)
+	Create(ctx context.Context, t Tenant) error
+	Update(ctx context.Context, id string, t Tenant) error
 }

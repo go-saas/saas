@@ -2,7 +2,7 @@ package domain
 
 import "time"
 
-//tenant connection string info
+//TenantConn connection string info
 type TenantConn struct {
 	TenantId string
 	//key of connection string
