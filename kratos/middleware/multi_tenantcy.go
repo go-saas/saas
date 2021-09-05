@@ -48,7 +48,10 @@ func MultiTenancy(hmtOptF shttp.PatchHttpMultiTenancyOption, trOptF common.Patch
 				tenantConfig, trCtx, err := tenantConfigProvider.Get(ctx, true)
 				if err != nil {
 					//not found
-					return nil, errors.NotFound("TENANT",err.Error())
+					if errors.Is(err, common.ErrTenantNotFound) {
+						return nil, errors.NotFound("TENANT", err.Error())
+					}
+					return nil, err
 				}
 				//set current tenant
 				currentTenant := common.ContextCurrentTenant{}

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/goxiaoy/go-saas/common"
 	"github.com/goxiaoy/go-saas/common/http"
 	"github.com/goxiaoy/go-saas/data"
@@ -36,7 +37,11 @@ func MultiTenancy(hmtOptF http.PatchHttpMultiTenancyOption, trOptF common.PatchT
 		tenantConfig, trCtx, err := tenantConfigProvider.Get(context, true)
 		if err != nil {
 			//not found
-			context.AbortWithError(404, err)
+			if errors.Is(err, common.ErrTenantNotFound) {
+				context.AbortWithError(404, err)
+			} else {
+				context.AbortWithError(500, err)
+			}
 		}
 		//set current tenant
 		currentTenant := common.ContextCurrentTenant{}
