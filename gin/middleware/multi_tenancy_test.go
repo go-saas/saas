@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/goxiaoy/go-saas/common"
+	http2 "github.com/goxiaoy/go-saas/common/http"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -13,7 +14,8 @@ import (
 
 func SetUp() *gin.Engine {
 	r := gin.Default()
-	r.Use(MultiTenancy(nil, nil, common.NewMemoryTenantStore(
+	wOpt := http2.NewDefaultWebMultiTenancyOption()
+	r.Use(MultiTenancy(wOpt, nil, common.NewMemoryTenantStore(
 		[]common.TenantConfig{
 			{ID: "1", Name: "Test1"},
 			{ID: "2", Name: "Test3"},

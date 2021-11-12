@@ -1,7 +1,5 @@
 package http
 
-type PatchHttpMultiTenancyOption func(tenancyOption *WebMultiTenancyOption)
-
 type WebMultiTenancyOption struct {
 	TenantKey    string
 	DomainFormat string
@@ -16,6 +14,7 @@ func NewWebMultiTenancyOption(key string, domainFormat string) *WebMultiTenancyO
 		DomainFormat: domainFormat,
 	}
 }
-func DefaultWebMultiTenancyOption() *WebMultiTenancyOption {
+
+func NewDefaultWebMultiTenancyOption() *WebMultiTenancyOption {
 	return NewWebMultiTenancyOption("", "")
 }

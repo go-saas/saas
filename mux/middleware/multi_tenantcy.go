@@ -8,19 +8,14 @@ import (
 )
 
 type MultiTenancy struct {
-	hmtOptF http.PatchHttpMultiTenancyOption
-	trOptF  common.PatchTenantResolveOption
-	ts      common.TenantStore
+	hmtOpt *http.WebMultiTenancyOption
+	trOptF common.PatchTenantResolveOption
+	ts     common.TenantStore
 }
 
 func (m *MultiTenancy) Middleware(next netHttp.Handler) netHttp.Handler {
 	return netHttp.HandlerFunc(func(w netHttp.ResponseWriter, r *netHttp.Request) {
-
-		hmtOpt := http.DefaultWebMultiTenancyOption()
-		if m.hmtOptF != nil {
-			//patch
-			m.hmtOptF(hmtOpt)
-		}
+		hmtOpt := m.hmtOpt
 		df := []common.TenantResolveContributor{
 			//TODO route
 			http.NewCookieTenantResolveContributor(*hmtOpt, r),

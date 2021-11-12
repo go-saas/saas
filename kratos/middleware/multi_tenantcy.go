@@ -11,12 +11,7 @@ import (
 	"github.com/goxiaoy/go-saas/data"
 )
 
-func MultiTenancy(hmtOptF shttp.PatchHttpMultiTenancyOption, trOptF common.PatchTenantResolveOption, ts common.TenantStore) middleware.Middleware {
-	hmtOpt := shttp.DefaultWebMultiTenancyOption()
-	if hmtOptF != nil {
-		//patch
-		hmtOptF(hmtOpt)
-	}
+func Server(hmtOpt *shttp.WebMultiTenancyOption, trOptF common.PatchTenantResolveOption, ts common.TenantStore) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			trOpt := common.NewTenantResolveOption()
@@ -60,6 +55,24 @@ func MultiTenancy(hmtOptF shttp.PatchHttpMultiTenancyOption, trOptF common.Patch
 				dataFilterCtx := data.NewEnableMultiTenancyDataFilter(newContext)
 
 				return handler(dataFilterCtx, req)
+			}
+			return handler(ctx, req)
+		}
+	}
+}
+
+func Client(hmtOpt *shttp.WebMultiTenancyOption) middleware.Middleware {
+	return func(handler middleware.Handler) middleware.Handler {
+		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
+			ti := common.FromCurrentTenant(ctx)
+			if tr, ok := transport.FromClientContext(ctx); ok {
+				if tr.Kind() == transport.KindHTTP {
+					if ht, ok := tr.(*http.Transport); ok {
+						ht.RequestHeader().Set(hmtOpt.TenantKey, ti.Id)
+					}
+				} else if tr.Kind() == transport.KindGRPC {
+					tr.RequestHeader().Set(hmtOpt.TenantKey, ti.Id)
+				}
 			}
 			return handler(ctx, req)
 		}

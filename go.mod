@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/gin-gonic/gin v1.7.4
-	github.com/go-kratos/kratos/v2 v2.0.4
+	github.com/go-kratos/kratos/v2 v2.1.1
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
@@ -17,7 +17,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go v1.2.6 // indirect
 	golang.org/x/crypto v0.0.0-20210813211128-0a44fdfbc16e // indirect
-	golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20210813162853-db860fec028c // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

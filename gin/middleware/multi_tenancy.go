@@ -8,14 +8,8 @@ import (
 	"github.com/goxiaoy/go-saas/data"
 )
 
-func MultiTenancy(hmtOptF http.PatchHttpMultiTenancyOption, trOptF common.PatchTenantResolveOption, ts common.TenantStore) gin.HandlerFunc {
+func MultiTenancy(hmtOpt *http.WebMultiTenancyOption, trOptF common.PatchTenantResolveOption, ts common.TenantStore) gin.HandlerFunc {
 	return func(context *gin.Context) {
-
-		hmtOpt := http.DefaultWebMultiTenancyOption()
-		if hmtOptF != nil {
-			//patch
-			hmtOptF(hmtOpt)
-		}
 		df := []common.TenantResolveContributor{
 			//TODO route
 			http.NewCookieTenantResolveContributor(*hmtOpt, context.Request),
