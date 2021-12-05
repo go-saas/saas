@@ -1,4 +1,4 @@
-package middleware
+package saas
 
 import (
 	"github.com/gin-gonic/gin"

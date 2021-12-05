@@ -1,4 +1,4 @@
-package middleware
+package saas
 
 import (
 	"github.com/goxiaoy/go-saas/common"

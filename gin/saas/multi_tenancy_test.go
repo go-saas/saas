@@ -1,8 +1,8 @@
-package middleware
+package saas
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"github.com/goxiaoy/go-saas/common"
 	http2 "github.com/goxiaoy/go-saas/common/http"
 	"github.com/stretchr/testify/assert"
@@ -12,27 +12,20 @@ import (
 	"time"
 )
 
-func SetUp() *mux.Router {
-	r := mux.NewRouter()
+func SetUp() *gin.Engine {
+	r := gin.Default()
 	wOpt := http2.NewDefaultWebMultiTenancyOption()
-	m := MultiTenancy{
-		wOpt,
-		nil,
-		common.NewMemoryTenantStore(
-			[]common.TenantConfig{
-				{ID: "1", Name: "Test1"},
-				{ID: "2", Name: "Test3"},
-			}),
-	}
-
-	r.Use(m.Middleware)
-
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		// an example API handler
+	r.Use(MultiTenancy(wOpt, nil, common.NewMemoryTenantStore(
+		[]common.TenantConfig{
+			{ID: "1", Name: "Test1"},
+			{ID: "2", Name: "Test3"},
+		})))
+	r.GET("/", func(c *gin.Context) {
 		currentTenant := common.ContextCurrentTenant{}
-		trR := common.FromTenantResolveRes(r.Context())
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"tenantId":  currentTenant.Id(r.Context()),
+		rCtx := c.Request.Context()
+		trR := common.FromTenantResolveRes(rCtx)
+		c.JSON(200, gin.H{
+			"tenantId":  currentTenant.Id(rCtx),
 			"resolvers": trR.AppliedResolvers,
 		})
 	})
