@@ -30,6 +30,7 @@ go get github.com/goxiaoy/go-saas
     
     
 # Sample Project
+* [example](https://github.com/Goxiaoy/go-saas/tree/main/examples) combination of `go-saas`,`gin`,`gorm(sqlite)`
 * [go-saas-kit](https://github.com/Goxiaoy/go-saas-kit) Microservice architecture starter kit for golang sass project
 
 # Documentation
