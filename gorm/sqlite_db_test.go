@@ -2,13 +2,9 @@ package gorm
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/goxiaoy/go-saas/common"
 	"github.com/goxiaoy/go-saas/data"
-	"github.com/goxiaoy/uow"
-	"github.com/goxiaoy/uow/gorm"
 	"gorm.io/driver/sqlite"
 	g "gorm.io/gorm"
 	"os"
@@ -20,8 +16,6 @@ var TestDbProvider *DefaultDbProvider
 var TenantId1 string
 var TenantId2 string
 var TestDbOpener DbOpener
-
-var TestUnitOfWorkManager uow.Manager
 
 func TestMain(m *testing.M) {
 	var c func()
@@ -36,16 +30,6 @@ func TestMain(m *testing.M) {
 		MaxOpenConn: 1,
 		MaxIdleConn: 1,
 	}
-	TestUnitOfWorkManager = uow.NewManager(&uow.Config{SupportNestedTransaction: false}, func(ctx context.Context, kind, key string) uow.TransactionalDb {
-		if kind == DbKind {
-			db, err := TestDbOpener.Open(cfg, key)
-			if err != nil {
-				panic(err)
-			}
-			return gorm.NewTransactionDb(db)
-		}
-		panic(errors.New(fmt.Sprintf("can not resolve %s", key)))
-	})
 
 	TestDbProvider = GetProvider(cfg)
 
@@ -78,6 +62,6 @@ func GetProvider(cfg *Config) *DefaultDbProvider {
 	mr := common.NewMultiTenancyConnStrResolver(func() common.TenantStore {
 		return ts
 	}, data.NewConnStrOption(conn))
-	r := NewDefaultDbProvider(mr, cfg, TestUnitOfWorkManager, TestDbOpener)
+	r := NewDefaultDbProvider(mr, cfg, TestDbOpener)
 	return r
 }

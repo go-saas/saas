@@ -19,16 +19,14 @@ type DbProvider interface {
 
 type DefaultDbProvider struct {
 	cs     data.ConnStrResolver
-	um     uow.Manager
 	c      *Config
 	opener DbOpener
 }
 
-func NewDefaultDbProvider(cs data.ConnStrResolver, c *Config, um uow.Manager, opener DbOpener) (d *DefaultDbProvider) {
+func NewDefaultDbProvider(cs data.ConnStrResolver, c *Config, opener DbOpener) (d *DefaultDbProvider) {
 	d = &DefaultDbProvider{
 		cs:     cs,
 		c:      c,
-		um:     um,
 		opener: opener,
 	}
 	return
@@ -37,6 +35,7 @@ func NewDefaultDbProvider(cs data.ConnStrResolver, c *Config, um uow.Manager, op
 func (d *DefaultDbProvider) Get(ctx context.Context, key string) *gorm.DB {
 	//resolve connection string
 	s := d.cs.Resolve(ctx, key)
+	// try resolve unit of work
 	u, ok := uow.FromCurrentUow(ctx)
 	if ok {
 		// get transaction db form current unit of work
