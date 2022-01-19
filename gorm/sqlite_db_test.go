@@ -62,6 +62,6 @@ func GetProvider(cfg *Config) *DefaultDbProvider {
 	mr := common.NewMultiTenancyConnStrResolver(func() common.TenantStore {
 		return ts
 	}, data.NewConnStrOption(conn))
-	r := NewDefaultDbProvider(mr, cfg, TestDbOpener)
-	return r
+	p := NewDefaultDbProvider(mr, cfg, TestDbOpener)
+	return p
 }

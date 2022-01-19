@@ -47,7 +47,7 @@ func (d *DefaultDbProvider) Get(ctx context.Context, key string) *gorm.DB {
 		if !ok {
 			panic(errors.New(fmt.Sprintf("%s is not a *gorm.DB instance", s)))
 		}
-		return g.DB
+		return g.DB.WithContext(ctx)
 	}
 	g, err := d.opener.Open(d.c, s)
 	if err != nil {

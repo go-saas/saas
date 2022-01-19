@@ -16,3 +16,13 @@ func (opt *Option) WithUow(uowMgr uow.Manager) *Option {
 	opt.uowMgr = uowMgr
 	return opt
 }
+
+func (opt *Option) WithTenantId(tenants ...string) *Option {
+	opt.TenantIds = tenants
+	return opt
+}
+
+func (opt *Option) AddTenantId(tenants ...string) *Option {
+	opt.TenantIds = append(opt.TenantIds, tenants...)
+	return opt
+}

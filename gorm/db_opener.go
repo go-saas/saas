@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// DbOpener open a real *gorm.DB instance by using connection string
 type DbOpener interface {
 	Open(c *Config, s string) (*gorm.DB, error)
 	Close()
