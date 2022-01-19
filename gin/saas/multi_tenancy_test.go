@@ -21,11 +21,11 @@ func SetUp() *gin.Engine {
 			{ID: "2", Name: "Test3"},
 		})))
 	r.GET("/", func(c *gin.Context) {
-		currentTenant := common.ContextCurrentTenant{}
 		rCtx := c.Request.Context()
+		tenantInfo := common.FromCurrentTenant(rCtx)
 		trR := common.FromTenantResolveRes(rCtx)
 		c.JSON(200, gin.H{
-			"tenantId":  currentTenant.Id(rCtx),
+			"tenantId":  tenantInfo.GetId(),
 			"resolvers": trR.AppliedResolvers,
 		})
 	})

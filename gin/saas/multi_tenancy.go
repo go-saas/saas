@@ -37,9 +37,9 @@ func MultiTenancy(hmtOpt *http.WebMultiTenancyOption, trOptF common.PatchTenantR
 				context.AbortWithError(500, err)
 			}
 		}
+		previousTenant := common.FromCurrentTenant(trCtx)
 		//set current tenant
-		currentTenant := common.ContextCurrentTenant{}
-		newContext, cancel := currentTenant.Change(trCtx, tenantConfig.ID, tenantConfig.Name)
+		newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
 		//data filter
 		dataFilterCtx := data.NewEnableMultiTenancyDataFilter(newContext)
 
@@ -48,6 +48,6 @@ func MultiTenancy(hmtOpt *http.WebMultiTenancyOption, trOptF common.PatchTenantR
 		//next
 		context.Next()
 		//cancel
-		context.Request = context.Request.WithContext(cancel(dataFilterCtx))
+		context.Request = context.Request.WithContext(common.NewCurrentTenantInfo(dataFilterCtx, previousTenant))
 	}
 }

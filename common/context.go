@@ -9,17 +9,20 @@ type (
 	tenantResolveRes struct{}
 )
 
-func NewCurrentTenant(ctx context.Context, id string, name string) context.Context {
-	newInfo := NewBasicTenantInfo(id, name)
-	return context.WithValue(ctx, currentTenantCtx{}, *newInfo)
+func NewCurrentTenant(ctx context.Context, id, name string) context.Context {
+	return NewCurrentTenantInfo(ctx, NewBasicTenantInfo(id, name))
 }
 
-func FromCurrentTenant(ctx context.Context) BasicTenantInfo {
-	value, ok := ctx.Value(currentTenantCtx{}).(BasicTenantInfo)
+func NewCurrentTenantInfo(ctx context.Context, info TenantInfo) context.Context {
+	return context.WithValue(ctx, currentTenantCtx{}, info)
+}
+
+func FromCurrentTenant(ctx context.Context) TenantInfo {
+	value, ok := ctx.Value(currentTenantCtx{}).(TenantInfo)
 	if ok {
 		return value
 	}
-	return BasicTenantInfo{}
+	return NewBasicTenantInfo("", "")
 }
 
 func NewTenantResolveRes(ctx context.Context, t *TenantResolveResult) context.Context {

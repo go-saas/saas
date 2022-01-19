@@ -40,12 +40,9 @@ func (m *MultiTenancy) Middleware(next netHttp.Handler) netHttp.Handler {
 			netHttp.Error(w, "Not Found", 404)
 		}
 		//set current tenant
-		currentTenant := common.ContextCurrentTenant{}
-		newContext, cancel := currentTenant.Change(trCtx, tenantConfig.ID, tenantConfig.Name)
+		newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
 		//data filter
 		dataFilterCtx := data.NewEnableMultiTenancyDataFilter(newContext)
-		//cancel
-		defer cancel(dataFilterCtx)
 		next.ServeHTTP(w, r.WithContext(dataFilterCtx))
 	})
 }

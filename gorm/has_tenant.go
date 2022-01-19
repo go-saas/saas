@@ -31,17 +31,17 @@ func NewTenantId(s string) HasTenant {
 
 func (t HasTenant) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
 	ct := common.FromCurrentTenant(ctx)
-	if ct.Id != t.String {
+	if ct.GetId() != t.String {
 		//mismatch
 		at := data.FromAutoSetTenantId(ctx)
-		if at && ct.Id != "" {
+		if at && ct.GetId() != "" {
 			if !t.Valid || t.String == "" {
 				//tenant want to insert self
-				return clause.Expr{SQL: "?", Vars: []interface{}{ct.Id}}
+				return clause.Expr{SQL: "?", Vars: []interface{}{ct.GetId()}}
 			} else {
 				//tenant want to insert others
 				//force reset
-				return clause.Expr{SQL: "?", Vars: []interface{}{ct.Id}}
+				return clause.Expr{SQL: "?", Vars: []interface{}{ct.GetId()}}
 			}
 		}
 	}
@@ -120,10 +120,10 @@ func (sd HasTenantQueryClause) ModifyStatement(stmt *gorm.Statement) {
 		}
 		if e {
 			var v interface{}
-			if t.Id == "" {
+			if t.GetId() == "" {
 				v = nil
 			} else {
-				v = t.Id
+				v = t.GetId()
 			}
 			stmt.AddClause(clause.Where{Exprs: []clause.Expression{
 				clause.Eq{Column: clause.Column{Table: clause.CurrentTable, Name: sd.Field.DBName}, Value: v},

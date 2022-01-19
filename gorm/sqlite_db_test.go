@@ -63,8 +63,6 @@ func TestMain(m *testing.M) {
 }
 
 func GetProvider(cfg *Config) *DefaultDbProvider {
-
-	ct := common.ContextCurrentTenant{}
 	//use memory store
 	TenantId1 = uuid.New().String()
 	TenantId2 = uuid.New().String()
@@ -77,7 +75,7 @@ func GetProvider(cfg *Config) *DefaultDbProvider {
 		})
 	conn := make(data.ConnStrings, 1)
 	conn.SetDefault("file::memory:?cache=shared")
-	mr := common.NewMultiTenancyConnStrResolver(ct, func() common.TenantStore {
+	mr := common.NewMultiTenancyConnStrResolver(func() common.TenantStore {
 		return ts
 	}, data.NewConnStrOption(conn))
 	r := NewDefaultDbProvider(mr, cfg, TestUnitOfWorkManager, TestDbOpener)

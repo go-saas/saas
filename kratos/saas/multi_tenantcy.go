@@ -48,12 +48,9 @@ func Server(hmtOpt *shttp.WebMultiTenancyOption, trOptF common.PatchTenantResolv
 					}
 					return nil, err
 				}
-				//set current tenant
-				currentTenant := common.ContextCurrentTenant{}
-				newContext, _ := currentTenant.Change(trCtx, tenantConfig.ID, tenantConfig.Name)
+				newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
 				//data filter
 				dataFilterCtx := data.NewEnableMultiTenancyDataFilter(newContext)
-
 				return handler(dataFilterCtx, req)
 			}
 			return handler(ctx, req)
@@ -68,10 +65,10 @@ func Client(hmtOpt *shttp.WebMultiTenancyOption) middleware.Middleware {
 			if tr, ok := transport.FromClientContext(ctx); ok {
 				if tr.Kind() == transport.KindHTTP {
 					if ht, ok := tr.(*http.Transport); ok {
-						ht.RequestHeader().Set(hmtOpt.TenantKey, ti.Id)
+						ht.RequestHeader().Set(hmtOpt.TenantKey, ti.GetId())
 					}
 				} else if tr.Kind() == transport.KindGRPC {
-					tr.RequestHeader().Set(hmtOpt.TenantKey, ti.Id)
+					tr.RequestHeader().Set(hmtOpt.TenantKey, ti.GetName())
 				}
 			}
 			return handler(ctx, req)

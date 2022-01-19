@@ -8,24 +8,23 @@ import (
 type TenantStoreCreator func() TenantStore
 
 type MultiTenancyConnStrResolver struct {
-	currentTenant CurrentTenant
 	//use creator to prevent circular dependency
 	tsc TenantStoreCreator
 	*data.DefaultConnStrResolver
 }
 
 // NewMultiTenancyConnStrResolver from tenant
-func NewMultiTenancyConnStrResolver(currentTenant CurrentTenant, tsc TenantStoreCreator, opt *data.ConnStrOption) *MultiTenancyConnStrResolver {
+func NewMultiTenancyConnStrResolver(tsc TenantStoreCreator, opt *data.ConnStrOption) *MultiTenancyConnStrResolver {
 	return &MultiTenancyConnStrResolver{
-		currentTenant:          currentTenant,
 		tsc:                    tsc,
 		DefaultConnStrResolver: data.NewDefaultConnStrResolver(opt),
 	}
 }
 
-func (m MultiTenancyConnStrResolver) Resolve(ctx context.Context, key string) string {
-	id := m.currentTenant.Id(ctx)
-	if !m.currentTenant.IsAvailable(ctx) {
+func (m *MultiTenancyConnStrResolver) Resolve(ctx context.Context, key string) string {
+	tenantInfo := FromCurrentTenant(ctx)
+	id := tenantInfo.GetId()
+	if len(id) == 0 {
 		//use default
 		return m.DefaultConnStrResolver.Resolve(ctx, key)
 	}
