@@ -3,7 +3,7 @@ go framework for saas(multi-tenancy). `go-saas` targets to provide saas solution
 
 # Overview
 
-install
+Install
 
 ```
 go get github.com/goxiaoy/go-saas
@@ -25,7 +25,7 @@ go get github.com/goxiaoy/go-saas
     * [x] Form parameters
     * [x] Header
     * [x] Cookie
-    * [ ] Route
+    * [x] Route
     * [x] Domain format
     
     
@@ -37,6 +37,6 @@ go get github.com/goxiaoy/go-saas
  Refer to [wiki](https://github.com/Goxiaoy/go-saas/wiki)
 
 
-#Referene
+# Reference
 
 https://docs.microsoft.com/en-us/azure/azure-sql/database/saas-tenancy-app-design-patterns
