@@ -25,7 +25,7 @@ go get github.com/goxiaoy/go-saas
     * [x] Form parameters
     * [x] Header
     * [x] Cookie
-    * [] Route
+    * [ ] Route
     * [x] Domain format
     
     
