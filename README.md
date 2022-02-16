@@ -13,7 +13,6 @@ go get github.com/goxiaoy/go-saas
   * [x] Single-tenancy:  Each database stores data from only one tenant.
   * [x] Multi-tenancy:  Each database stores data from multiple separate tenants (with mechanisms to protect data privacy).
   * [x] Hybrid tenancy models are also available.
-* Domain driven design (DDD)
 * Support multiple web framework
     * [x] [gin](https://github.com/gin-gonic/gin)
     * [x] [mux](https://github.com/gorilla/mux)
