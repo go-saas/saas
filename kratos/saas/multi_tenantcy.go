@@ -11,7 +11,7 @@ import (
 	"github.com/goxiaoy/go-saas/data"
 )
 
-func Server(hmtOpt *shttp.WebMultiTenancyOption, trOptF common.PatchTenantResolveOption, ts common.TenantStore) middleware.Middleware {
+func Server(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore, trOptF ...common.PatchTenantResolveOption) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			trOpt := common.NewTenantResolveOption()
@@ -33,9 +33,8 @@ func Server(hmtOpt *shttp.WebMultiTenancyOption, trOptF common.PatchTenantResolv
 				} else {
 					trOpt.AppendContributors(NewHeaderTenantResolveContributor(*hmtOpt, tr))
 				}
-				if trOptF != nil {
-					//patch
-					trOptF(trOpt)
+				for _, option := range trOptF {
+					option(trOpt)
 				}
 
 				//get tenant config

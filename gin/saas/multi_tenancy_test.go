@@ -15,7 +15,7 @@ import (
 func SetUp() *gin.Engine {
 	r := gin.Default()
 	wOpt := http2.NewDefaultWebMultiTenancyOption()
-	r.Use(MultiTenancy(wOpt, nil, common.NewMemoryTenantStore(
+	r.Use(MultiTenancy(wOpt, common.NewMemoryTenantStore(
 		[]common.TenantConfig{
 			{ID: "1", Name: "Test1"},
 			{ID: "2", Name: "Test3"},

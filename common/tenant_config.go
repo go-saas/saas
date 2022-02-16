@@ -3,10 +3,10 @@ package common
 import "github.com/goxiaoy/go-saas/data"
 
 type TenantConfig struct {
-	ID     string
-	Name   string
-	Region string
-	Conn   data.ConnStrings
+	ID     string           `json:"id"`
+	Name   string           `json:"name"`
+	Region string           `json:"region"`
+	Conn   data.ConnStrings `json:"conn"`
 }
 
 func NewTenantConfig(id string, name string, region string) *TenantConfig {

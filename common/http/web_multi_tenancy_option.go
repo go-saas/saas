@@ -1,14 +1,22 @@
 package http
 
+const defaultKey = "__tenant"
+
+func KeyOrDefault(key string) string {
+	if len(key) > 0 {
+		return key
+
+	}
+	return defaultKey
+}
+
 type WebMultiTenancyOption struct {
 	TenantKey    string
 	DomainFormat string
 }
 
 func NewWebMultiTenancyOption(key string, domainFormat string) *WebMultiTenancyOption {
-	if key == "" {
-		key = "__tenant"
-	}
+	key = KeyOrDefault(key)
 	return &WebMultiTenancyOption{
 		TenantKey:    key,
 		DomainFormat: domainFormat,

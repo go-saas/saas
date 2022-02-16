@@ -9,7 +9,7 @@ import (
 
 type MultiTenancy struct {
 	hmtOpt *http.WebMultiTenancyOption
-	trOptF common.PatchTenantResolveOption
+	trOptF []common.PatchTenantResolveOption
 	ts     common.TenantStore
 }
 
@@ -28,9 +28,8 @@ func (m *MultiTenancy) Middleware(next netHttp.Handler) netHttp.Handler {
 			df[0] = http.NewDomainTenantResolveContributor(*hmtOpt, r, hmtOpt.DomainFormat)
 		}
 		trOpt := common.NewTenantResolveOption(df...)
-		if m.trOptF != nil {
-			//patch
-			m.trOptF(trOpt)
+		for _, option := range m.trOptF {
+			option(trOpt)
 		}
 		//get tenant config
 		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(*trOpt), m.ts)

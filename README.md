@@ -25,8 +25,9 @@ go get github.com/goxiaoy/go-saas
     * [x] Form parameters
     * [x] Header
     * [x] Cookie
-    * [ ] Route
     * [x] Domain format
+* Integration with gateway
+  * [x] [apisix](https://github.com/apache/apisix)
     
     
 # Sample Project

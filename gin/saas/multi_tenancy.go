@@ -8,7 +8,7 @@ import (
 	"github.com/goxiaoy/go-saas/data"
 )
 
-func MultiTenancy(hmtOpt *http.WebMultiTenancyOption, trOptF common.PatchTenantResolveOption, ts common.TenantStore) gin.HandlerFunc {
+func MultiTenancy(hmtOpt *http.WebMultiTenancyOption, ts common.TenantStore, trOptF ...common.PatchTenantResolveOption) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		df := []common.TenantResolveContributor{
 			//TODO route
@@ -22,9 +22,8 @@ func MultiTenancy(hmtOpt *http.WebMultiTenancyOption, trOptF common.PatchTenantR
 			df[0] = http.NewDomainTenantResolveContributor(*hmtOpt, context.Request, hmtOpt.DomainFormat)
 		}
 		trOpt := common.NewTenantResolveOption(df...)
-		if trOptF != nil {
-			//patch
-			trOptF(trOpt)
+		for _, option := range trOptF {
+			option(trOpt)
 		}
 		//get tenant config
 		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(*trOpt), ts)
