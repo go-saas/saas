@@ -17,7 +17,7 @@ import (
 func init() {
 	err := plugin.RegisterPlugin(&Saas{})
 	if err != nil {
-		log.Fatalf("failed to register plugin say: %s", err)
+		log.Fatalf("failed to register plugin go-saas: %s", err)
 	}
 }
 
