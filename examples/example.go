@@ -65,7 +65,7 @@ func main() {
 	}, data.NewConnStrOption(conn))
 	dbProvider := gorm2.NewDefaultDbProvider(mr, cfg, dbOpener)
 
-	r.Use(saas.MultiTenancy(wOpt, nil, tenantStore))
+	r.Use(saas.MultiTenancy(wOpt, tenantStore))
 
 	//return current tenant
 	r.GET("/tenant/current", func(c *gin.Context) {

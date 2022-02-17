@@ -1,6 +1,7 @@
 # go-saas
 go framework for saas(multi-tenancy). `go-saas` targets to provide saas solution for go
 
+
 # Overview
 
 Install
@@ -27,7 +28,16 @@ go get github.com/goxiaoy/go-saas
     * [x] Domain format
 * Integration with gateway
   * [x] [apisix](https://github.com/apache/apisix)
-    
+
+```mermaid
+graph TD
+    A(InComming Request) -->|cookie,domain,form,header,query...|B(TenantResolver)
+    B --> C(Tenant Context)  --> D(ConnectionString Resolver)
+    D --> E(Tenant 1) --> J(Data Filter) -->  H(Shared Database)
+    D --> F(Tenant 2) --> J
+    D --> G(Tenant 3) --> I(Tenant 3 Database)
+```
+ 
     
 # Sample Project
 * [example](https://github.com/Goxiaoy/go-saas/tree/main/examples) combination of `go-saas`,`gin`,`gorm(sqlite)`
