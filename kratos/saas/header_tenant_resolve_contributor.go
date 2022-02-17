@@ -3,17 +3,16 @@ package saas
 import (
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/goxiaoy/go-saas/common"
-	"github.com/goxiaoy/go-saas/common/http"
 )
 
 type HeaderTenantResolveContributor struct {
-	opt         http.WebMultiTenancyOption
+	key         string
 	transporter transport.Transporter
 }
 
-func NewHeaderTenantResolveContributor(opt http.WebMultiTenancyOption, transporter transport.Transporter) *HeaderTenantResolveContributor {
+func NewHeaderTenantResolveContributor(key string, transporter transport.Transporter) *HeaderTenantResolveContributor {
 	return &HeaderTenantResolveContributor{
-		opt:         opt,
+		key:         key,
 		transporter: transporter,
 	}
 }
@@ -22,7 +21,7 @@ func (h *HeaderTenantResolveContributor) Name() string {
 }
 
 func (h *HeaderTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) {
-	v := h.transporter.RequestHeader().Get(h.opt.TenantKey)
+	v := h.transporter.RequestHeader().Get(h.key)
 	if v == "" {
 		return
 	}

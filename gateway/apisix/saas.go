@@ -2,6 +2,7 @@ package apisix
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/goxiaoy/go-saas/common"
@@ -27,6 +28,7 @@ type Saas struct {
 type SaasConf struct {
 	TenantKey          string `json:"tenant_key"`
 	NextHeader         string `json:"next_header"`
+	NextInfoHeader     string `json:"next_info_header"`
 	PathRegex          string `json:"path_regex"`
 	TenantNotFoundBody string `json:"tenant_not_found_body"`
 }
@@ -75,5 +77,16 @@ func (p *Saas) Filter(conf interface{}, w http.ResponseWriter, r pkgHTTP.Request
 		}
 	}
 	w.Header().Set(nextHeader, tenantConfig.ID)
+	nextInfoHeader := InfoHeaderOrDefault(cfg.NextInfoHeader)
+	b, _ := json.Marshal(tenantConfig)
+	w.Header().Set(nextInfoHeader, base64.StdEncoding.EncodeToString(b))
 	return
+}
+
+func InfoHeaderOrDefault(h string) string {
+	if len(h) == 0 {
+		return "X-TENANT-INFO"
+	} else {
+		return h
+	}
 }

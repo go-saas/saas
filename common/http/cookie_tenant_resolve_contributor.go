@@ -6,13 +6,13 @@ import (
 )
 
 type CookieTenantResolveContributor struct {
-	opt     WebMultiTenancyOption
+	key     string
 	request *http.Request
 }
 
-func NewCookieTenantResolveContributor(opt WebMultiTenancyOption, r *http.Request) *CookieTenantResolveContributor {
+func NewCookieTenantResolveContributor(key string, r *http.Request) *CookieTenantResolveContributor {
 	return &CookieTenantResolveContributor{
-		opt:     opt,
+		key:     key,
 		request: r,
 	}
 }
@@ -22,7 +22,7 @@ func (h *CookieTenantResolveContributor) Name() string {
 }
 
 func (h *CookieTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) {
-	v, err := h.request.Cookie(h.opt.TenantKey)
+	v, err := h.request.Cookie(h.key)
 	if err != nil {
 		//no cookie
 		return

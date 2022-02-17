@@ -20,18 +20,18 @@ func Server(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore, trOptF .
 					r := ht.Request()
 					df := []common.TenantResolveContributor{
 						//TODO route
-						shttp.NewCookieTenantResolveContributor(*hmtOpt, r),
-						shttp.NewFormTenantResolveContributor(*hmtOpt, r),
-						shttp.NewHeaderTenantResolveContributor(*hmtOpt, r),
-						shttp.NewQueryTenantResolveContributor(*hmtOpt, r),
+						shttp.NewCookieTenantResolveContributor(hmtOpt.TenantKey, r),
+						shttp.NewFormTenantResolveContributor(hmtOpt.TenantKey, r),
+						shttp.NewHeaderTenantResolveContributor(hmtOpt.TenantKey, r),
+						shttp.NewQueryTenantResolveContributor(hmtOpt.TenantKey, r),
 					}
 					if hmtOpt.DomainFormat != "" {
 						df := append(df[:1], df[0:]...)
-						df[0] = shttp.NewDomainTenantResolveContributor(*hmtOpt, r, hmtOpt.DomainFormat)
+						df[0] = shttp.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, r)
 					}
 					trOpt.AppendContributors(df...)
 				} else {
-					trOpt.AppendContributors(NewHeaderTenantResolveContributor(*hmtOpt, tr))
+					trOpt.AppendContributors(NewHeaderTenantResolveContributor(hmtOpt.TenantKey, tr))
 				}
 				for _, option := range trOptF {
 					option(trOpt)

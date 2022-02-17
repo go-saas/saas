@@ -6,13 +6,13 @@ import (
 )
 
 type FormTenantResolveContributor struct {
-	opt     WebMultiTenancyOption
+	key     string
 	request *http.Request
 }
 
-func NewFormTenantResolveContributor(opt WebMultiTenancyOption, r *http.Request) *FormTenantResolveContributor {
+func NewFormTenantResolveContributor(key string, r *http.Request) *FormTenantResolveContributor {
 	return &FormTenantResolveContributor{
-		opt:     opt,
+		key:     key,
 		request: r,
 	}
 }
@@ -22,7 +22,7 @@ func (h *FormTenantResolveContributor) Name() string {
 }
 
 func (h *FormTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) {
-	v := h.request.FormValue(h.opt.TenantKey)
+	v := h.request.FormValue(h.key)
 	if v == "" {
 		return
 	}

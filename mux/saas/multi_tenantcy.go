@@ -17,15 +17,14 @@ func (m *MultiTenancy) Middleware(next netHttp.Handler) netHttp.Handler {
 	return netHttp.HandlerFunc(func(w netHttp.ResponseWriter, r *netHttp.Request) {
 		hmtOpt := m.hmtOpt
 		df := []common.TenantResolveContributor{
-			//TODO route
-			http.NewCookieTenantResolveContributor(*hmtOpt, r),
-			http.NewFormTenantResolveContributor(*hmtOpt, r),
-			http.NewHeaderTenantResolveContributor(*hmtOpt, r),
-			http.NewQueryTenantResolveContributor(*hmtOpt, r),
+			http.NewCookieTenantResolveContributor(hmtOpt.TenantKey, r),
+			http.NewFormTenantResolveContributor(hmtOpt.TenantKey, r),
+			http.NewHeaderTenantResolveContributor(hmtOpt.TenantKey, r),
+			http.NewQueryTenantResolveContributor(hmtOpt.TenantKey, r),
 		}
 		if hmtOpt.DomainFormat != "" {
 			df := append(df[:1], df[0:]...)
-			df[0] = http.NewDomainTenantResolveContributor(*hmtOpt, r, hmtOpt.DomainFormat)
+			df[0] = http.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, r)
 		}
 		trOpt := common.NewTenantResolveOption(df...)
 		for _, option := range m.trOptF {

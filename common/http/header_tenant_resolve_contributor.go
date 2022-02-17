@@ -6,13 +6,13 @@ import (
 )
 
 type HeaderTenantResolveContributor struct {
-	opt     WebMultiTenancyOption
+	key     string
 	request *http.Request
 }
 
-func NewHeaderTenantResolveContributor(opt WebMultiTenancyOption, r *http.Request) *HeaderTenantResolveContributor {
+func NewHeaderTenantResolveContributor(key string, r *http.Request) *HeaderTenantResolveContributor {
 	return &HeaderTenantResolveContributor{
-		opt:     opt,
+		key:     key,
 		request: r,
 	}
 }
@@ -22,7 +22,7 @@ func (h *HeaderTenantResolveContributor) Name() string {
 }
 
 func (h *HeaderTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) {
-	v := h.request.Header.Get(h.opt.TenantKey)
+	v := h.request.Header.Get(h.key)
 	if v == "" {
 		return
 	}

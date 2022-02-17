@@ -11,15 +11,14 @@ import (
 func MultiTenancy(hmtOpt *http.WebMultiTenancyOption, ts common.TenantStore, trOptF ...common.PatchTenantResolveOption) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		df := []common.TenantResolveContributor{
-			//TODO route
-			http.NewCookieTenantResolveContributor(*hmtOpt, context.Request),
-			http.NewFormTenantResolveContributor(*hmtOpt, context.Request),
-			http.NewHeaderTenantResolveContributor(*hmtOpt, context.Request),
-			http.NewQueryTenantResolveContributor(*hmtOpt, context.Request),
+			http.NewCookieTenantResolveContributor(hmtOpt.TenantKey, context.Request),
+			http.NewFormTenantResolveContributor(hmtOpt.TenantKey, context.Request),
+			http.NewHeaderTenantResolveContributor(hmtOpt.TenantKey, context.Request),
+			http.NewQueryTenantResolveContributor(hmtOpt.TenantKey, context.Request),
 		}
 		if hmtOpt.DomainFormat != "" {
 			df := append(df[:1], df[0:]...)
-			df[0] = http.NewDomainTenantResolveContributor(*hmtOpt, context.Request, hmtOpt.DomainFormat)
+			df[0] = http.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, context.Request)
 		}
 		trOpt := common.NewTenantResolveOption(df...)
 		for _, option := range trOptF {
