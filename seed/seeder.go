@@ -38,17 +38,7 @@ func (d *DefaultSeeder) Seed(ctx context.Context) error {
 			}
 			return nil
 		}
-		if d.opt.uowMgr != nil {
-			//run into uow
-			err := d.opt.uowMgr.WithNew(newCtx, func(ctx context.Context) error {
-				return seedFn(ctx)
-			})
-			if err != nil {
-				return err
-			}
-		} else {
-			return seedFn(newCtx)
-		}
+		return seedFn(newCtx)
 	}
 	return nil
 }
