@@ -20,6 +20,7 @@ var TestDbOpener DbOpener
 func TestMain(m *testing.M) {
 	var c func()
 	TestDbOpener, c = NewDbOpener()
+	i := 1
 	cfg := &Config{
 		Debug: true,
 		Dialect: func(s string) g.Dialector {
@@ -27,8 +28,8 @@ func TestMain(m *testing.M) {
 		},
 		Cfg: &g.Config{},
 		//https://github.com/go-gorm/gorm/issues/2875
-		MaxOpenConn: 1,
-		MaxIdleConn: 1,
+		MaxOpenConn: &i,
+		MaxIdleConn: &i,
 	}
 
 	TestDbProvider = GetProvider(cfg)

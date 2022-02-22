@@ -11,9 +11,9 @@ type Config struct {
 	Debug       bool
 	Dialect     DialectFunc
 	Cfg         *gorm.Config
-	MaxLifetime int
-	MaxOpenConn int
-	MaxIdleConn int
+	MaxLifetime *int
+	MaxOpenConn *int
+	MaxIdleConn *int
 }
 
 // MultiTenancy entity

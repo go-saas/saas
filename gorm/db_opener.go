@@ -46,11 +46,15 @@ func (d *dbOpener) Open(c *Config, s string) (*gorm.DB, error) {
 		//error
 		return db, err
 	}
-
-	sqlDB.SetMaxIdleConns(c.MaxIdleConn)
-	sqlDB.SetMaxOpenConns(c.MaxOpenConn)
-	sqlDB.SetConnMaxLifetime(time.Duration(c.MaxLifetime) * time.Second)
-
+	if c.MaxIdleConn != nil {
+		sqlDB.SetMaxIdleConns(*c.MaxIdleConn)
+	}
+	if c.MaxOpenConn != nil {
+		sqlDB.SetMaxOpenConns(*c.MaxOpenConn)
+	}
+	if c.MaxLifetime != nil {
+		sqlDB.SetConnMaxLifetime(time.Duration(*c.MaxLifetime) * time.Second)
+	}
 	d.db[s] = db
 	return db, nil
 }

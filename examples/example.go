@@ -18,6 +18,7 @@ func main() {
 	//dbOpener
 	dbOpener, c := gorm2.NewDbOpener()
 	defer c()
+	i := 1
 	cfg := &gorm2.Config{
 		Debug: true,
 		Dialect: func(s string) g.Dialector {
@@ -27,8 +28,8 @@ func main() {
 		},
 		Cfg: &g.Config{},
 		//https://github.com/go-gorm/gorm/issues/2875
-		MaxOpenConn: 1,
-		MaxIdleConn: 1,
+		MaxOpenConn: &i,
+		MaxIdleConn: &i,
 	}
 
 	//create a unit of work manager. you can skip this if you do not want it
