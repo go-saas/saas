@@ -26,15 +26,17 @@ type Saas struct {
 }
 
 type SaasConf struct {
-	TenantKey          string `json:"tenant_key"`
-	NextHeader         string `json:"next_header"`
-	NextInfoHeader     string `json:"next_info_header"`
-	PathRegex          string `json:"path_regex"`
-	TenantNotFoundBody string `json:"tenant_not_found_body"`
+	TenantKey      string `json:"tenant_key"`
+	NextHeader     string `json:"next_header"`
+	NextInfoHeader string `json:"next_info_header"`
+	PathRegex      string `json:"path_regex"`
 }
 
 //global variable to store tenants
-var tenantStore common.TenantStore
+var (
+	tenantStore      common.TenantStore
+	nextTenantHeader string
+)
 
 type FormatError func(err error, w http.ResponseWriter)
 
@@ -45,9 +47,10 @@ var errFormat FormatError = func(err error, w http.ResponseWriter) {
 	w.WriteHeader(500)
 }
 
-func Init(t common.TenantStore, format FormatError) {
+func Init(t common.TenantStore, nextHeader string, format FormatError) {
 	tenantStore = t
 	errFormat = format
+	nextTenantHeader = nextHeader
 }
 
 func (p *Saas) Name() string {
@@ -69,6 +72,9 @@ func (p *Saas) Filter(conf interface{}, w http.ResponseWriter, r pkgHTTP.Request
 	key := shttp.KeyOrDefault(cfg.TenantKey)
 	nextHeader := cfg.NextHeader
 	if len(nextHeader) == 0 {
+		nextHeader = nextTenantHeader
+	}
+	if len(nextHeader) == 0 {
 		nextHeader = key
 	}
 	//get tenant config
@@ -83,10 +89,10 @@ func (p *Saas) Filter(conf interface{}, w http.ResponseWriter, r pkgHTTP.Request
 		errFormat(err, w)
 	}
 	log.Infof("resolve tenant: %s ,is host: %v", idOrName, len(idOrName) == 0)
-	w.Header().Set(nextHeader, tenantConfig.ID)
+	r.Header().Set(nextHeader, tenantConfig.ID)
 	nextInfoHeader := InfoHeaderOrDefault(cfg.NextInfoHeader)
 	b, _ := json.Marshal(tenantConfig)
-	w.Header().Set(nextInfoHeader, base64.StdEncoding.EncodeToString(b))
+	r.Header().Set(nextInfoHeader, base64.StdEncoding.EncodeToString(b))
 	return
 }
 
