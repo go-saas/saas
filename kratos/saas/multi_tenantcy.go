@@ -11,51 +11,48 @@ import (
 	"github.com/goxiaoy/go-saas/data"
 )
 
-func Server(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore, force bool, trOptF ...common.PatchTenantResolveOption) middleware.Middleware {
+func Server(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore, trOptF ...common.PatchTenantResolveOption) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
-			retCtx := ctx
-			_, ok := common.FromCurrentTenant(ctx)
-			if !ok || force {
-				trOpt := common.NewTenantResolveOption()
-				if tr, ok := transport.FromServerContext(ctx); ok {
-					if ht, ok := tr.(*http.Transport); ok {
-						r := ht.Request()
-						df := []common.TenantResolveContributor{
-							//TODO route
-							shttp.NewCookieTenantResolveContributor(hmtOpt.TenantKey, r),
-							shttp.NewFormTenantResolveContributor(hmtOpt.TenantKey, r),
-							shttp.NewHeaderTenantResolveContributor(hmtOpt.TenantKey, r),
-							shttp.NewQueryTenantResolveContributor(hmtOpt.TenantKey, r),
-						}
-						if hmtOpt.DomainFormat != "" {
-							df := append(df[:1], df[0:]...)
-							df[0] = shttp.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, r)
-						}
-						trOpt.AppendContributors(df...)
-					} else {
-						trOpt.AppendContributors(NewHeaderTenantResolveContributor(hmtOpt.TenantKey, tr))
+			trOpt := common.NewTenantResolveOption()
+			if tr, ok := transport.FromServerContext(ctx); ok {
+				if ht, ok := tr.(*http.Transport); ok {
+					r := ht.Request()
+					df := []common.TenantResolveContributor{
+						//TODO route
+						shttp.NewCookieTenantResolveContributor(hmtOpt.TenantKey, r),
+						shttp.NewFormTenantResolveContributor(hmtOpt.TenantKey, r),
+						shttp.NewHeaderTenantResolveContributor(hmtOpt.TenantKey, r),
+						shttp.NewQueryTenantResolveContributor(hmtOpt.TenantKey, r),
 					}
-					for _, option := range trOptF {
-						option(trOpt)
+					if hmtOpt.DomainFormat != "" {
+						df := append(df[:1], df[0:]...)
+						df[0] = shttp.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, r)
 					}
-
-					//get tenant config
-					tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(*trOpt), ts)
-					tenantConfig, newCtx, err := tenantConfigProvider.Get(retCtx, true)
-					if err != nil {
-						//not found
-						if errors.Is(err, common.ErrTenantNotFound) {
-							return nil, errors.NotFound("TENANT", err.Error())
-						}
-						return nil, err
-					}
-					retCtx = common.NewCurrentTenant(newCtx, tenantConfig.ID, tenantConfig.Name)
+					trOpt.AppendContributors(df...)
+				} else {
+					trOpt.AppendContributors(NewHeaderTenantResolveContributor(hmtOpt.TenantKey, tr))
 				}
+				for _, option := range trOptF {
+					option(trOpt)
+				}
+
+				//get tenant config
+				tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(*trOpt), ts)
+				tenantConfig, trCtx, err := tenantConfigProvider.Get(ctx, true)
+				if err != nil {
+					//not found
+					if errors.Is(err, common.ErrTenantNotFound) {
+						return nil, errors.NotFound("TENANT", err.Error())
+					}
+					return nil, err
+				}
+				newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
+				//data filter
+				dataFilterCtx := data.NewEnableMultiTenancyDataFilter(newContext)
+				return handler(dataFilterCtx, req)
 			}
-			//data filter
-			dataFilterCtx := data.NewEnableMultiTenancyDataFilter(retCtx)
-			return handler(dataFilterCtx, req)
+			return handler(ctx, req)
 		}
 	}
 }
