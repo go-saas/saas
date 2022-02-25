@@ -34,7 +34,10 @@ func NewDefaultDbProvider(cs data.ConnStrResolver, c *Config, opener DbOpener) (
 
 func (d *DefaultDbProvider) Get(ctx context.Context, key string) *gorm.DB {
 	//resolve connection string
-	s := d.cs.Resolve(ctx, key)
+	s, err := d.cs.Resolve(ctx, key)
+	if err != nil {
+		panic(err)
+	}
 	// try resolve unit of work
 	u, ok := uow.FromCurrentUow(ctx)
 	if ok {

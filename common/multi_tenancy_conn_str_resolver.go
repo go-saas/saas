@@ -13,6 +13,8 @@ type MultiTenancyConnStrResolver struct {
 	*data.DefaultConnStrResolver
 }
 
+var _ data.ConnStrResolver = (*MultiTenancyConnStrResolver)(nil)
+
 // NewMultiTenancyConnStrResolver from tenant
 func NewMultiTenancyConnStrResolver(tsc TenantStoreCreator, opt *data.ConnStrOption) *MultiTenancyConnStrResolver {
 	return &MultiTenancyConnStrResolver{
@@ -21,7 +23,7 @@ func NewMultiTenancyConnStrResolver(tsc TenantStoreCreator, opt *data.ConnStrOpt
 	}
 }
 
-func (m *MultiTenancyConnStrResolver) Resolve(ctx context.Context, key string) string {
+func (m *MultiTenancyConnStrResolver) Resolve(ctx context.Context, key string) (string, error) {
 	tenantInfo := FromCurrentTenant(ctx)
 	id := tenantInfo.GetId()
 	if len(id) == 0 {
@@ -29,7 +31,10 @@ func (m *MultiTenancyConnStrResolver) Resolve(ctx context.Context, key string) s
 		return m.DefaultConnStrResolver.Resolve(ctx, key)
 	}
 	ts := m.tsc()
-	tenant, _ := ts.GetByNameOrId(ctx, id)
+	tenant, err := ts.GetByNameOrId(ctx, id)
+	if err != nil {
+		return "", err
+	}
 	if tenant.Conn == nil {
 		//not found
 		//use default
@@ -39,23 +44,23 @@ func (m *MultiTenancyConnStrResolver) Resolve(ctx context.Context, key string) s
 		//get default
 		ret := (*tenant).Conn.Default()
 		if ret == "" {
-			return m.Opt.Conn.Default()
+			return m.Opt.Conn.Default(), nil
 		}
-		return ret
+		return ret, nil
 	}
 	//get key
 	ret := tenant.Conn.GetOrDefault(key)
 	if ret != "" {
-		return ret
+		return ret, nil
 	}
 	ret = m.Opt.Conn.GetOrDefault(key)
 	if ret != "" {
-		return ret
+		return ret, nil
 	}
 	//still not found. fallback
 	ret = (*tenant).Conn.Default()
 	if ret == "" {
-		return m.Opt.Conn.Default()
+		return m.Opt.Conn.Default(), nil
 	}
-	return ret
+	return ret, nil
 }

@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	testIn = []byte(`{"tenant_key":"tenant","next_header":"next_tenant","path_regex":"http://(.*).test.com","tenant_not_found_body":"TenantNotFound"}`)
+	testIn = []byte(`{"tenant_key":"tenant","next_header":"next_tenant","path_regex":"http://(.*).test.com"}`)
 )
 
 func TestSaas(t *testing.T) {
@@ -17,7 +17,6 @@ func TestSaas(t *testing.T) {
 	saas := &Saas{}
 	conf, err := saas.ParseConf(in)
 	assert.Nil(t, err)
-	assert.Equal(t, "TenantNotFound", conf.(SaasConf).TenantNotFoundBody)
 
 	w := httptest.NewRecorder()
 	saas.Filter(conf, w, nil)
