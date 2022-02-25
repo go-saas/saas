@@ -24,7 +24,7 @@ func NewMultiTenancyConnStrResolver(tsc TenantStoreCreator, opt *data.ConnStrOpt
 }
 
 func (m *MultiTenancyConnStrResolver) Resolve(ctx context.Context, key string) (string, error) {
-	tenantInfo := FromCurrentTenant(ctx)
+	tenantInfo, _ := FromCurrentTenant(ctx)
 	id := tenantInfo.GetId()
 	if len(id) == 0 {
 		//use default

@@ -30,7 +30,7 @@ func NewTenantId(s string) HasTenant {
 }
 
 func (t HasTenant) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
-	ct := common.FromCurrentTenant(ctx)
+	ct, _ := common.FromCurrentTenant(ctx)
 	if ct.GetId() != t.String {
 		//mismatch
 		at := data.FromAutoSetTenantId(ctx)
@@ -103,7 +103,7 @@ func (sd HasTenantQueryClause) MergeClause(*clause.Clause) {
 }
 
 func (sd HasTenantQueryClause) ModifyStatement(stmt *gorm.Statement) {
-	t := common.FromCurrentTenant(stmt.Context)
+	t, _ := common.FromCurrentTenant(stmt.Context)
 	e := data.FromMultiTenancyDataFilter(stmt.Context)
 	if _, ok := stmt.Clauses["multi_tenancy_enabled"]; !ok {
 		if c, ok := stmt.Clauses["WHERE"]; ok {

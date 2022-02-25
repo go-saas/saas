@@ -29,7 +29,7 @@ func SetUp() *mux.Router {
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// an example API handler
-		tenantInfo := common.FromCurrentTenant(r.Context())
+		tenantInfo, _ := common.FromCurrentTenant(r.Context())
 		trR := common.FromTenantResolveRes(r.Context())
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"tenantId":  tenantInfo.GetId(),

@@ -17,12 +17,12 @@ func NewCurrentTenantInfo(ctx context.Context, info TenantInfo) context.Context 
 	return context.WithValue(ctx, currentTenantCtx{}, info)
 }
 
-func FromCurrentTenant(ctx context.Context) TenantInfo {
+func FromCurrentTenant(ctx context.Context) (TenantInfo, bool) {
 	value, ok := ctx.Value(currentTenantCtx{}).(TenantInfo)
 	if ok {
-		return value
+		return value, true
 	}
-	return NewBasicTenantInfo("", "")
+	return NewBasicTenantInfo("", ""), false
 }
 
 func NewTenantResolveRes(ctx context.Context, t *TenantResolveResult) context.Context {

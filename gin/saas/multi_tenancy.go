@@ -35,7 +35,7 @@ func MultiTenancy(hmtOpt *http.WebMultiTenancyOption, ts common.TenantStore, trO
 				context.AbortWithError(500, err)
 			}
 		}
-		previousTenant := common.FromCurrentTenant(trCtx)
+		previousTenant, _ := common.FromCurrentTenant(trCtx)
 		//set current tenant
 		newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
 		//data filter

@@ -22,7 +22,7 @@ func SetUp() *gin.Engine {
 		})))
 	r.GET("/", func(c *gin.Context) {
 		rCtx := c.Request.Context()
-		tenantInfo := common.FromCurrentTenant(rCtx)
+		tenantInfo, _ := common.FromCurrentTenant(rCtx)
 		trR := common.FromTenantResolveRes(rCtx)
 		c.JSON(200, gin.H{
 			"tenantId":  tenantInfo.GetId(),

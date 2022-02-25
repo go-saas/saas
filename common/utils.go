@@ -5,7 +5,7 @@ import (
 )
 
 func GetMultiTenantSide(ctx context.Context) MultiTenancySide {
-	tenantInfo := FromCurrentTenant(ctx)
+	tenantInfo, _ := FromCurrentTenant(ctx)
 	if tenantInfo.GetId() == "" {
 		return Host
 	} else {
