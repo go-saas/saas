@@ -36,13 +36,13 @@ type SaasConf struct {
 //global variable to store tenants
 var tenantStore common.TenantStore
 
-type FormatError func(err error) (code int, body string)
+type FormatError func(err error, w http.ResponseWriter)
 
-var errFormat FormatError = func(err error) (code int, body string) {
+var errFormat FormatError = func(err error, w http.ResponseWriter) {
 	if errors.Is(err, common.ErrTenantNotFound) {
-		return 404, ""
+		w.WriteHeader(404)
 	}
-	return 500, ""
+	w.WriteHeader(500)
 }
 
 func Init(t common.TenantStore, format FormatError) {
@@ -80,11 +80,7 @@ func (p *Saas) Filter(conf interface{}, w http.ResponseWriter, r pkgHTTP.Request
 		idOrName = resolveValue.TenantIdOrName
 	}
 	if err != nil {
-		code, body := errFormat(err)
-		w.WriteHeader(code)
-		if len(body) > 0 {
-			w.Write([]byte(body))
-		}
+		errFormat(err, w)
 	}
 	log.Infof("resolve tenant: %s ,is host: %v", idOrName, len(idOrName) == 0)
 	w.Header().Set(nextHeader, tenantConfig.ID)
