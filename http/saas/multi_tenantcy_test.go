@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/goxiaoy/go-saas/common"
-	http2 "github.com/goxiaoy/go-saas/common/http"
+	shttp "github.com/goxiaoy/go-saas/common/http"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -14,16 +14,14 @@ import (
 
 func SetUp() *mux.Router {
 	r := mux.NewRouter()
-	wOpt := http2.NewDefaultWebMultiTenancyOption()
-	m := MultiTenancy{
+	wOpt := shttp.NewDefaultWebMultiTenancyOption()
+	m := NewMultiTenancy(
 		wOpt,
-		nil,
 		common.NewMemoryTenantStore(
 			[]common.TenantConfig{
 				{ID: "1", Name: "Test1"},
 				{ID: "2", Name: "Test3"},
-			}),
-	}
+			}))
 
 	r.Use(m.Middleware)
 

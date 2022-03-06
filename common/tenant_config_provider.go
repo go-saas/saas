@@ -20,22 +20,24 @@ func NewDefaultTenantConfigProvider(tr TenantResolver, ts TenantStore) TenantCon
 }
 
 func (d *DefaultTenantConfigProvider) Get(ctx context.Context, store bool) (TenantConfig, context.Context, error) {
-	rr := d.tr.Resolve(ctx)
-	rc := ctx
+	rr, err := d.tr.Resolve(ctx)
+	if err != nil {
+		return TenantConfig{}, ctx, err
+	}
 	if store {
 		//store into context
-		rc = NewTenantResolveRes(ctx, &rr)
+		ctx = NewTenantResolveRes(ctx, &rr)
 	}
 	if rr.TenantIdOrName != "" {
 		//tenant side
 		//get config from tenant store
 		cfg, err := d.ts.GetByNameOrId(ctx, rr.TenantIdOrName)
 		if err != nil {
-			return TenantConfig{}, rc, err
+			return TenantConfig{}, ctx, err
 		}
-		return *cfg, rc, nil
+		return *cfg, ctx, nil
 		//check error
 	}
-	return TenantConfig{}, rc, nil
+	return TenantConfig{}, ctx, nil
 
 }

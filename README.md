@@ -16,7 +16,7 @@ go get github.com/goxiaoy/go-saas
   * [x] Hybrid tenancy models are also available.
 * Support multiple web framework
     * [x] [gin](https://github.com/gin-gonic/gin)
-    * [x] [mux](https://github.com/gorilla/mux)
+    * [x] net/http
     * [x] [kratos](https://github.com/go-kratos/kratos)
 * Support multiple orms
     * [x] [gorm](https://github.com/go-gorm/gorm)

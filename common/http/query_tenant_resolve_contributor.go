@@ -21,10 +21,11 @@ func (h *QueryTenantResolveContributor) Name() string {
 	return "Query"
 }
 
-func (h *QueryTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) {
+func (h *QueryTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) error {
 	v := h.request.URL.Query().Get(h.key)
 	if v == "" {
-		return
+		return nil
 	}
 	trCtx.TenantIdOrName = v
+	return nil
 }

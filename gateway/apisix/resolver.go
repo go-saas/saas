@@ -23,7 +23,7 @@ func NewResolver(r pkgHTTP.Request, key, pathRegex string) *Resolver {
 
 var _ common.TenantResolver = (*Resolver)(nil)
 
-func (r *Resolver) Resolve(_ context.Context) common.TenantResolveResult {
+func (r *Resolver) Resolve(_ context.Context) (common.TenantResolveResult, error) {
 	// default host side
 	var t = ""
 	if v := r.r.Header().Get(r.key); len(v) > 0 {
@@ -40,5 +40,5 @@ func (r *Resolver) Resolve(_ context.Context) common.TenantResolveResult {
 		}
 	}
 
-	return common.TenantResolveResult{TenantIdOrName: t}
+	return common.TenantResolveResult{TenantIdOrName: t}, nil
 }

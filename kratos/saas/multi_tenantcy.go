@@ -11,7 +11,22 @@ import (
 	"github.com/goxiaoy/go-saas/data"
 )
 
-func Server(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore, trOptF ...common.PatchTenantResolveOption) middleware.Middleware {
+type ErrorFormatter func(err error) (interface{}, error)
+
+var (
+	DefaultErrorFormatter ErrorFormatter = func(err error) (interface{}, error) {
+		//not found
+		if errors.Is(err, common.ErrTenantNotFound) {
+			return nil, errors.NotFound("TENANT", err.Error())
+		}
+		return nil, err
+	}
+)
+
+func Server(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore, ef ErrorFormatter, options ...common.PatchTenantResolveOption) middleware.Middleware {
+	if ef == nil {
+		ef = DefaultErrorFormatter
+	}
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			trOpt := common.NewTenantResolveOption()
@@ -19,7 +34,6 @@ func Server(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore, trOptF .
 				if ht, ok := tr.(*http.Transport); ok {
 					r := ht.Request()
 					df := []common.TenantResolveContributor{
-						//TODO route
 						shttp.NewCookieTenantResolveContributor(hmtOpt.TenantKey, r),
 						shttp.NewFormTenantResolveContributor(hmtOpt.TenantKey, r),
 						shttp.NewHeaderTenantResolveContributor(hmtOpt.TenantKey, r),
@@ -33,7 +47,7 @@ func Server(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore, trOptF .
 				} else {
 					trOpt.AppendContributors(NewHeaderTenantResolveContributor(hmtOpt.TenantKey, tr))
 				}
-				for _, option := range trOptF {
+				for _, option := range options {
 					option(trOpt)
 				}
 
@@ -41,11 +55,7 @@ func Server(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore, trOptF .
 				tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(*trOpt), ts)
 				tenantConfig, trCtx, err := tenantConfigProvider.Get(ctx, true)
 				if err != nil {
-					//not found
-					if errors.Is(err, common.ErrTenantNotFound) {
-						return nil, errors.NotFound("TENANT", err.Error())
-					}
-					return nil, err
+					return ef(err)
 				}
 				newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
 				//data filter

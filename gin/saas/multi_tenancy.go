@@ -8,7 +8,22 @@ import (
 	"github.com/goxiaoy/go-saas/data"
 )
 
-func MultiTenancy(hmtOpt *http.WebMultiTenancyOption, ts common.TenantStore, trOptF ...common.PatchTenantResolveOption) gin.HandlerFunc {
+type ErrorFormatter func(context *gin.Context, err error)
+
+var (
+	DefaultErrorFormatter ErrorFormatter = func(context *gin.Context, err error) {
+		if errors.Is(err, common.ErrTenantNotFound) {
+			context.AbortWithError(404, err)
+		} else {
+			context.AbortWithError(500, err)
+		}
+	}
+)
+
+func MultiTenancy(hmtOpt *http.WebMultiTenancyOption, ts common.TenantStore, ef ErrorFormatter, options ...common.PatchTenantResolveOption) gin.HandlerFunc {
+	if ef == nil {
+		ef = DefaultErrorFormatter
+	}
 	return func(context *gin.Context) {
 		df := []common.TenantResolveContributor{
 			http.NewCookieTenantResolveContributor(hmtOpt.TenantKey, context.Request),
@@ -21,19 +36,14 @@ func MultiTenancy(hmtOpt *http.WebMultiTenancyOption, ts common.TenantStore, trO
 			df[0] = http.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, context.Request)
 		}
 		trOpt := common.NewTenantResolveOption(df...)
-		for _, option := range trOptF {
+		for _, option := range options {
 			option(trOpt)
 		}
 		//get tenant config
 		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(*trOpt), ts)
 		tenantConfig, trCtx, err := tenantConfigProvider.Get(context, true)
 		if err != nil {
-			//not found
-			if errors.Is(err, common.ErrTenantNotFound) {
-				context.AbortWithError(404, err)
-			} else {
-				context.AbortWithError(500, err)
-			}
+			ef(context, err)
 		}
 		previousTenant, _ := common.FromCurrentTenant(trCtx)
 		//set current tenant

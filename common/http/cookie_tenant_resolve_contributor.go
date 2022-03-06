@@ -21,14 +21,15 @@ func (h *CookieTenantResolveContributor) Name() string {
 	return "Cookie"
 }
 
-func (h *CookieTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) {
+func (h *CookieTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) error {
 	v, err := h.request.Cookie(h.key)
 	if err != nil {
 		//no cookie
-		return
+		return nil
 	}
 	if v.Value == "" {
-		return
+		return nil
 	}
 	trCtx.TenantIdOrName = v.Value
+	return nil
 }

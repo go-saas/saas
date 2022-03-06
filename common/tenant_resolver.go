@@ -3,7 +3,7 @@ package common
 import "context"
 
 type TenantResolver interface {
-	Resolve(ctx context.Context) TenantResolveResult
+	Resolve(ctx context.Context) (TenantResolveResult, error)
 }
 
 type DefaultTenantResolver struct {
@@ -17,11 +17,13 @@ func NewDefaultTenantResolver(o TenantResolveOption) TenantResolver {
 	}
 }
 
-func (d DefaultTenantResolver) Resolve(_ context.Context) TenantResolveResult {
+func (d *DefaultTenantResolver) Resolve(ctx context.Context) (TenantResolveResult, error) {
 	res := TenantResolveResult{}
-	trCtx := TenantResolveContext{}
+	trCtx := TenantResolveContext{Context: ctx}
 	for _, resolver := range d.o.Resolvers {
-		resolver.Resolve(&trCtx)
+		if err := resolver.Resolve(&trCtx); err != nil {
+			return res, err
+		}
 		res.AppliedResolvers = append(res.AppliedResolvers, resolver.Name())
 		if trCtx.HasResolved() {
 			//set
@@ -29,5 +31,5 @@ func (d DefaultTenantResolver) Resolve(_ context.Context) TenantResolveResult {
 			break
 		}
 	}
-	return res
+	return res, nil
 }
