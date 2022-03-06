@@ -40,9 +40,9 @@ func Server(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore, ef Error
 						shttp.NewQueryTenantResolveContributor(hmtOpt.TenantKey, r),
 					}
 					if hmtOpt.DomainFormat != "" {
-						df := append(df[:1], df[0:]...)
-						df[0] = shttp.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, r)
+						df = append(df, shttp.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, r))
 					}
+					df = append(df, common.NewTenantNormalizerContributor(ts))
 					trOpt.AppendContributors(df...)
 				} else {
 					trOpt.AppendContributors(NewHeaderTenantResolveContributor(hmtOpt.TenantKey, tr))
@@ -52,8 +52,8 @@ func Server(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore, ef Error
 				}
 
 				//get tenant config
-				tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(*trOpt), ts)
-				tenantConfig, trCtx, err := tenantConfigProvider.Get(ctx, true)
+				tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt), common.NewCachedTenantStore(ts))
+				tenantConfig, trCtx, err := tenantConfigProvider.Get(ctx)
 				if err != nil {
 					return ef(err)
 				}

@@ -3,26 +3,26 @@ package common
 import "context"
 
 type TenantResolver interface {
-	Resolve(ctx context.Context) (TenantResolveResult, error)
+	Resolve(ctx context.Context) (TenantResolveResult, context.Context, error)
 }
 
 type DefaultTenantResolver struct {
 	//options
-	o TenantResolveOption
+	o *TenantResolveOption
 }
 
-func NewDefaultTenantResolver(o TenantResolveOption) TenantResolver {
+func NewDefaultTenantResolver(o *TenantResolveOption) TenantResolver {
 	return &DefaultTenantResolver{
 		o: o,
 	}
 }
 
-func (d *DefaultTenantResolver) Resolve(ctx context.Context) (TenantResolveResult, error) {
+func (d *DefaultTenantResolver) Resolve(ctx context.Context) (TenantResolveResult, context.Context, error) {
 	res := TenantResolveResult{}
-	trCtx := TenantResolveContext{Context: ctx}
+	trCtx := NewTenantResolveContext(ctx)
 	for _, resolver := range d.o.Resolvers {
-		if err := resolver.Resolve(&trCtx); err != nil {
-			return res, err
+		if err := resolver.Resolve(trCtx); err != nil {
+			return res, trCtx.Context(), err
 		}
 		res.AppliedResolvers = append(res.AppliedResolvers, resolver.Name())
 		if trCtx.HasResolved() {
@@ -30,5 +30,6 @@ func (d *DefaultTenantResolver) Resolve(ctx context.Context) (TenantResolveResul
 		}
 	}
 	res.TenantIdOrName = trCtx.TenantIdOrName
-	return res, nil
+	ctx = NewTenantResolveRes(trCtx.Context(), &res)
+	return res, ctx, nil
 }

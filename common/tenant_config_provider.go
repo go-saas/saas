@@ -4,7 +4,7 @@ import "context"
 
 type TenantConfigProvider interface {
 	// Get tenant config
-	Get(ctx context.Context, store bool) (TenantConfig, context.Context, error)
+	Get(ctx context.Context) (TenantConfig, context.Context, error)
 }
 
 type DefaultTenantConfigProvider struct {
@@ -19,14 +19,10 @@ func NewDefaultTenantConfigProvider(tr TenantResolver, ts TenantStore) TenantCon
 	}
 }
 
-func (d *DefaultTenantConfigProvider) Get(ctx context.Context, store bool) (TenantConfig, context.Context, error) {
-	rr, err := d.tr.Resolve(ctx)
+func (d *DefaultTenantConfigProvider) Get(ctx context.Context) (TenantConfig, context.Context, error) {
+	rr, ctx, err := d.tr.Resolve(ctx)
 	if err != nil {
 		return TenantConfig{}, ctx, err
-	}
-	if store {
-		//store into context
-		ctx = NewTenantResolveRes(ctx, &rr)
 	}
 	if rr.TenantIdOrName != "" {
 		//tenant side

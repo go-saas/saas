@@ -77,18 +77,20 @@ func (p *Saas) Filter(conf interface{}, w http.ResponseWriter, r pkgHTTP.Request
 	if len(nextHeader) == 0 {
 		nextHeader = key
 	}
+	ctx := context.Background()
 	//get tenant config
 	tenantConfigProvider := common.NewDefaultTenantConfigProvider(NewResolver(r, key, cfg.PathRegex), tenantStore)
-	tenantConfig, newCtx, err := tenantConfigProvider.Get(context.Background(), true)
-	resolveValue := common.FromTenantResolveRes(newCtx)
+	tenantConfig, ctx, err := tenantConfigProvider.Get(ctx)
+	if err != nil {
+		errFormat(err, w)
+		return
+	}
+	resolveValue := common.FromTenantResolveRes(ctx)
 	idOrName := ""
 	if resolveValue != nil {
 		idOrName = resolveValue.TenantIdOrName
 	}
-	if err != nil {
-		errFormat(err, w)
-	}
-	log.Infof("resolve tenant: %s ,is host: %v", idOrName, len(idOrName) == 0)
+	log.Infof("resolve tenant: %s ,id: %s ,is host: %v", idOrName, tenantConfig.ID, len(tenantConfig.ID) == 0)
 	r.Header().Set(nextHeader, tenantConfig.ID)
 	nextInfoHeader := InfoHeaderOrDefault(cfg.NextInfoHeader)
 	b, _ := json.Marshal(tenantConfig)

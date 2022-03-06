@@ -38,7 +38,9 @@ func (d *DefaultSeeder) Seed(ctx context.Context) error {
 			}
 			return nil
 		}
-		return seedFn(newCtx)
+		if err := seedFn(newCtx); err != nil {
+			return err
+		}
 	}
 	return nil
 }

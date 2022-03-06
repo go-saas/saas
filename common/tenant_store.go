@@ -44,3 +44,23 @@ func (t *AlwaysTrustedAsIdTenantStore) GetByNameOrId(ctx context.Context, nameOr
 		ID: nameOrId,
 	}, nil
 }
+
+type CachedTenantStore struct {
+	up TenantStore
+}
+
+func NewCachedTenantStore(up TenantStore) *CachedTenantStore {
+	return &CachedTenantStore{
+		up: up,
+	}
+}
+
+var _ TenantStore = (*CachedTenantStore)(nil)
+
+func (c *CachedTenantStore) GetByNameOrId(ctx context.Context, nameOrId string) (*TenantConfig, error) {
+	cfg, ok := FromTenantConfigContext(ctx, nameOrId)
+	if ok {
+		return cfg, nil
+	}
+	return c.up.GetByNameOrId(ctx, nameOrId)
+}

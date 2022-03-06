@@ -53,19 +53,21 @@ func (m *MultiTenancy) Middleware(next http.Handler) http.Handler {
 			shttp.NewHeaderTenantResolveContributor(hmtOpt.TenantKey, r),
 			shttp.NewQueryTenantResolveContributor(hmtOpt.TenantKey, r),
 		}
+
 		if hmtOpt.DomainFormat != "" {
-			df := append(df[:1], df[0:]...)
-			df[0] = shttp.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, r)
+			df = append(df, shttp.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, r))
 		}
+		df = append(df, common.NewTenantNormalizerContributor(m.ts))
 		trOpt := common.NewTenantResolveOption(df...)
 		for _, option := range m.trOptF {
 			option(trOpt)
 		}
 		//get tenant config
-		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(*trOpt), m.ts)
-		tenantConfig, trCtx, err := tenantConfigProvider.Get(r.Context(), true)
+		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt), common.NewCachedTenantStore(m.ts))
+		tenantConfig, trCtx, err := tenantConfigProvider.Get(r.Context())
 		if err != nil {
 			m.ef(w, err)
+			return
 		}
 		//set current tenant
 		newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)

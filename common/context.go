@@ -7,6 +7,7 @@ import (
 type (
 	currentTenantCtx struct{}
 	tenantResolveRes struct{}
+	tenantConfigKey  string
 )
 
 func NewCurrentTenant(ctx context.Context, id, name string) context.Context {
@@ -35,4 +36,16 @@ func FromTenantResolveRes(ctx context.Context) *TenantResolveResult {
 		return v
 	}
 	return nil
+}
+
+func NewTenantConfigContext(ctx context.Context, tenantId string, cfg *TenantConfig) context.Context {
+	return context.WithValue(ctx, tenantConfigKey(tenantId), cfg)
+}
+
+func FromTenantConfigContext(ctx context.Context, tenantId string) (*TenantConfig, bool) {
+	v, ok := ctx.Value(tenantConfigKey(tenantId)).(*TenantConfig)
+	if ok {
+		return v, ok && v != nil
+	}
+	return nil, false
 }

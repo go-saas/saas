@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/goxiaoy/go-saas/data"
 	"github.com/goxiaoy/go-saas/gorm"
 	"github.com/goxiaoy/go-saas/seed"
 	"gorm.io/driver/sqlite"
@@ -23,6 +24,16 @@ func (s *Seed) Seed(ctx context.Context, sCtx *seed.Context) error {
 	liteDial := db.Dialector.(*sqlite.Dialector)
 	dsn := liteDial.DSN
 	if sCtx.TenantId == "" {
+		//seed host
+		err := db.Model(&Tenant{}).Clauses(clause.OnConflict{DoNothing: true}).CreateInBatches([]Tenant{
+			{ID: "1", Name: "Test1"}, // use default shared.db
+			{ID: "2", Name: "Test2"},
+			{ID: "3", Name: "Test3", Conn: []TenantConn{
+				{Key: data.Default, Value: "./tenant3.db"}, // use tenant3.db
+			}}}, 10).Error
+		if err != nil {
+			return err
+		}
 		entities := []Post{
 			{
 				Model:       gorm2.Model{ID: 1},
@@ -35,6 +46,7 @@ func (s *Seed) Seed(ctx context.Context, sCtx *seed.Context) error {
 			return err
 		}
 	}
+
 	if sCtx.TenantId == "1" {
 		entities := []Post{
 			{
@@ -48,6 +60,7 @@ func (s *Seed) Seed(ctx context.Context, sCtx *seed.Context) error {
 			return err
 		}
 	}
+
 	if sCtx.TenantId == "2" {
 		entities := []Post{
 			{

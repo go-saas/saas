@@ -29,33 +29,31 @@ func MultiTenancy(hmtOpt *http.WebMultiTenancyOption, ts common.TenantStore, ef 
 			http.NewCookieTenantResolveContributor(hmtOpt.TenantKey, context.Request),
 			http.NewFormTenantResolveContributor(hmtOpt.TenantKey, context.Request),
 			http.NewHeaderTenantResolveContributor(hmtOpt.TenantKey, context.Request),
-			http.NewQueryTenantResolveContributor(hmtOpt.TenantKey, context.Request),
-		}
+			http.NewQueryTenantResolveContributor(hmtOpt.TenantKey, context.Request)}
 		if hmtOpt.DomainFormat != "" {
-			df := append(df[:1], df[0:]...)
-			df[0] = http.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, context.Request)
+			df = append(df, http.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, context.Request))
 		}
+		df = append(df, common.NewTenantNormalizerContributor(ts))
 		trOpt := common.NewTenantResolveOption(df...)
 		for _, option := range options {
 			option(trOpt)
 		}
 		//get tenant config
-		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(*trOpt), ts)
-		tenantConfig, trCtx, err := tenantConfigProvider.Get(context, true)
+		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt), common.NewCachedTenantStore(ts))
+		tenantConfig, trCtx, err := tenantConfigProvider.Get(context)
 		if err != nil {
 			ef(context, err)
+			return
 		}
-		previousTenant, _ := common.FromCurrentTenant(trCtx)
 		//set current tenant
 		newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
 		//data filter
-		dataFilterCtx := data.NewEnableMultiTenancyDataFilter(newContext)
+		newContext = data.NewEnableMultiTenancyDataFilter(newContext)
 
 		//with newContext
-		context.Request = context.Request.WithContext(dataFilterCtx)
+		context.Request = context.Request.WithContext(newContext)
 		//next
 		context.Next()
-		//cancel
-		context.Request = context.Request.WithContext(common.NewCurrentTenantInfo(dataFilterCtx, previousTenant))
+
 	}
 }

@@ -52,19 +52,14 @@ func main() {
 	//default database
 	conn.SetDefault("./shared.db")
 
-	tenantStore := common.NewMemoryTenantStore(
-		[]common.TenantConfig{
-			{ID: "1", Name: "Test1"}, // use default shared.db
-			{ID: "2", Name: "Test2"},
-			{ID: "3", Name: "Test3", Conn: map[string]string{
-				data.Default: "./tenant3.db", // use tenant3.db
-			}}},
-	)
+	var tenantStore common.TenantStore
 
 	mr := common.NewMultiTenancyConnStrResolver(func() common.TenantStore {
 		return tenantStore
 	}, data.NewConnStrOption(conn))
 	dbProvider := gorm2.NewDefaultDbProvider(mr, cfg, dbOpener)
+
+	tenantStore = common.NewCachedTenantStore(&TenantStore{dbProvider: dbProvider})
 
 	r.Use(saas.MultiTenancy(wOpt, tenantStore, nil))
 
