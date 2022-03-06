@@ -35,11 +35,13 @@ func NewMultiTenancy(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore)
 	}
 }
 
-func (m *MultiTenancy) WithErrorFormatter(ef ErrorFormatter) {
+func (m *MultiTenancy) WithErrorFormatter(ef ErrorFormatter) *MultiTenancy {
 	m.ef = ef
+	return m
 }
-func (m *MultiTenancy) WithOptions(options ...common.PatchTenantResolveOption) {
+func (m *MultiTenancy) WithOptions(options ...common.PatchTenantResolveOption) *MultiTenancy {
 	m.trOptF = options
+	return m
 }
 
 func (m *MultiTenancy) Middleware(next http.Handler) http.Handler {

@@ -2,6 +2,7 @@ package saas
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 	"github.com/goxiaoy/go-saas/common"
 	shttp "github.com/goxiaoy/go-saas/common/http"
@@ -87,8 +88,6 @@ func TestCookieMultiTenancy(t *testing.T) {
 	value, exists := response["tenantId"]
 	assert.True(t, exists)
 	assert.Equal(t, "1", value)
-	r := response["resolvers"].([]interface{})
-	assert.Equal(t, "Cookie", r[len(r)-1])
 	assert.Nil(t, err)
 }
 
@@ -102,7 +101,50 @@ func TestHeaderMultiTenancy(t *testing.T) {
 	value, exists := response["tenantId"]
 	assert.True(t, exists)
 	assert.Equal(t, "1", value)
-	r := response["resolvers"].([]interface{})
-	assert.Equal(t, "Header", r[len(r)-1])
 	assert.Nil(t, err)
+}
+
+func TestTerminate(t *testing.T) {
+	r := mux.NewRouter()
+	wOpt := shttp.NewDefaultWebMultiTenancyOption()
+	m := NewMultiTenancy(
+		wOpt,
+		common.NewMemoryTenantStore(
+			[]common.TenantConfig{
+				{ID: "1", Name: "Test1"},
+				{ID: "2", Name: "Test3"},
+			})).WithOptions(func(resolveOption *common.TenantResolveOption) {
+		resolveOption.AppendContributors(&TerminateContributor{})
+	}).WithErrorFormatter(func(w http.ResponseWriter, err error) {
+		if err == ErrForbidden {
+			http.Error(w, "Forbidden", 403)
+		}
+	})
+
+	r.Use(m.Middleware)
+
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	})
+
+	req, _ := http.NewRequest("GET", "/", nil)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
+}
+
+var (
+	ErrForbidden = errors.New("forbidden")
+)
+
+type TerminateContributor struct {
+}
+
+func (t *TerminateContributor) Name() string {
+	return "Terminate"
+}
+
+func (t TerminateContributor) Resolve(_ *common.TenantResolveContext) error {
+	return ErrForbidden
 }

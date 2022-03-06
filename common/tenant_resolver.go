@@ -26,10 +26,9 @@ func (d *DefaultTenantResolver) Resolve(ctx context.Context) (TenantResolveResul
 		}
 		res.AppliedResolvers = append(res.AppliedResolvers, resolver.Name())
 		if trCtx.HasResolved() {
-			//set
-			res.TenantIdOrName = trCtx.TenantIdOrName
 			break
 		}
 	}
+	res.TenantIdOrName = trCtx.TenantIdOrName
 	return res, nil
 }

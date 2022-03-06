@@ -82,8 +82,6 @@ func TestCookieMultiTenancy(t *testing.T) {
 	value, exists := response["tenantId"]
 	assert.True(t, exists)
 	assert.Equal(t, "1", value)
-	r := response["resolvers"].([]interface{})
-	assert.Equal(t, "Cookie", r[len(r)-1])
 	assert.Nil(t, err)
 }
 
@@ -97,7 +95,5 @@ func TestHeaderMultiTenancy(t *testing.T) {
 	value, exists := response["tenantId"]
 	assert.True(t, exists)
 	assert.Equal(t, "1", value)
-	r := response["resolvers"].([]interface{})
-	assert.Equal(t, "Header", r[len(r)-1])
 	assert.Nil(t, err)
 }

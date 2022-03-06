@@ -10,7 +10,7 @@ type TenantResolveContext struct {
 }
 
 func (t TenantResolveContext) HasResolved() bool {
-	return t.TenantIdOrName != "" || t.HasHandled
+	return t.HasHandled
 }
 
 var DefaultTenantResolveContext = TenantResolveContext{
