@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/ReneKroon/ttlcache/v2 v2.11.0 // indirect
-	github.com/apache/apisix-go-plugin-runner v0.0.0-20220214021533-1a00a4b14f93
+	github.com/apache/apisix-go-plugin-runner v0.0.0-20220323093822-dee7fa0167af
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-kratos/kratos/v2 v2.1.5
 	github.com/go-playground/validator/v10 v10.10.0 // indirect
@@ -22,7 +22,6 @@ require (
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
-	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20220218161850-94dd64e39d7c // indirect
 	gorm.io/driver/sqlite v1.1.4
 	gorm.io/gorm v1.23.1

@@ -1,7 +1,6 @@
 package apisix
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"github.com/go-kratos/kratos/v2/errors"
@@ -77,7 +76,7 @@ func (p *Saas) Filter(conf interface{}, w http.ResponseWriter, r pkgHTTP.Request
 	if len(nextHeader) == 0 {
 		nextHeader = key
 	}
-	ctx := context.Background()
+	ctx := r.Context()
 	//get tenant config
 	tenantConfigProvider := common.NewDefaultTenantConfigProvider(NewResolver(r, key, cfg.PathRegex), tenantStore)
 	tenantConfig, ctx, err := tenantConfigProvider.Get(ctx)
