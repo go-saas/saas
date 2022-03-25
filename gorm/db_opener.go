@@ -13,13 +13,17 @@ type DbOpener interface {
 }
 
 type dbOpener struct {
-	mtx sync.Mutex
-	db  map[string]*gorm.DB
+	mtx           sync.Mutex
+	db            map[string]*gorm.DB
+	creationHooks []DbCreationHook
 }
 
-func NewDbOpener() (DbOpener, func()) {
+type DbCreationHook func(db *gorm.DB) *gorm.DB
+
+func NewDbOpener(creationHooks ...DbCreationHook) (DbOpener, func()) {
 	ret := &dbOpener{
-		db: make(map[string]*gorm.DB),
+		db:            make(map[string]*gorm.DB),
+		creationHooks: creationHooks,
 	}
 	return ret, ret.Close
 }
@@ -36,6 +40,9 @@ func (d *dbOpener) Open(c *Config, s string) (*gorm.DB, error) {
 	if err != nil {
 		//error
 		return nil, err
+	}
+	for _, ch := range d.creationHooks {
+		db = ch(db)
 	}
 
 	if c.Debug {
