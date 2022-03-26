@@ -31,13 +31,14 @@ type SaasConf struct {
 	PathRegex      string `json:"path_regex"`
 }
 
+type FormatError func(err error, w http.ResponseWriter)
+
 //global variable to store tenants
 var (
-	tenantStore      common.TenantStore
-	nextTenantHeader string
+	tenantStore          common.TenantStore
+	nextTenantHeader     string
+	nextTenantInfoHeader string
 )
-
-type FormatError func(err error, w http.ResponseWriter)
 
 var errFormat FormatError = func(err error, w http.ResponseWriter) {
 	if errors.Is(err, common.ErrTenantNotFound) {
@@ -46,10 +47,11 @@ var errFormat FormatError = func(err error, w http.ResponseWriter) {
 	w.WriteHeader(500)
 }
 
-func Init(t common.TenantStore, nextHeader string, format FormatError) {
+func Init(t common.TenantStore, nextHeader, nextInfoHeader string, format FormatError) {
 	tenantStore = t
 	errFormat = format
 	nextTenantHeader = nextHeader
+	nextTenantInfoHeader = nextInfoHeader
 }
 
 func (p *Saas) Name() string {
@@ -91,7 +93,11 @@ func (p *Saas) Filter(conf interface{}, w http.ResponseWriter, r pkgHTTP.Request
 	}
 	log.Infof("resolve tenant: %s ,id: %s ,is host: %v", idOrName, tenantConfig.ID, len(tenantConfig.ID) == 0)
 	r.Header().Set(nextHeader, tenantConfig.ID)
-	nextInfoHeader := InfoHeaderOrDefault(cfg.NextInfoHeader)
+	nextInfoHeader := cfg.NextInfoHeader
+	if len(nextInfoHeader) == 0 {
+		nextInfoHeader = nextTenantInfoHeader
+	}
+	nextInfoHeader = InfoHeaderOrDefault(nextInfoHeader)
 	b, _ := json.Marshal(tenantConfig)
 	r.Header().Set(nextInfoHeader, base64.StdEncoding.EncodeToString(b))
 	return
