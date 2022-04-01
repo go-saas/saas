@@ -1,12 +1,12 @@
 package seed
 
 type Option struct {
-	Contributors []Contributor
-	TenantIds    []string
+	TenantIds []string
+	Extra     map[string]interface{}
 }
 
-func NewSeedOption(opt ...Contributor) *Option {
-	return &Option{Contributors: opt, TenantIds: make([]string, 0)}
+func NewSeedOption() *Option {
+	return &Option{}
 }
 
 func (opt *Option) WithTenantId(tenants ...string) *Option {
@@ -16,5 +16,10 @@ func (opt *Option) WithTenantId(tenants ...string) *Option {
 
 func (opt *Option) AddTenantId(tenants ...string) *Option {
 	opt.TenantIds = append(opt.TenantIds, tenants...)
+	return opt
+}
+
+func (opt *Option) WithExtra(extra map[string]interface{}) *Option {
+	opt.Extra = extra
 	return opt
 }

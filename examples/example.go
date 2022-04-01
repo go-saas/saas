@@ -85,16 +85,12 @@ func main() {
 	})
 
 	//seed data into db
-	seeder := seed.NewDefaultSeeder(seed.NewSeedOption(
-		NewMigrationSeeder(dbProvider),
-		NewSeed(dbProvider)).
-		WithTenantId("", "1", "2", "3"),
-		//WithUow(um),
-		map[string]interface{}{})
-	err := seeder.Seed(context.Background())
+	seeder := seed.NewDefaultSeeder(NewMigrationSeeder(dbProvider), NewSeed(dbProvider))
+	seedOpt := seed.NewSeedOption().WithTenantId("", "1", "2", "3").WithExtra(map[string]interface{}{})
+	err := seeder.Seed(context.Background(), seedOpt)
 	if err != nil {
 		panic(err)
 	}
 
-	r.Run(":8888") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.Run(":8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

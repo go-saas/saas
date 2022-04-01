@@ -6,39 +6,37 @@ import (
 )
 
 type Seeder interface {
-	Seed(ctx context.Context) error
+	Seed(ctx context.Context, option *Option) error
 }
 
 var _ Seeder = (*DefaultSeeder)(nil)
 
 type DefaultSeeder struct {
-	extra map[string]interface{}
-	opt   *Option
+	contrib []Contributor
 }
 
-func NewDefaultSeeder(opt *Option, extra map[string]interface{}) *DefaultSeeder {
+func NewDefaultSeeder(contrib ...Contributor) *DefaultSeeder {
 	return &DefaultSeeder{
-		opt:   opt,
-		extra: extra,
+		contrib: contrib,
 	}
 }
 
-func (d *DefaultSeeder) Seed(ctx context.Context) error {
-	for _, tenant := range d.opt.TenantIds {
+func (d *DefaultSeeder) Seed(ctx context.Context, option *Option) error {
+	for _, tenant := range option.TenantIds {
 		// change to next tenant
-		newCtx := common.NewCurrentTenant(ctx, tenant, "")
+		ctx = common.NewCurrentTenant(ctx, tenant, "")
 
 		seedFn := func(ctx context.Context) error {
-			sCtx := NewSeedContext(tenant, d.extra)
+			sCtx := NewSeedContext(tenant, option.Extra)
 			//create seeder
-			for _, contributor := range d.opt.Contributors {
+			for _, contributor := range d.contrib {
 				if err := contributor.Seed(ctx, sCtx); err != nil {
 					return err
 				}
 			}
 			return nil
 		}
-		if err := seedFn(newCtx); err != nil {
+		if err := seedFn(ctx); err != nil {
 			return err
 		}
 	}
