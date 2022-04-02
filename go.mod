@@ -24,5 +24,5 @@ require (
 	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
 	google.golang.org/genproto v0.0.0-20220218161850-94dd64e39d7c // indirect
 	gorm.io/driver/sqlite v1.1.4
-	gorm.io/gorm v1.23.1
+	gorm.io/gorm v1.23.4
 )

@@ -35,7 +35,11 @@ func (d *dbOpener) Open(c *Config, s string) (*gorm.DB, error) {
 	if ok {
 		return db, nil
 	}
-
+	if c.EnsureDbExist != nil {
+		if err := c.EnsureDbExist(c, s); err != nil {
+			return nil, err
+		}
+	}
 	db, err := gorm.Open(c.Dialect(s), c.Cfg)
 	if err != nil {
 		//error
