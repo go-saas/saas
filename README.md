@@ -22,7 +22,10 @@ if you are finding microservice solution, please refer to [go-saas-kit](https://
   * [x] Hybrid tenancy models are also available.
   
   ![img.png](docs/mode3.png)
-  
+
+  * [x] Implement your own resolver to achieve style like sharding
+
+
 * Support multiple web framework
     * [x] [gin](https://github.com/gin-gonic/gin)
     * [x] net/http

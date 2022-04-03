@@ -21,6 +21,7 @@
   
     ![img.png](docs/mode3_zh.png)
   
+  * [x] 实现自己的Resolver来自定义，比如说像分片啥的
 
 * 支持多种Web框架
   * [x] [gin](https://github.com/gin-gonic/gin)
@@ -65,4 +66,4 @@ graph TD
 
 # 参考
 
-https://docs.microsoft.com/en-us/azure/azure-sql/database/saas-tenancy-app-design-patterns
+https://docs.microsoft.com/zh-cn/azure/azure-sql/database/saas-tenancy-app-design-patterns
