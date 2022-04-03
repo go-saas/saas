@@ -10,11 +10,17 @@
 
 * 不同的数据储存方式
   * [x] 每个租户各有数据库: 
+  
     ![img.png](docs/mode1_zh.png)
+  
   * [x] 各个租户共享数据库: （数据访问层提供隔离）
+  
     ![img.png](docs/mode2_zh.png)
+  
   * [x] 混合模式
+  
     ![img.png](docs/mode3_zh.png)
+  
 
 * 支持多种Web框架
   * [x] [gin](https://github.com/gin-gonic/gin)

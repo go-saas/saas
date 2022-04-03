@@ -12,10 +12,15 @@ if you are finding microservice solution, please refer to [go-saas-kit](https://
 
 * Different database architecture
   * [x] Single-tenancy:  Each database stores data from only one tenant.
+  
   ![img.png](docs/mode1.png)
+
   * [x] Multi-tenancy:  Each database stores data from multiple separate tenants (with mechanisms to protect data privacy).
+  
   ![img.png](docs/mode2.png)
+
   * [x] Hybrid tenancy models are also available.
+  
   ![img.png](docs/mode3.png)
   
 * Support multiple web framework
