@@ -19,8 +19,6 @@
   
   * [x] 混合模式
   
-    ![img.png](docs/mode3_zh.png)
-  
   * [x] 实现自己的Resolver来自定义，比如说像分片啥的
 
 * 支持多种Web框架
