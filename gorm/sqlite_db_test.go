@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"context"
+	"database/sql"
 	"github.com/google/uuid"
 	"github.com/goxiaoy/go-saas/common"
 	"github.com/goxiaoy/go-saas/data"
@@ -12,27 +13,38 @@ import (
 )
 
 var TestDb *g.DB
-var TestDbProvider *DefaultDbProvider
-var TenantId1 string
-var TenantId2 string
-var TestDbOpener DbOpener
+
+var TestDbProvider DbProvider
+
+var (
+	TenantId1 = uuid.New().String()
+	TenantId2 = uuid.New().String()
+)
 
 func TestMain(m *testing.M) {
-	var c func()
-	TestDbOpener, c = NewDbOpener()
-	i := 1
-	cfg := &Config{
-		Debug: true,
-		Dialect: func(s string) g.Dialector {
-			return sqlite.Open(s)
-		},
-		Cfg: &g.Config{},
-		//https://github.com/go-gorm/gorm/issues/2875
-		MaxOpenConn: &i,
-		MaxIdleConn: &i,
-	}
 
-	TestDbProvider = GetProvider(cfg)
+	dbOpener, c := common.NewCachedDbOpener(common.DbOpenerFunc(func(s string) (*sql.DB, error) {
+		return sql.Open("sqlite3", s)
+	}))
+	clientProvider := ClientProviderFunc(func(ctx context.Context, s string) (*g.DB, error) {
+		db, err := dbOpener.Open(s)
+		if err != nil {
+			return nil, err
+		}
+		db.SetMaxIdleConns(1)
+		db.SetMaxOpenConns(1)
+
+		client, err := g.Open(&sqlite.Dialector{
+			DriverName: sqlite.DriverName,
+			DSN:        s,
+			Conn:       db,
+		})
+		if err != nil {
+			return client, err
+		}
+		return client.WithContext(ctx).Debug(), err
+	})
+	TestDbProvider = NewDbProvider(GetConnStrResolver(), clientProvider)
 
 	TestDb = GetDb(context.Background(), TestDbProvider)
 	err := AutoMigrate(nil, TestDb)
@@ -47,10 +59,9 @@ func TestMain(m *testing.M) {
 
 }
 
-func GetProvider(cfg *Config) *DefaultDbProvider {
+func GetConnStrResolver() *common.MultiTenancyConnStrResolver {
 	//use memory store
-	TenantId1 = uuid.New().String()
-	TenantId2 = uuid.New().String()
+
 	ts := common.NewMemoryTenantStore(
 		[]common.TenantConfig{
 			{ID: TenantId1, Name: "Test1"},
@@ -63,6 +74,5 @@ func GetProvider(cfg *Config) *DefaultDbProvider {
 	mr := common.NewMultiTenancyConnStrResolver(func() common.TenantStore {
 		return ts
 	}, data.NewConnStrOption(conn))
-	p := NewDefaultDbProvider(mr, cfg, TestDbOpener)
-	return p
+	return mr
 }

@@ -1,6 +1,6 @@
 module github.com/goxiaoy/go-saas
 
-go 1.15
+go 1.18
 
 require (
 	github.com/ReneKroon/ttlcache/v2 v2.11.0 // indirect
@@ -11,7 +11,6 @@ require (
 	github.com/google/flatbuffers v2.0.5+incompatible // indirect
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
-	github.com/goxiaoy/uow v0.0.0-20210815151702-b0032203778a
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-sqlite3 v1.14.8 // indirect

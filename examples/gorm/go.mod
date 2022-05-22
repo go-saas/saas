@@ -1,13 +1,12 @@
-module github.com/goxiaoy/go-saas/examples
+module github.com/goxiaoy/go-saas/examples/gorm
 
 go 1.17
 
 require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/goxiaoy/go-saas v0.0.10
-	github.com/goxiaoy/uow v0.0.0-20210815151702-b0032203778a
 	gorm.io/driver/sqlite v1.3.1
-	gorm.io/gorm v1.23.1
+	gorm.io/gorm v1.23.4
 )
 
 require (
@@ -35,4 +34,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-replace github.com/goxiaoy/go-saas => ../
+replace github.com/goxiaoy/go-saas => ../../

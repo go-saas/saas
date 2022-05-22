@@ -16,6 +16,8 @@ func NewEnableMultiTenancyDataFilter(ctx context.Context) context.Context {
 func NewDisableMultiTenancyDataFilter(ctx context.Context) context.Context {
 	return context.WithValue(ctx, multiTenancyDataFilterCtx{}, false)
 }
+
+//FromMultiTenancyDataFilter resolve where apply multi tenancy data filter, default true
 func FromMultiTenancyDataFilter(ctx context.Context) bool {
 	v := ctx.Value(multiTenancyDataFilterCtx{})
 	if v == nil {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"github.com/gin-gonic/gin"
 	"github.com/goxiaoy/go-saas/common"
 	shttp "github.com/goxiaoy/go-saas/common/http"
@@ -16,37 +17,28 @@ import (
 func main() {
 	r := gin.Default()
 	//dbOpener
-	dbOpener, c := gorm2.NewDbOpener()
+	dbOpener, c := common.NewCachedDbOpener(common.DbOpenerFunc(func(s string) (*sql.DB, error) {
+		return sql.Open("sqlite3", s)
+	}))
 	defer c()
-	i := 1
-	cfg := &gorm2.Config{
-		Debug: true,
-		Dialect: func(s string) g.Dialector {
-			// if use mysql
-			// return mysql.Open(s)
-			return sqlite.Open(s)
-		},
-		Cfg: &g.Config{},
-		//https://github.com/go-gorm/gorm/issues/2875
-		MaxOpenConn: &i,
-		MaxIdleConn: &i,
-	}
+	clientProvider := gorm2.ClientProviderFunc(func(ctx context.Context, s string) (*g.DB, error) {
+		db, err := dbOpener.Open(s)
+		if err != nil {
+			return nil, err
+		}
+		db.SetMaxIdleConns(1)
+		db.SetMaxOpenConns(1)
 
-	//create a unit of work manager. you can skip this if you do not want it
-	//um := uow.NewManager(&uow.Config{SupportNestedTransaction: false}, func(ctx context.Context, kind, key string) uow.TransactionalDb {
-	//	if kind == gorm2.DbKind {
-	//		db, err := dbOpener.Open(cfg, key)
-	//		if err != nil {
-	//			panic(err)
-	//		}
-	//		return gorm.NewTransactionDb(db)
-	//	}
-	//	panic(errors.New(fmt.Sprintf("can not resolve %s", key)))
-	//})
-	//
-	//r.Use(Uow(um))
-
-	wOpt := shttp.NewDefaultWebMultiTenancyOption()
+		client, err := g.Open(&sqlite.Dialector{
+			DriverName: sqlite.DriverName,
+			DSN:        s,
+			Conn:       db,
+		})
+		if err != nil {
+			return client, err
+		}
+		return client.WithContext(ctx), err
+	})
 
 	conn := make(data.ConnStrings, 1)
 	//default database
@@ -57,10 +49,11 @@ func main() {
 	mr := common.NewMultiTenancyConnStrResolver(func() common.TenantStore {
 		return tenantStore
 	}, data.NewConnStrOption(conn))
-	dbProvider := gorm2.NewDefaultDbProvider(mr, cfg, dbOpener)
+	dbProvider := gorm2.NewDbProvider(mr, clientProvider)
 
 	tenantStore = common.NewCachedTenantStore(&TenantStore{dbProvider: dbProvider})
 
+	wOpt := shttp.NewDefaultWebMultiTenancyOption()
 	r.Use(saas.MultiTenancy(wOpt, tenantStore, nil))
 
 	//return current tenant

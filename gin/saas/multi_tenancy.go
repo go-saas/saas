@@ -1,8 +1,8 @@
 package saas
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/goxiaoy/go-saas/common"
 	"github.com/goxiaoy/go-saas/common/http"
 	"github.com/goxiaoy/go-saas/data"

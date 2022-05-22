@@ -2,7 +2,6 @@ package seed
 
 import (
 	"context"
-	"github.com/goxiaoy/uow"
 )
 
 type Contributor interface {
@@ -26,24 +25,4 @@ func (c *chainContributor) Seed(ctx context.Context, sCtx *Context) error {
 
 func Chain(seeds ...Contributor) Contributor {
 	return &chainContributor{seeds: seeds}
-}
-
-type UowContributor struct {
-	uow uow.Manager
-	up  Contributor
-}
-
-var _ Contributor = (*UowContributor)(nil)
-
-func NewUowContributor(uow uow.Manager, up Contributor) *UowContributor {
-	return &UowContributor{
-		uow: uow,
-		up:  up,
-	}
-}
-
-func (u *UowContributor) Seed(ctx context.Context, sCtx *Context) error {
-	return u.uow.WithNew(ctx, func(ctx context.Context) error {
-		return u.up.Seed(ctx, sCtx)
-	})
 }

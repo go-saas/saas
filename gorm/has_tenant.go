@@ -31,21 +31,24 @@ func NewTenantId(s string) HasTenant {
 
 func (t HasTenant) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
 	ct, _ := common.FromCurrentTenant(ctx)
-	if ct.GetId() != t.String {
-		//mismatch
-		at := data.FromAutoSetTenantId(ctx)
-		if at && ct.GetId() != "" {
-			if !t.Valid || t.String == "" {
-				//tenant want to insert self
-				return clause.Expr{SQL: "?", Vars: []interface{}{ct.GetId()}}
-			} else {
-				//tenant want to insert others
-				//force reset
-				return clause.Expr{SQL: "?", Vars: []interface{}{ct.GetId()}}
+	at := data.FromAutoSetTenantId(ctx)
+	if at {
+		if ct.GetId() != t.String {
+			//mismatch
+			if ct.GetId() != "" {
+				//only normalize in tenant side
+				if !t.Valid || t.String == "" {
+					//tenant want to insert self
+					return clause.Expr{SQL: "?", Vars: []interface{}{ct.GetId()}}
+				} else {
+					//tenant want to insert others
+					//force reset
+					return clause.Expr{SQL: "?", Vars: []interface{}{ct.GetId()}}
+				}
 			}
 		}
 	}
-	if t.Valid {
+	if t.Valid && t.String != "" {
 		return clause.Expr{SQL: "?", Vars: []interface{}{t.String}}
 	} else {
 		return clause.Expr{SQL: "?", Vars: []interface{}{nil}}
