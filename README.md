@@ -30,6 +30,7 @@ if you are finding microservice solution, please refer to [go-saas-kit](https://
     * [x] [kratos](https://github.com/go-kratos/kratos)
 * Supported orm, which means all underlying database
     * [x] [gorm](https://github.com/go-gorm/gorm)
+    * [x] [ent](https://entgo.io/)
 * Customizable tenant resolver
     * [x] Query String
     * [x] Form parameters
@@ -58,7 +59,8 @@ graph TD
  
     
 # Sample Project
-* [example](https://github.com/Goxiaoy/go-saas/tree/main/examples) combination of `go-saas`,`gin`,`gorm(sqlite)`
+* [example-gorm](https://github.com/Goxiaoy/go-saas/tree/main/examples/gorm) combination of `go-saas`,`gin`,`gorm(sqlite)`
+* [example-ent](https://github.com/Goxiaoy/go-saas/tree/main/examples/ent) combination of `go-saas`,`gin`,`ent(sqlite)`
 * [go-saas-kit](https://github.com/Goxiaoy/go-saas-kit) Microservice architecture starter kit for golang sass project
 
 # Documentation

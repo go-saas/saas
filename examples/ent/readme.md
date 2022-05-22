@@ -1,9 +1,9 @@
 # Example project
 
-combination of `go-saas`,`gin`,`gorm(sqlite)`
+combination of `go-saas`,`gin`,`ent(sqlite)`
 
 ```shell
-go run github.com/goxiaoy/go-saas/examples/gorm
+go run github.com/goxiaoy/go-saas/examples/ent
 ```
 ---
 Host side ( use shared database):
