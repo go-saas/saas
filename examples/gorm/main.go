@@ -3,22 +3,90 @@ package main
 import (
 	"context"
 	"database/sql"
+	"flag"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	mysql2 "github.com/go-sql-driver/mysql"
 	"github.com/goxiaoy/go-saas/common"
 	shttp "github.com/goxiaoy/go-saas/common/http"
 	"github.com/goxiaoy/go-saas/data"
 	"github.com/goxiaoy/go-saas/gin/saas"
 	gorm2 "github.com/goxiaoy/go-saas/gorm"
 	"github.com/goxiaoy/go-saas/seed"
+	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	g "gorm.io/gorm"
 )
 
+const (
+	defaultSqliteSharedDsn = "./shared.db"
+	defaultMysqlSharedDsn  = "root:youShouldChangeThis@tcp(127.0.0.1:3306)/shared?parseTime=true&loc=Local"
+)
+
+var (
+	driver        string
+	sharedDsn     string
+	tenant3Dsn    string
+	ensureDbExist func(s string) error
+)
+
+func init() {
+	flag.StringVar(&driver, "driver", "sqlite3", "sqlite3/mysql")
+	flag.StringVar(&sharedDsn, "dsn", "", "shared dsn.")
+}
+
 func main() {
+	flag.Parse()
+
+	switch driver {
+	case sqlite.DriverName:
+		if len(sharedDsn) == 0 {
+			sharedDsn = defaultSqliteSharedDsn
+			tenant3Dsn = "./tenant3.db"
+		}
+	case "mysql":
+		if len(sharedDsn) == 0 {
+			sharedDsn = defaultMysqlSharedDsn
+			tenant3, err := mysql2.ParseDSN(sharedDsn)
+			if err != nil {
+				panic(err)
+			}
+			tenant3.DBName = "tenant3"
+			tenant3Dsn = tenant3.FormatDSN()
+
+			ensureDbExist = func(s string) error {
+				dsn, err := mysql2.ParseDSN(s)
+				if err != nil {
+					return err
+				}
+				dbname := dsn.DBName
+				dsn.DBName = ""
+				//open without db name
+				db, err := g.Open(mysql.Open(dsn.FormatDSN()))
+				if err != nil {
+					return err
+				}
+				err = db.Debug().Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s`", dbname)).Error
+				if err != nil {
+					return err
+				}
+				return closeDb(db)
+			}
+
+		}
+	default:
+		panic(fmt.Errorf("driver %s unsupported", driver))
+	}
+
 	r := gin.Default()
 	//dbOpener
 	dbOpener, c := common.NewCachedDbOpener(common.DbOpenerFunc(func(s string) (*sql.DB, error) {
-		return sql.Open("sqlite3", s)
+		if ensureDbExist != nil {
+			if err := ensureDbExist(s); err != nil {
+				return nil, err
+			}
+		}
+		return sql.Open(driver, s)
 	}))
 	defer c()
 	clientProvider := gorm2.ClientProviderFunc(func(ctx context.Context, s string) (*g.DB, error) {
@@ -26,23 +94,35 @@ func main() {
 		if err != nil {
 			return nil, err
 		}
-		db.SetMaxIdleConns(1)
-		db.SetMaxOpenConns(1)
+		var client *g.DB
 
-		client, err := g.Open(&sqlite.Dialector{
-			DriverName: sqlite.DriverName,
-			DSN:        s,
-			Conn:       db,
-		})
-		if err != nil {
-			return client, err
+		if driver == sqlite.DriverName {
+			db.SetMaxIdleConns(1)
+			db.SetMaxOpenConns(1)
+
+			client, err = g.Open(&sqlite.Dialector{
+				DriverName: sqlite.DriverName,
+				DSN:        s,
+				Conn:       db,
+			})
+			if err != nil {
+				return client, err
+			}
+		} else if driver == "mysql" {
+			client, err = g.Open(mysql.New(mysql.Config{
+				Conn: db,
+			}))
+			if err != nil {
+				return client, err
+			}
 		}
-		return client.WithContext(ctx), err
+
+		return client.WithContext(ctx).Debug(), err
 	})
 
 	conn := make(data.ConnStrings, 1)
 	//default database
-	conn.SetDefault("./shared.db")
+	conn.SetDefault(sharedDsn)
 
 	var tenantStore common.TenantStore
 
@@ -86,4 +166,18 @@ func main() {
 	}
 
 	r.Run(":8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+}
+
+func closeDb(d *g.DB) error {
+	sqlDB, err := d.DB()
+	if err != nil {
+		return err
+	}
+	cErr := sqlDB.Close()
+	if cErr != nil {
+		//todo logging
+		//logger.Errorf("Gorm db close error: %s", err.Error())
+		return cErr
+	}
+	return nil
 }

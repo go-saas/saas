@@ -6,6 +6,7 @@ import (
 	"github.com/goxiaoy/go-saas/data"
 	"github.com/goxiaoy/go-saas/gorm"
 	"github.com/goxiaoy/go-saas/seed"
+	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	gorm2 "gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -21,15 +22,22 @@ func NewSeed(dbProvider gorm.DbProvider) *Seed {
 
 func (s *Seed) Seed(ctx context.Context, sCtx *seed.Context) error {
 	db := s.dbProvider.Get(ctx, "")
-	liteDial := db.Dialector.(*sqlite.Dialector)
-	dsn := liteDial.DSN
+	dsn := ""
+	if liteDial, ok := db.Dialector.(*sqlite.Dialector); ok {
+		dsn = liteDial.DSN
+	}
+	if liteDial, ok := db.Dialector.(*mysql.Dialector); ok {
+		dsn = liteDial.DSN
+	}
+
 	if sCtx.TenantId == "" {
 		//seed host
-		err := db.Model(&Tenant{}).Clauses(clause.OnConflict{DoNothing: true}).CreateInBatches([]Tenant{
+
+		err := db.Model(&Tenant{}).Clauses(clause.OnConflict{UpdateAll: true}).CreateInBatches([]Tenant{
 			{ID: "1", Name: "Test1"}, // use default shared.db
 			{ID: "2", Name: "Test2"},
 			{ID: "3", Name: "Test3", Conn: []TenantConn{
-				{Key: data.Default, Value: "./tenant3.db"}, // use tenant3.db
+				{Key: data.Default, Value: tenant3Dsn}, // use tenant3.db
 			}}}, 10).Error
 		if err != nil {
 			return err
