@@ -49,7 +49,7 @@ func TestCustomField(t *testing.T) {
 	}
 	wg.Wait()
 
-	disableCtx := data.NewDisableMultiTenancyDataFilter(context.Background())
+	disableCtx := data.NewMultiTenancyDataFilter(context.Background(), false)
 
 	var count int64
 	//check count
@@ -108,7 +108,7 @@ func TestAutoSetTenant(t *testing.T) {
 
 		//can find now
 		hostAutoSet = TestEntity{}
-		disableCtx := data.NewDisableMultiTenancyDataFilter(ctx)
+		disableCtx := data.NewMultiTenancyDataFilter(ctx, false)
 		err = TestDb.WithContext(disableCtx).Model(&TestEntity{}).Where("id = ?", "HostAutoSetTenant2").First(&hostAutoSet).Error
 		assert.NoError(t, err)
 
@@ -139,7 +139,7 @@ func TestAutoSetTenant(t *testing.T) {
 		assert.Equal(t, TenantAutoSet.TenantId.String, tenantId)
 
 		//disable auto set
-		ctx = data.NewDisableAutoSetTenantId(ctx)
+		ctx = data.NewAutoSetTenantId(ctx, false)
 
 		i = TestEntity{ID: "TenantAutoSetTenant3", MultiTenancy: MultiTenancy{NewTenantId(tenantId2)}}
 		err = TestDb.WithContext(ctx).Model(&TestEntity{}).Create(&i).Error
@@ -152,7 +152,7 @@ func TestAutoSetTenant(t *testing.T) {
 
 		//can find now
 		TenantAutoSet = TestEntity{}
-		disableCtx := data.NewDisableMultiTenancyDataFilter(ctx)
+		disableCtx := data.NewMultiTenancyDataFilter(ctx, false)
 		err = TestDb.WithContext(disableCtx).Model(&TestEntity{}).Where("id = ?", "TenantAutoSetTenant3").First(&TenantAutoSet).Error
 		assert.NoError(t, err)
 		assert.Equal(t, TenantAutoSet.TenantId.String, tenantId2)

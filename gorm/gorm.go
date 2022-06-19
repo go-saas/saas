@@ -7,8 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const DbKind = "gorm"
-
 // MultiTenancy entity
 type MultiTenancy struct {
 	TenantId HasTenant `gorm:"index"`

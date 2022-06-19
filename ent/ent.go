@@ -8,8 +8,6 @@ import (
 	"github.com/goxiaoy/go-saas/data"
 )
 
-const DbKind = "ent"
-
 func Saas(next ent.Mutator) ent.Mutator {
 	type hasTenant interface {
 		SetTenantID(ss *sql.NullString)

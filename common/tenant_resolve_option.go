@@ -1,9 +1,21 @@
 package common
 
-type PatchTenantResolveOption func(resolveOption *TenantResolveOption)
-
 type TenantResolveOption struct {
 	Resolvers []TenantResolveContributor
+}
+
+type ResolveOption func(resolveOption *TenantResolveOption)
+
+func AppendContributors(c ...TenantResolveContributor) ResolveOption {
+	return func(resolveOption *TenantResolveOption) {
+		resolveOption.AppendContributors(c...)
+	}
+}
+
+func RemoveContributors(c ...TenantResolveContributor) ResolveOption {
+	return func(resolveOption *TenantResolveOption) {
+		resolveOption.RemoveContributors(c...)
+	}
 }
 
 func NewTenantResolveOption(c ...TenantResolveContributor) *TenantResolveOption {

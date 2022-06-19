@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/goxiaoy/go-saas/common"
-	shttp "github.com/goxiaoy/go-saas/common/http"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -15,16 +14,12 @@ import (
 
 func SetUp() *mux.Router {
 	r := mux.NewRouter()
-	wOpt := shttp.NewDefaultWebMultiTenancyOption()
-	m := NewMultiTenancy(
-		wOpt,
-		common.NewMemoryTenantStore(
-			[]common.TenantConfig{
-				{ID: "1", Name: "Test1"},
-				{ID: "2", Name: "Test3"},
-			}))
 
-	r.Use(m.Middleware)
+	r.Use(Middleware(common.NewMemoryTenantStore(
+		[]common.TenantConfig{
+			{ID: "1", Name: "Test1"},
+			{ID: "2", Name: "Test3"},
+		})))
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// an example API handler
@@ -106,22 +101,18 @@ func TestHeaderMultiTenancy(t *testing.T) {
 
 func TestTerminate(t *testing.T) {
 	r := mux.NewRouter()
-	wOpt := shttp.NewDefaultWebMultiTenancyOption()
-	m := NewMultiTenancy(
-		wOpt,
-		common.NewMemoryTenantStore(
-			[]common.TenantConfig{
-				{ID: "1", Name: "Test1"},
-				{ID: "2", Name: "Test3"},
-			})).WithOptions(func(resolveOption *common.TenantResolveOption) {
-		resolveOption.AppendContributors(&TerminateContributor{})
-	}).WithErrorFormatter(func(w http.ResponseWriter, err error) {
-		if err == ErrForbidden {
-			http.Error(w, "Forbidden", 403)
-		}
-	})
 
-	r.Use(m.Middleware)
+	r.Use(Middleware(common.NewMemoryTenantStore(
+		[]common.TenantConfig{
+			{ID: "1", Name: "Test1"},
+			{ID: "2", Name: "Test3"},
+		}),
+		WithErrorFormatter(func(w http.ResponseWriter, err error) {
+			if err == ErrForbidden {
+				http.Error(w, "Forbidden", 403)
+			}
+		}),
+		WithResolveOption(common.AppendContributors(&TerminateContributor{}))))
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 	})

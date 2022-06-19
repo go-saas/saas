@@ -27,7 +27,9 @@ func (f DbOpenerFunc) Open(s string) (*sql.DB, error) {
 
 var _ DbOpener = (*dbOpener)(nil)
 
-//NewCachedDbOpener wrap DbOpener with cache
+// NewCachedDbOpener wrap DbOpener with cache, used when switching database instance
+//
+// Notice: current implementation will hold all db connection opened
 func NewCachedDbOpener(d DbOpener) (DbOpener, func()) {
 	ret := &dbOpener{
 		db: make(map[string]*sql.DB),

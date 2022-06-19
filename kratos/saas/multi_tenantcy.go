@@ -23,9 +23,40 @@ var (
 	}
 )
 
-func Server(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore, ef ErrorFormatter, options ...common.PatchTenantResolveOption) middleware.Middleware {
-	if ef == nil {
-		ef = DefaultErrorFormatter
+type option struct {
+	hmtOpt  *shttp.WebMultiTenancyOption
+	ef      ErrorFormatter
+	resolve []common.ResolveOption
+}
+
+type Option func(*option)
+
+func WithMultiTenancyOption(opt *shttp.WebMultiTenancyOption) Option {
+	return func(o *option) {
+		o.hmtOpt = opt
+	}
+}
+
+func WithErrorFormatter(e ErrorFormatter) Option {
+	return func(o *option) {
+		o.ef = e
+	}
+}
+
+func WithResolveOption(opt ...common.ResolveOption) Option {
+	return func(o *option) {
+		o.resolve = opt
+	}
+}
+
+func Server(ts common.TenantStore, ef ErrorFormatter, options ...Option) middleware.Middleware {
+	opt := &option{
+		hmtOpt:  shttp.NewDefaultWebMultiTenancyOption(),
+		ef:      DefaultErrorFormatter,
+		resolve: nil,
+	}
+	for _, o := range options {
+		o(opt)
 	}
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
@@ -34,21 +65,21 @@ func Server(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore, ef Error
 				if ht, ok := tr.(*http.Transport); ok {
 					r := ht.Request()
 					df := []common.TenantResolveContributor{
-						shttp.NewCookieTenantResolveContributor(hmtOpt.TenantKey, r),
-						shttp.NewFormTenantResolveContributor(hmtOpt.TenantKey, r),
-						shttp.NewHeaderTenantResolveContributor(hmtOpt.TenantKey, r),
-						shttp.NewQueryTenantResolveContributor(hmtOpt.TenantKey, r),
+						shttp.NewCookieTenantResolveContributor(opt.hmtOpt.TenantKey, r),
+						shttp.NewFormTenantResolveContributor(opt.hmtOpt.TenantKey, r),
+						shttp.NewHeaderTenantResolveContributor(opt.hmtOpt.TenantKey, r),
+						shttp.NewQueryTenantResolveContributor(opt.hmtOpt.TenantKey, r),
 					}
-					if hmtOpt.DomainFormat != "" {
-						df = append(df, shttp.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, r))
+					if opt.hmtOpt.DomainFormat != "" {
+						df = append(df, shttp.NewDomainTenantResolveContributor(opt.hmtOpt.DomainFormat, r))
 					}
 					df = append(df, common.NewTenantNormalizerContributor(ts))
 					trOpt.AppendContributors(df...)
 				} else {
-					trOpt.AppendContributors(NewHeaderTenantResolveContributor(hmtOpt.TenantKey, tr))
+					trOpt.AppendContributors(NewHeaderTenantResolveContributor(opt.hmtOpt.TenantKey, tr))
 				}
-				for _, option := range options {
-					option(trOpt)
+				for _, resolveOption := range opt.resolve {
+					resolveOption(trOpt)
 				}
 
 				//get tenant config
@@ -59,7 +90,7 @@ func Server(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore, ef Error
 				}
 				newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
 				//data filter
-				dataFilterCtx := data.NewEnableMultiTenancyDataFilter(newContext)
+				dataFilterCtx := data.NewMultiTenancyDataFilter(newContext)
 				return handler(dataFilterCtx, req)
 			}
 			return handler(ctx, req)

@@ -7,13 +7,6 @@ import (
 	"net/http"
 )
 
-type MultiTenancy struct {
-	hmtOpt *shttp.WebMultiTenancyOption
-	trOptF []common.PatchTenantResolveOption
-	ts     common.TenantStore
-	ef     ErrorFormatter
-}
-
 type ErrorFormatter func(w http.ResponseWriter, err error)
 
 var (
@@ -27,52 +20,71 @@ var (
 	}
 )
 
-func NewMultiTenancy(hmtOpt *shttp.WebMultiTenancyOption, ts common.TenantStore) *MultiTenancy {
-	return &MultiTenancy{
-		hmtOpt: hmtOpt,
-		ts:     ts,
-		ef:     DefaultErrorFormatter,
+type option struct {
+	hmtOpt  *shttp.WebMultiTenancyOption
+	ef      ErrorFormatter
+	resolve []common.ResolveOption
+}
+
+type Option func(*option)
+
+func WithMultiTenancyOption(opt *shttp.WebMultiTenancyOption) Option {
+	return func(o *option) {
+		o.hmtOpt = opt
 	}
 }
 
-func (m *MultiTenancy) WithErrorFormatter(ef ErrorFormatter) *MultiTenancy {
-	m.ef = ef
-	return m
-}
-func (m *MultiTenancy) WithOptions(options ...common.PatchTenantResolveOption) *MultiTenancy {
-	m.trOptF = options
-	return m
+func WithErrorFormatter(e ErrorFormatter) Option {
+	return func(o *option) {
+		o.ef = e
+	}
 }
 
-func (m *MultiTenancy) Middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		hmtOpt := m.hmtOpt
-		df := []common.TenantResolveContributor{
-			shttp.NewCookieTenantResolveContributor(hmtOpt.TenantKey, r),
-			shttp.NewFormTenantResolveContributor(hmtOpt.TenantKey, r),
-			shttp.NewHeaderTenantResolveContributor(hmtOpt.TenantKey, r),
-			shttp.NewQueryTenantResolveContributor(hmtOpt.TenantKey, r),
-		}
+func WithResolveOption(opt ...common.ResolveOption) Option {
+	return func(o *option) {
+		o.resolve = opt
+	}
+}
 
-		if hmtOpt.DomainFormat != "" {
-			df = append(df, shttp.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, r))
-		}
-		df = append(df, common.NewTenantNormalizerContributor(m.ts))
-		trOpt := common.NewTenantResolveOption(df...)
-		for _, option := range m.trOptF {
-			option(trOpt)
-		}
-		//get tenant config
-		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt), common.NewCachedTenantStore(m.ts))
-		tenantConfig, trCtx, err := tenantConfigProvider.Get(r.Context())
-		if err != nil {
-			m.ef(w, err)
-			return
-		}
-		//set current tenant
-		newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
-		//data filter
-		newContext = data.NewEnableMultiTenancyDataFilter(newContext)
-		next.ServeHTTP(w, r.WithContext(newContext))
-	})
+func Middleware(ts common.TenantStore, options ...Option) func(next http.Handler) http.Handler {
+	opt := &option{
+		hmtOpt:  shttp.NewDefaultWebMultiTenancyOption(),
+		ef:      DefaultErrorFormatter,
+		resolve: nil,
+	}
+	for _, o := range options {
+		o(opt)
+	}
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			df := []common.TenantResolveContributor{
+				shttp.NewCookieTenantResolveContributor(opt.hmtOpt.TenantKey, r),
+				shttp.NewFormTenantResolveContributor(opt.hmtOpt.TenantKey, r),
+				shttp.NewHeaderTenantResolveContributor(opt.hmtOpt.TenantKey, r),
+				shttp.NewQueryTenantResolveContributor(opt.hmtOpt.TenantKey, r),
+			}
+
+			if opt.hmtOpt.DomainFormat != "" {
+				df = append(df, shttp.NewDomainTenantResolveContributor(opt.hmtOpt.DomainFormat, r))
+			}
+			df = append(df, common.NewTenantNormalizerContributor(ts))
+			trOpt := common.NewTenantResolveOption(df...)
+			for _, resolveOption := range opt.resolve {
+				resolveOption(trOpt)
+			}
+			//get tenant config
+			tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt), common.NewCachedTenantStore(ts))
+			tenantConfig, trCtx, err := tenantConfigProvider.Get(r.Context())
+			if err != nil {
+				opt.ef(w, err)
+				return
+			}
+			//set current tenant
+			newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
+			//data filter
+			newContext = data.NewMultiTenancyDataFilter(newContext)
+			next.ServeHTTP(w, r.WithContext(newContext))
+		})
+	}
+
 }

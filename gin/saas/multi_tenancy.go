@@ -20,35 +20,66 @@ var (
 	}
 )
 
-func MultiTenancy(hmtOpt *http.WebMultiTenancyOption, ts common.TenantStore, ef ErrorFormatter, options ...common.PatchTenantResolveOption) gin.HandlerFunc {
-	if ef == nil {
-		ef = DefaultErrorFormatter
+type option struct {
+	hmtOpt  *http.WebMultiTenancyOption
+	ef      ErrorFormatter
+	resolve []common.ResolveOption
+}
+
+type Option func(*option)
+
+func WithMultiTenancyOption(opt *http.WebMultiTenancyOption) Option {
+	return func(o *option) {
+		o.hmtOpt = opt
+	}
+}
+
+func WithErrorFormatter(e ErrorFormatter) Option {
+	return func(o *option) {
+		o.ef = e
+	}
+}
+
+func WithResolveOption(opt ...common.ResolveOption) Option {
+	return func(o *option) {
+		o.resolve = opt
+	}
+}
+
+func MultiTenancy(ts common.TenantStore, options ...Option) gin.HandlerFunc {
+	opt := &option{
+		hmtOpt:  http.NewDefaultWebMultiTenancyOption(),
+		ef:      DefaultErrorFormatter,
+		resolve: nil,
+	}
+	for _, o := range options {
+		o(opt)
 	}
 	return func(context *gin.Context) {
 		df := []common.TenantResolveContributor{
-			http.NewCookieTenantResolveContributor(hmtOpt.TenantKey, context.Request),
-			http.NewFormTenantResolveContributor(hmtOpt.TenantKey, context.Request),
-			http.NewHeaderTenantResolveContributor(hmtOpt.TenantKey, context.Request),
-			http.NewQueryTenantResolveContributor(hmtOpt.TenantKey, context.Request)}
-		if hmtOpt.DomainFormat != "" {
-			df = append(df, http.NewDomainTenantResolveContributor(hmtOpt.DomainFormat, context.Request))
+			http.NewCookieTenantResolveContributor(opt.hmtOpt.TenantKey, context.Request),
+			http.NewFormTenantResolveContributor(opt.hmtOpt.TenantKey, context.Request),
+			http.NewHeaderTenantResolveContributor(opt.hmtOpt.TenantKey, context.Request),
+			http.NewQueryTenantResolveContributor(opt.hmtOpt.TenantKey, context.Request)}
+		if opt.hmtOpt.DomainFormat != "" {
+			df = append(df, http.NewDomainTenantResolveContributor(opt.hmtOpt.DomainFormat, context.Request))
 		}
 		df = append(df, common.NewTenantNormalizerContributor(ts))
 		trOpt := common.NewTenantResolveOption(df...)
-		for _, option := range options {
-			option(trOpt)
+		for _, resolveOption := range opt.resolve {
+			resolveOption(trOpt)
 		}
 		//get tenant config
 		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt), common.NewCachedTenantStore(ts))
 		tenantConfig, trCtx, err := tenantConfigProvider.Get(context)
 		if err != nil {
-			ef(context, err)
+			opt.ef(context, err)
 			return
 		}
 		//set current tenant
 		newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
 		//data filter
-		newContext = data.NewEnableMultiTenancyDataFilter(newContext)
+		newContext = data.NewMultiTenancyDataFilter(newContext)
 
 		//with newContext
 		context.Request = context.Request.WithContext(newContext)

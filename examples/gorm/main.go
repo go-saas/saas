@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	mysql2 "github.com/go-sql-driver/mysql"
 	"github.com/goxiaoy/go-saas/common"
-	shttp "github.com/goxiaoy/go-saas/common/http"
 	"github.com/goxiaoy/go-saas/data"
 	"github.com/goxiaoy/go-saas/gin/saas"
 	gorm2 "github.com/goxiaoy/go-saas/gorm"
@@ -133,8 +132,7 @@ func main() {
 
 	tenantStore = common.NewCachedTenantStore(&TenantStore{dbProvider: dbProvider})
 
-	wOpt := shttp.NewDefaultWebMultiTenancyOption()
-	r.Use(saas.MultiTenancy(wOpt, tenantStore, nil))
+	r.Use(saas.MultiTenancy(tenantStore))
 
 	//return current tenant
 	r.GET("/tenant/current", func(c *gin.Context) {

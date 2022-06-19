@@ -10,11 +10,12 @@ type (
 	autoSetTenantIdCtx        struct{}
 )
 
-func NewEnableMultiTenancyDataFilter(ctx context.Context) context.Context {
-	return context.WithValue(ctx, multiTenancyDataFilterCtx{}, true)
-}
-func NewDisableMultiTenancyDataFilter(ctx context.Context) context.Context {
-	return context.WithValue(ctx, multiTenancyDataFilterCtx{}, false)
+func NewMultiTenancyDataFilter(ctx context.Context, enable ...bool) context.Context {
+	v := true
+	if len(enable) > 0 {
+		v = enable[0]
+	}
+	return context.WithValue(ctx, multiTenancyDataFilterCtx{}, v)
 }
 
 //FromMultiTenancyDataFilter resolve where apply multi tenancy data filter, default true
@@ -25,12 +26,15 @@ func FromMultiTenancyDataFilter(ctx context.Context) bool {
 	}
 	return v.(bool)
 }
-func NewEnableAutoSetTenantId(ctx context.Context) context.Context {
-	return context.WithValue(ctx, autoSetTenantIdCtx{}, true)
+
+func NewAutoSetTenantId(ctx context.Context, enable ...bool) context.Context {
+	v := true
+	if len(enable) > 0 {
+		v = enable[0]
+	}
+	return context.WithValue(ctx, autoSetTenantIdCtx{}, v)
 }
-func NewDisableAutoSetTenantId(ctx context.Context) context.Context {
-	return context.WithValue(ctx, autoSetTenantIdCtx{}, false)
-}
+
 func FromAutoSetTenantId(ctx context.Context) bool {
 	v := ctx.Value(autoSetTenantIdCtx{})
 	if v == nil {

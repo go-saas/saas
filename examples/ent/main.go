@@ -6,7 +6,6 @@ import (
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/gin-gonic/gin"
 	"github.com/goxiaoy/go-saas/common"
-	shttp "github.com/goxiaoy/go-saas/common/http"
 	"github.com/goxiaoy/go-saas/data"
 	sent "github.com/goxiaoy/go-saas/ent"
 	"github.com/goxiaoy/go-saas/examples/ent/shared/ent"
@@ -69,8 +68,7 @@ func main() {
 
 	tenantStore = common.NewCachedTenantStore(&TenantStore{shared: sharedDbProvider})
 
-	wOpt := shttp.NewDefaultWebMultiTenancyOption()
-	r.Use(saas.MultiTenancy(wOpt, tenantStore, nil))
+	r.Use(saas.MultiTenancy(tenantStore))
 
 	//return current tenant
 	r.GET("/tenant/current", func(c *gin.Context) {
