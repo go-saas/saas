@@ -1,6 +1,7 @@
 package common
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"sync"
@@ -9,7 +10,7 @@ import (
 type (
 	// DbOpener open a real *sql.Driver instance by using connection string
 	DbOpener interface {
-		Open(s string) (*sql.DB, error)
+		Open(ctx context.Context, s string) (*sql.DB, error)
 	}
 
 	dbOpener struct {
@@ -18,11 +19,11 @@ type (
 		d   DbOpener
 	}
 
-	DbOpenerFunc func(s string) (*sql.DB, error)
+	DbOpenerFunc func(ctx context.Context, s string) (*sql.DB, error)
 )
 
-func (f DbOpenerFunc) Open(s string) (*sql.DB, error) {
-	return f(s)
+func (f DbOpenerFunc) Open(ctx context.Context, s string) (*sql.DB, error) {
+	return f(ctx, s)
 }
 
 var _ DbOpener = (*dbOpener)(nil)
@@ -40,7 +41,7 @@ func NewCachedDbOpener(d DbOpener) (DbOpener, func()) {
 	}
 }
 
-func (d *dbOpener) Open(s string) (*sql.DB, error) {
+func (d *dbOpener) Open(ctx context.Context, s string) (*sql.DB, error) {
 	d.mtx.Lock()
 	defer d.mtx.Unlock()
 	db, ok := d.db[s]
@@ -48,7 +49,7 @@ func (d *dbOpener) Open(s string) (*sql.DB, error) {
 		return db, nil
 	}
 	var err error
-	db, err = d.d.Open(s)
+	db, err = d.d.Open(ctx, s)
 	if err != nil {
 		return nil, err
 	}
