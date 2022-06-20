@@ -11,11 +11,11 @@ import (
 	"github.com/goxiaoy/go-saas/common"
 	"github.com/goxiaoy/go-saas/data"
 	"github.com/goxiaoy/go-saas/gin/saas"
-	gorm2 "github.com/goxiaoy/go-saas/gorm"
+	sgorm "github.com/goxiaoy/go-saas/gorm"
 	"github.com/goxiaoy/go-saas/seed"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
-	g "gorm.io/gorm"
+	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -38,14 +38,14 @@ func init() {
 func main() {
 	flag.Parse()
 
-	cache := common.NewCache[string, *g.DB]()
+	cache := common.NewCache[string, *sgorm.DbWrap]()
 	defer cache.Flush()
 
 	var connStrGen common.ConnStrGenerator
 	switch driver {
 	case sqlite.DriverName:
 		sharedDsn = defaultSqliteSharedDsn
-		connStrGen = common.NewConnStrGenerator("./example-%s")
+		connStrGen = common.NewConnStrGenerator("./example-%s.db")
 	case "mysql":
 		if len(sharedDsn) == 0 {
 			sharedDsn = defaultMysqlSharedDsn
@@ -92,14 +92,14 @@ func main() {
 		return tenantStore
 	}, data.NewConnStrOption(conn))
 
-	clientProvider := gorm2.ClientProviderFunc(func(ctx context.Context, s string) (*g.DB, error) {
-		client, _, err := cache.GetOrSet(s, func() (*g.DB, error) {
+	clientProvider := sgorm.ClientProviderFunc(func(ctx context.Context, s string) (*gorm.DB, error) {
+		client, _, err := cache.GetOrSet(s, func() (*sgorm.DbWrap, error) {
 			if ensureDbExist != nil {
 				if err := ensureDbExist(s); err != nil {
 					return nil, err
 				}
 			}
-			var client *g.DB
+			var client *gorm.DB
 			var err error
 			db, err := sql.Open(driver, s)
 			if err != nil {
@@ -111,27 +111,27 @@ func main() {
 			}
 
 			if driver == sqlite.DriverName {
-				client, err = g.Open(&sqlite.Dialector{
+				client, err = gorm.Open(&sqlite.Dialector{
 					DriverName: sqlite.DriverName,
 					DSN:        s,
 					Conn:       db,
 				})
 			} else if driver == "mysql" {
-				client, err = g.Open(mysql.New(mysql.Config{
+				client, err = gorm.Open(mysql.New(mysql.Config{
 					Conn: db,
 				}))
 			}
-			return client, err
+			return sgorm.NewDbWrap(client), err
 		})
 
 		if err != nil {
-			return client, err
+			return nil, err
 		}
 		return client.WithContext(ctx).Debug(), err
 
 	})
 
-	dbProvider := gorm2.NewDbProvider(mr, clientProvider)
+	dbProvider := sgorm.NewDbProvider(mr, clientProvider)
 
 	tenantStore = common.NewCachedTenantStore(&TenantStore{dbProvider: dbProvider})
 

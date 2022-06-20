@@ -189,7 +189,7 @@ func (c *Cache[K, V]) delete(e *list.Element) error {
 	entry := e.Value.(*entry[K, V])
 	delete(c.items, entry.key)
 
-	if f, ok := e.Value.(closable); ok {
+	if f, ok := any(entry.val).(closable); ok {
 		return f.Close()
 	}
 	return nil
