@@ -49,7 +49,7 @@ func WithResolveOption(opt ...common.ResolveOption) Option {
 	}
 }
 
-func Server(ts common.TenantStore, ef ErrorFormatter, options ...Option) middleware.Middleware {
+func Server(ts common.TenantStore, options ...Option) middleware.Middleware {
 	opt := &option{
 		hmtOpt:  shttp.NewDefaultWebMultiTenancyOption(),
 		ef:      DefaultErrorFormatter,
@@ -86,7 +86,7 @@ func Server(ts common.TenantStore, ef ErrorFormatter, options ...Option) middlew
 				tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt), common.NewCachedTenantStore(ts))
 				tenantConfig, trCtx, err := tenantConfigProvider.Get(ctx)
 				if err != nil {
-					return ef(err)
+					return opt.ef(err)
 				}
 				newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
 				//data filter
