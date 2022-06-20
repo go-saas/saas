@@ -2,7 +2,6 @@ package common
 
 import (
 	"context"
-	"database/sql"
 	"github.com/goxiaoy/go-saas/data"
 )
 
@@ -12,6 +11,7 @@ type (
 		Get(ctx context.Context, dsn string) (TClient, error)
 	}
 
+	// ClientProviderFunc see ClientProvider
 	ClientProviderFunc[TClient interface{}] func(ctx context.Context, dsn string) (TClient, error)
 
 	//DbProvider resolve TClient from user friendly key
@@ -50,13 +50,4 @@ func (d *DefaultDbProvider[TClient]) Get(ctx context.Context, key string) TClien
 		panic(err)
 	}
 	return c
-}
-
-type SqlDbProvider DbProvider[*sql.DB]
-
-var SqlClientProvider ClientProvider[*sql.DB]
-
-// NewSqlDbProvider create db provider which directly use sql.Db
-func NewSqlDbProvider(cs data.ConnStrResolver, cp DbOpener) SqlDbProvider {
-	return NewDbProvider(cs, SqlClientProvider(cp))
 }

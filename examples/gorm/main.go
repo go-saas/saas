@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	mysql2 "github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 	"github.com/goxiaoy/go-saas/common"
 	"github.com/goxiaoy/go-saas/data"
 	"github.com/goxiaoy/go-saas/gin/saas"
@@ -15,17 +16,17 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	g "gorm.io/gorm"
+	"net/http"
 )
 
 const (
-	defaultSqliteSharedDsn = "./shared.db"
-	defaultMysqlSharedDsn  = "root:youShouldChangeThis@tcp(127.0.0.1:3306)/shared?parseTime=true&loc=Local"
+	defaultSqliteSharedDsn = "./example.db"
+	defaultMysqlSharedDsn  = "root:youShouldChangeThis@tcp(127.0.0.1:3406)/example?parseTime=true&loc=Local"
 )
 
 var (
 	driver        string
 	sharedDsn     string
-	tenant3Dsn    string
 	ensureDbExist func(s string) error
 )
 
@@ -37,87 +38,49 @@ func init() {
 func main() {
 	flag.Parse()
 
+	cache := common.NewCache[string, *g.DB]()
+	defer cache.Flush()
+
+	var connStrGen common.ConnStrGenerator
 	switch driver {
 	case sqlite.DriverName:
-		if len(sharedDsn) == 0 {
-			sharedDsn = defaultSqliteSharedDsn
-			tenant3Dsn = "./tenant3.db"
-		}
+		sharedDsn = defaultSqliteSharedDsn
+		connStrGen = common.NewConnStrGenerator("./example-%s")
 	case "mysql":
 		if len(sharedDsn) == 0 {
 			sharedDsn = defaultMysqlSharedDsn
-			tenant3, err := mysql2.ParseDSN(sharedDsn)
+		}
+		dd, err := mysql2.ParseDSN(sharedDsn)
+		if err != nil {
+			panic(err)
+		}
+		hostDbName := dd.DBName
+		dd.DBName = hostDbName + "-%s"
+		connStrGen = common.NewConnStrGenerator(dd.FormatDSN())
+
+		ensureDbExist = func(s string) error {
+			dsn, err := mysql2.ParseDSN(s)
 			if err != nil {
-				panic(err)
+				return err
 			}
-			tenant3.DBName = "tenant3"
-			tenant3Dsn = tenant3.FormatDSN()
-
-			ensureDbExist = func(s string) error {
-				dsn, err := mysql2.ParseDSN(s)
-				if err != nil {
-					return err
-				}
-				dbname := dsn.DBName
-				dsn.DBName = ""
-				//open without db name
-				db, err := g.Open(mysql.Open(dsn.FormatDSN()))
-				if err != nil {
-					return err
-				}
-				err = db.Debug().Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s`", dbname)).Error
-				if err != nil {
-					return err
-				}
-				return closeDb(db)
+			dbname := dsn.DBName
+			dsn.DBName = ""
+			//open without db name
+			db, err := sql.Open(driver, dsn.FormatDSN())
+			if err != nil {
+				return err
 			}
-
+			_, err = db.ExecContext(context.Background(), fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s`", dbname))
+			if err != nil {
+				return err
+			}
+			return db.Close()
 		}
 	default:
 		panic(fmt.Errorf("driver %s unsupported", driver))
 	}
 
 	r := gin.Default()
-	//dbOpener
-	dbOpener, c := common.NewCachedDbOpener(common.DbOpenerFunc(func(s string) (*sql.DB, error) {
-		if ensureDbExist != nil {
-			if err := ensureDbExist(s); err != nil {
-				return nil, err
-			}
-		}
-		return sql.Open(driver, s)
-	}))
-	defer c()
-	clientProvider := gorm2.ClientProviderFunc(func(ctx context.Context, s string) (*g.DB, error) {
-		db, err := dbOpener.Open(s)
-		if err != nil {
-			return nil, err
-		}
-		var client *g.DB
-
-		if driver == sqlite.DriverName {
-			db.SetMaxIdleConns(1)
-			db.SetMaxOpenConns(1)
-
-			client, err = g.Open(&sqlite.Dialector{
-				DriverName: sqlite.DriverName,
-				DSN:        s,
-				Conn:       db,
-			})
-			if err != nil {
-				return client, err
-			}
-		} else if driver == "mysql" {
-			client, err = g.Open(mysql.New(mysql.Config{
-				Conn: db,
-			}))
-			if err != nil {
-				return client, err
-			}
-		}
-
-		return client.WithContext(ctx).Debug(), err
-	})
 
 	conn := make(data.ConnStrings, 1)
 	//default database
@@ -128,6 +91,46 @@ func main() {
 	mr := common.NewMultiTenancyConnStrResolver(func() common.TenantStore {
 		return tenantStore
 	}, data.NewConnStrOption(conn))
+
+	clientProvider := gorm2.ClientProviderFunc(func(ctx context.Context, s string) (*g.DB, error) {
+		client, _, err := cache.GetOrSet(s, func() (*g.DB, error) {
+			if ensureDbExist != nil {
+				if err := ensureDbExist(s); err != nil {
+					return nil, err
+				}
+			}
+			var client *g.DB
+			var err error
+			db, err := sql.Open(driver, s)
+			if err != nil {
+				return nil, err
+			}
+			if driver == sqlite.DriverName {
+				db.SetMaxIdleConns(1)
+				db.SetMaxOpenConns(1)
+			}
+
+			if driver == sqlite.DriverName {
+				client, err = g.Open(&sqlite.Dialector{
+					DriverName: sqlite.DriverName,
+					DSN:        s,
+					Conn:       db,
+				})
+			} else if driver == "mysql" {
+				client, err = g.Open(mysql.New(mysql.Config{
+					Conn: db,
+				}))
+			}
+			return client, err
+		})
+
+		if err != nil {
+			return client, err
+		}
+		return client.WithContext(ctx).Debug(), err
+
+	})
+
 	dbProvider := gorm2.NewDbProvider(mr, clientProvider)
 
 	tenantStore = common.NewCachedTenantStore(&TenantStore{dbProvider: dbProvider})
@@ -156,26 +159,49 @@ func main() {
 	})
 
 	//seed data into db
-	seeder := seed.NewDefaultSeeder(NewMigrationSeeder(dbProvider), NewSeed(dbProvider))
+	seeder := seed.NewDefaultSeeder(NewMigrationSeeder(dbProvider), NewSeed(dbProvider, connStrGen))
 	seedOpt := seed.NewSeedOption().WithTenantId("", "1", "2", "3").WithExtra(map[string]interface{}{})
 	err := seeder.Seed(context.Background(), seedOpt)
 	if err != nil {
 		panic(err)
 	}
 
-	r.Run(":8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
-}
+	r.POST("/tenant", func(c *gin.Context) {
+		type CreateTenant struct {
+			Name       string `form:"name" json:"name" binding:"required"`
+			SeparateDb bool   `form:"separateDb" json:"separateDb"`
+		}
+		var json CreateTenant
+		if err := c.ShouldBindJSON(&json); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		ctx := c.Request.Context()
+		//change to host side
+		ctx = common.NewCurrentTenant(ctx, "", "")
+		db := dbProvider.Get(ctx, "")
+		t := &Tenant{
+			ID:          uuid.New().String(),
+			Name:        json.Name,
+			DisplayName: json.Name,
+		}
+		if json.SeparateDb {
+			t3Conn, _ := connStrGen.Gen(ctx, common.NewBasicTenantInfo(t.ID, t.Name))
+			t.Conn = []TenantConn{
+				{Key: data.Default, Value: t3Conn}, // use tenant3.db
+			}
+		}
+		err := db.Model(t).Create(t).Error
+		if err != nil {
+			c.AbortWithError(500, err)
+			return
+		}
+		err = seeder.Seed(context.Background(), seed.NewSeedOption().WithTenantId(t.ID))
+		if err != nil {
+			panic(err)
+		}
 
-func closeDb(d *g.DB) error {
-	sqlDB, err := d.DB()
-	if err != nil {
-		return err
-	}
-	cErr := sqlDB.Close()
-	if cErr != nil {
-		//todo logging
-		//logger.Errorf("Gorm db close error: %s", err.Error())
-		return cErr
-	}
-	return nil
+	})
+
+	r.Run(":8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

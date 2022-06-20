@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
-	entsql "entgo.io/ent/dialect/sql"
 	"github.com/gin-gonic/gin"
 	"github.com/goxiaoy/go-saas/common"
 	"github.com/goxiaoy/go-saas/data"
@@ -22,35 +20,34 @@ type TenantDbProvider common.DbProvider[*ent2.Client]
 
 func main() {
 	r := gin.Default()
-	//dbOpener
-	dbOpener, c := common.NewCachedDbOpener(common.DbOpenerFunc(func(s string) (*sql.DB, error) {
-		return sql.Open("sqlite3", s)
-	}))
-	defer c()
+
+	cache := common.NewCache[string, *ent.Client]()
+	defer cache.Flush()
+	cache2 := common.NewCache[string, *ent2.Client]()
+	defer cache.Flush()
 
 	sharedClientProvider := common.ClientProviderFunc[*ent.Client](func(ctx context.Context, s string) (*ent.Client, error) {
-		db, err := dbOpener.Open(s)
-		if err != nil {
-			return nil, err
-		}
-		db.SetMaxIdleConns(1)
-		db.SetMaxOpenConns(1)
-		drv := entsql.OpenDB("sqlite3", db)
-		ret := ent.NewClient(ent.Driver(drv), ent.Debug())
-		ret.Use(sent.Saas)
-		return ret, nil
+		v, _, err := cache.GetOrSet(s, func() (*ent.Client, error) {
+			client, err := ent.Open("sqlite3", s, ent.Debug())
+			if err != nil {
+				return nil, err
+			}
+			client.Use(sent.Saas)
+			return client, nil
+		})
+		return v, err
 	})
 	tenantClientProvider := common.ClientProviderFunc[*ent2.Client](func(ctx context.Context, s string) (*ent2.Client, error) {
-		db, err := dbOpener.Open(s)
-		if err != nil {
-			return nil, err
-		}
-		db.SetMaxIdleConns(1)
-		db.SetMaxOpenConns(1)
-		drv := entsql.OpenDB("sqlite3", db)
-		ret := ent2.NewClient(ent2.Driver(drv), ent2.Debug())
-		ret.Use(sent.Saas)
-		return ret, nil
+
+		v, _, err := cache2.GetOrSet(s, func() (*ent2.Client, error) {
+			client, err := ent2.Open("sqlite3", s, ent2.Debug())
+			if err != nil {
+				return nil, err
+			}
+			client.Use(sent.Saas)
+			return client, nil
+		})
+		return v, err
 	})
 
 	conn := make(data.ConnStrings, 1)

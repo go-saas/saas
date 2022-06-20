@@ -3,42 +3,37 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/goxiaoy/go-saas/common"
 	"github.com/goxiaoy/go-saas/data"
 	"github.com/goxiaoy/go-saas/gorm"
 	"github.com/goxiaoy/go-saas/seed"
-	"gorm.io/driver/mysql"
-	"gorm.io/driver/sqlite"
 	gorm2 "gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 type Seed struct {
 	dbProvider gorm.DbProvider
+	connStrGen common.ConnStrGenerator
 }
 
-func NewSeed(dbProvider gorm.DbProvider) *Seed {
-	return &Seed{dbProvider: dbProvider}
+func NewSeed(dbProvider gorm.DbProvider, connStrGen common.ConnStrGenerator) *Seed {
+	return &Seed{dbProvider: dbProvider, connStrGen: connStrGen}
 }
 
 func (s *Seed) Seed(ctx context.Context, sCtx *seed.Context) error {
 	db := s.dbProvider.Get(ctx, "")
-	dsn := ""
-	if liteDial, ok := db.Dialector.(*sqlite.Dialector); ok {
-		dsn = liteDial.DSN
-	}
-	if liteDial, ok := db.Dialector.(*mysql.Dialector); ok {
-		dsn = liteDial.DSN
-	}
 
 	if sCtx.TenantId == "" {
 		//seed host
-
+		t3 := Tenant{ID: "3", Name: "Test3"}
+		t3Conn, _ := s.connStrGen.Gen(ctx, common.NewBasicTenantInfo(t3.ID, t3.Name))
+		t3.Conn = []TenantConn{
+			{Key: data.Default, Value: t3Conn}, // use tenant3.db
+		}
 		err := db.Model(&Tenant{}).Clauses(clause.OnConflict{UpdateAll: true}).CreateInBatches([]Tenant{
 			{ID: "1", Name: "Test1"}, // use default shared.db
 			{ID: "2", Name: "Test2"},
-			{ID: "3", Name: "Test3", Conn: []TenantConn{
-				{Key: data.Default, Value: tenant3Dsn}, // use tenant3.db
-			}}}, 10).Error
+			t3}, 10).Error
 		if err != nil {
 			return err
 		}
@@ -47,7 +42,6 @@ func (s *Seed) Seed(ctx context.Context, sCtx *seed.Context) error {
 				Model:       gorm2.Model{ID: 1},
 				Title:       fmt.Sprintf("Host Side"),
 				Description: fmt.Sprintf("Hello Host"),
-				DSN:         dsn,
 			},
 		}
 		if err := createPosts(db, entities); err != nil {
@@ -61,7 +55,6 @@ func (s *Seed) Seed(ctx context.Context, sCtx *seed.Context) error {
 				Model:       gorm2.Model{ID: 2},
 				Title:       fmt.Sprintf("Tenant %s Post 1", sCtx.TenantId),
 				Description: fmt.Sprintf("Hello from tenant %s. There are one post in this tenant. This is post 1", sCtx.TenantId),
-				DSN:         dsn,
 			},
 		}
 		if err := createPosts(db, entities); err != nil {
@@ -75,13 +68,11 @@ func (s *Seed) Seed(ctx context.Context, sCtx *seed.Context) error {
 				Model:       gorm2.Model{ID: 3},
 				Title:       fmt.Sprintf("Tenant %s Post 1", sCtx.TenantId),
 				Description: fmt.Sprintf("Hello from tenant %s. There are two posts in this tenant. This is post 1", sCtx.TenantId),
-				DSN:         dsn,
 			},
 			{
 				Model:       gorm2.Model{ID: 4},
 				Title:       fmt.Sprintf("Tenant %s Post 2", sCtx.TenantId),
 				Description: fmt.Sprintf("Hello from tenant %s. There are two posts in this tenant. This is post 2", sCtx.TenantId),
-				DSN:         dsn,
 			},
 		}
 		if err := createPosts(db, entities); err != nil {
@@ -95,19 +86,16 @@ func (s *Seed) Seed(ctx context.Context, sCtx *seed.Context) error {
 				Model:       gorm2.Model{ID: 5},
 				Title:       fmt.Sprintf("Tenant %s Post 1", sCtx.TenantId),
 				Description: fmt.Sprintf("Hello from tenant %s. There are there posts in this tenant. This is post 1", sCtx.TenantId),
-				DSN:         dsn,
 			},
 			{
 				Model:       gorm2.Model{ID: 6},
 				Title:       fmt.Sprintf("Tenant %s Post 2", sCtx.TenantId),
 				Description: fmt.Sprintf("Hello from tenant %s. There are there posts in this tenant. This is post 2", sCtx.TenantId),
-				DSN:         dsn,
 			},
 			{
 				Model:       gorm2.Model{ID: 7},
 				Title:       fmt.Sprintf("Tenant %s Post 2", sCtx.TenantId),
 				Description: fmt.Sprintf("Hello from tenant %s. There are there posts in this tenant. This is post 3", sCtx.TenantId),
-				DSN:         dsn,
 			},
 		}
 		if err := createPosts(db, entities); err != nil {
