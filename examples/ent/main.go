@@ -58,7 +58,7 @@ func main() {
 
 	mr := common.NewMultiTenancyConnStrResolver(func() common.TenantStore {
 		return tenantStore
-	}, data.NewConnStrOption(conn))
+	}, conn)
 
 	sharedDbProvider := common.NewDbProvider[*ent.Client](mr, sharedClientProvider)
 	tenantDbProvider := common.NewDbProvider[*ent2.Client](mr, tenantClientProvider)

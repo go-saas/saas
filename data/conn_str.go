@@ -1,31 +1,31 @@
 package data
 
+import "context"
+
 type ConnStrings map[string]string
 
 const Default = "default"
-
-type ConnStrOption struct {
-	// Conn string map
-	Conn ConnStrings
-}
-
-func NewConnStrOption(cs ConnStrings) *ConnStrOption {
-	return &ConnStrOption{
-		Conn: cs,
-	}
-}
 
 func (c ConnStrings) Default() string {
 	return c[Default]
 }
 
-func (c ConnStrings) GetOrDefault(k string) string {
+func (c ConnStrings) Resolve(_ context.Context, key string) (string, error) {
+	s := c.getOrDefault(key)
+	return s, nil
+}
+
+func (c ConnStrings) getOrDefault(k string) string {
+	if len(k) == 0 {
+		return c.Default()
+	}
 	ret := c[k]
 	if ret == "" {
 		return c.Default()
 	}
 	return ret
 }
+
 func (c ConnStrings) SetDefault(value string) {
 	c[Default] = value
 }

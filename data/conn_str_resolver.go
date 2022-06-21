@@ -3,30 +3,29 @@ package data
 import "context"
 
 type ConnStrResolver interface {
-	// Resolve connection string by key
+	// Resolve connection string by user-friendly key
 	Resolve(ctx context.Context, key string) (string, error)
 }
 
-var _ ConnStrResolver = (*DefaultConnStrResolver)(nil)
+type ConnStrResolverFunc func(ctx context.Context, key string) (string, error)
 
-// DefaultConnStrResolver use config map to resolve connection string
-type DefaultConnStrResolver struct {
-	Opt *ConnStrOption
+func (c ConnStrResolverFunc) Resolve(ctx context.Context, key string) (string, error) {
+	return c(ctx, key)
 }
 
-func NewDefaultConnStrResolver(c *ConnStrOption) *DefaultConnStrResolver {
-	return &DefaultConnStrResolver{
-		Opt: c,
-	}
-}
+var _ ConnStrResolver = (*ConnStrResolverFunc)(nil)
 
-// Resolve from option
-func (d DefaultConnStrResolver) Resolve(_ context.Context, key string) (string, error) {
-	if key != "" {
-		v := d.Opt.Conn[key]
-		if v != "" {
-			return v, nil
+func ChainConnStrResolver(cs ...ConnStrResolver) ConnStrResolver {
+	return ConnStrResolverFunc(func(ctx context.Context, key string) (string, error) {
+		for _, c := range cs {
+			conn, err := c.Resolve(ctx, key)
+			if err != nil {
+				return "", err
+			}
+			if len(conn) > 0 {
+				return conn, err
+			}
 		}
-	}
-	return d.Opt.Conn.Default(), nil
+		return "", nil
+	})
 }

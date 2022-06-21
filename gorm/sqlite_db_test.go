@@ -70,6 +70,6 @@ func GetConnStrResolver() *common.MultiTenancyConnStrResolver {
 	conn.SetDefault("file::memory:?cache=shared")
 	mr := common.NewMultiTenancyConnStrResolver(func() common.TenantStore {
 		return ts
-	}, data.NewConnStrOption(conn))
+	}, conn)
 	return mr
 }

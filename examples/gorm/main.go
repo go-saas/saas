@@ -90,7 +90,7 @@ func main() {
 
 	mr := common.NewMultiTenancyConnStrResolver(func() common.TenantStore {
 		return tenantStore
-	}, data.NewConnStrOption(conn))
+	}, conn)
 
 	clientProvider := sgorm.ClientProviderFunc(func(ctx context.Context, s string) (*gorm.DB, error) {
 		client, _, err := cache.GetOrSet(s, func() (*sgorm.DbWrap, error) {
