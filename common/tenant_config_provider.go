@@ -37,8 +37,7 @@ func (d *DefaultTenantConfigProvider) Get(ctx context.Context) (TenantConfig, co
 		if err != nil {
 			return TenantConfig{}, ctx, err
 		}
-		return *cfg, ctx, nil
-		//check error
+		return *cfg, NewTenantConfigContext(ctx, cfg.ID, cfg), nil
 	}
 	// host side
 	return TenantConfig{}, ctx, nil
