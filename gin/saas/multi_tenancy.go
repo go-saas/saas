@@ -56,6 +56,7 @@ func MultiTenancy(ts common.TenantStore, options ...Option) gin.HandlerFunc {
 		o(opt)
 	}
 	return func(context *gin.Context) {
+		var trOpt []common.ResolveOption
 		df := []common.TenantResolveContributor{
 			http.NewCookieTenantResolveContributor(opt.hmtOpt.TenantKey, context.Request),
 			http.NewFormTenantResolveContributor(opt.hmtOpt.TenantKey, context.Request),
@@ -65,12 +66,11 @@ func MultiTenancy(ts common.TenantStore, options ...Option) gin.HandlerFunc {
 			df = append(df, http.NewDomainTenantResolveContributor(opt.hmtOpt.DomainFormat, context.Request))
 		}
 		df = append(df, common.NewTenantNormalizerContributor(ts))
-		trOpt := common.NewTenantResolveOption(df...)
-		for _, resolveOption := range opt.resolve {
-			resolveOption(trOpt)
-		}
+		trOpt = append(trOpt, common.AppendContributors(df...))
+		trOpt = append(trOpt, opt.resolve...)
+
 		//get tenant config
-		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt), common.NewCachedTenantStore(ts))
+		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt...), ts)
 		tenantConfig, trCtx, err := tenantConfigProvider.Get(context)
 		if err != nil {
 			opt.ef(context, err)

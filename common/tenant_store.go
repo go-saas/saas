@@ -26,43 +26,11 @@ func NewMemoryTenantStore(t []TenantConfig) *MemoryTenantStore {
 	}
 }
 
-func (m MemoryTenantStore) GetByNameOrId(_ context.Context, nameOrId string) (*TenantConfig, error) {
+func (m *MemoryTenantStore) GetByNameOrId(_ context.Context, nameOrId string) (*TenantConfig, error) {
 	for _, config := range m.TenantConfig {
 		if config.ID == nameOrId || config.Name == nameOrId {
 			return &config, nil
 		}
 	}
 	return nil, ErrTenantNotFound
-}
-
-//AlwaysTrustedAsIdTenantStore get the nameOrId as trusted id. usually used behind gateway
-type AlwaysTrustedAsIdTenantStore struct {
-}
-
-var _ TenantStore = (*AlwaysTrustedAsIdTenantStore)(nil)
-
-func (t *AlwaysTrustedAsIdTenantStore) GetByNameOrId(ctx context.Context, nameOrId string) (*TenantConfig, error) {
-	return &TenantConfig{
-		ID: nameOrId,
-	}, nil
-}
-
-type CachedTenantStore struct {
-	up TenantStore
-}
-
-func NewCachedTenantStore(up TenantStore) *CachedTenantStore {
-	return &CachedTenantStore{
-		up: up,
-	}
-}
-
-var _ TenantStore = (*CachedTenantStore)(nil)
-
-func (c *CachedTenantStore) GetByNameOrId(ctx context.Context, nameOrId string) (*TenantConfig, error) {
-	cfg, ok := FromTenantConfigContext(ctx, nameOrId)
-	if ok {
-		return cfg, nil
-	}
-	return c.up.GetByNameOrId(ctx, nameOrId)
 }

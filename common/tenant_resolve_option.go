@@ -24,12 +24,11 @@ func NewTenantResolveOption(c ...TenantResolveContributor) *TenantResolveOption 
 	}
 }
 
-func (opt *TenantResolveOption) AppendContributors(c ...TenantResolveContributor) *TenantResolveOption {
+func (opt *TenantResolveOption) AppendContributors(c ...TenantResolveContributor) {
 	opt.Resolvers = append(opt.Resolvers, c...)
-	return opt
 }
 
-func (opt *TenantResolveOption) RemoveContributors(c ...TenantResolveContributor) *TenantResolveOption {
+func (opt *TenantResolveOption) RemoveContributors(c ...TenantResolveContributor) {
 	var r []TenantResolveContributor
 	for _, resolver := range opt.Resolvers {
 		if !contains(c, resolver) {
@@ -37,7 +36,6 @@ func (opt *TenantResolveOption) RemoveContributors(c ...TenantResolveContributor
 		}
 	}
 	opt.Resolvers = r
-	return opt
 }
 
 func contains(a []TenantResolveContributor, b TenantResolveContributor) bool {

@@ -11,7 +11,11 @@ type DefaultTenantResolver struct {
 	o *TenantResolveOption
 }
 
-func NewDefaultTenantResolver(o *TenantResolveOption) TenantResolver {
+func NewDefaultTenantResolver(opt ...ResolveOption) TenantResolver {
+	o := NewTenantResolveOption(&ContextContributor{})
+	for _, resolveOption := range opt {
+		resolveOption(o)
+	}
 	return &DefaultTenantResolver{
 		o: o,
 	}

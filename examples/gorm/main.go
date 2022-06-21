@@ -133,7 +133,7 @@ func main() {
 
 	dbProvider := sgorm.NewDbProvider(mr, clientProvider)
 
-	tenantStore = common.NewCachedTenantStore(&TenantStore{dbProvider: dbProvider})
+	tenantStore = &TenantStore{dbProvider: dbProvider}
 
 	r.Use(saas.MultiTenancy(tenantStore))
 

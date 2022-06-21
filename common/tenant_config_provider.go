@@ -2,6 +2,7 @@ package common
 
 import "context"
 
+// TenantConfigProvider resolve tenant config from current context
 type TenantConfigProvider interface {
 	// Get tenant config
 	Get(ctx context.Context) (TenantConfig, context.Context, error)
@@ -26,6 +27,11 @@ func (d *DefaultTenantConfigProvider) Get(ctx context.Context) (TenantConfig, co
 	}
 	if rr.TenantIdOrName != "" {
 		//tenant side
+
+		//read from cache
+		if cfg, ok := FromTenantConfigContext(ctx, rr.TenantIdOrName); ok {
+			return *cfg, ctx, nil
+		}
 		//get config from tenant store
 		cfg, err := d.ts.GetByNameOrId(ctx, rr.TenantIdOrName)
 		if err != nil {
@@ -34,6 +40,7 @@ func (d *DefaultTenantConfigProvider) Get(ctx context.Context) (TenantConfig, co
 		return *cfg, ctx, nil
 		//check error
 	}
+	// host side
 	return TenantConfig{}, ctx, nil
 
 }

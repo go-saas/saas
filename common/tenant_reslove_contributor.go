@@ -30,8 +30,28 @@ func (t *TenantNormalizerContributor) Resolve(trCtx *TenantResolveContext) error
 			return err
 		}
 		trCtx.TenantIdOrName = tenant.ID
-		//store
+		//store for cache
 		trCtx.WithContext(NewTenantConfigContext(trCtx.Context(), tenant.ID, tenant))
+	}
+	return nil
+}
+
+// ContextContributor resolve from current context
+type ContextContributor struct {
+}
+
+var _ TenantResolveContributor = (*ContextContributor)(nil)
+
+func (c *ContextContributor) Name() string {
+	return "ContextContributor"
+}
+
+func (c *ContextContributor) Resolve(trCtx *TenantResolveContext) error {
+	info, ok := FromCurrentTenant(trCtx.Context())
+	if ok {
+		trCtx.TenantIdOrName = info.GetId()
+		//terminate
+		trCtx.HasHandled = true
 	}
 	return nil
 }

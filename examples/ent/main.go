@@ -63,7 +63,7 @@ func main() {
 	sharedDbProvider := common.NewDbProvider[*ent.Client](mr, sharedClientProvider)
 	tenantDbProvider := common.NewDbProvider[*ent2.Client](mr, tenantClientProvider)
 
-	tenantStore = common.NewCachedTenantStore(&TenantStore{shared: sharedDbProvider})
+	tenantStore = &TenantStore{shared: sharedDbProvider}
 
 	r.Use(saas.MultiTenancy(tenantStore))
 

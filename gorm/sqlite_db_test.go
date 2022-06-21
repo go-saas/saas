@@ -23,11 +23,8 @@ var (
 
 func TestMain(m *testing.M) {
 
-	dbOpener, c := common.NewCachedDbOpener(common.DbOpenerFunc(func(s string) (*sql.DB, error) {
-		return sql.Open("sqlite3", s)
-	}))
 	clientProvider := ClientProviderFunc(func(ctx context.Context, s string) (*g.DB, error) {
-		db, err := dbOpener.Open(s)
+		db, err := sql.Open("sqlite3", s)
 		if err != nil {
 			return nil, err
 		}
@@ -53,7 +50,7 @@ func TestMain(m *testing.M) {
 	}
 
 	exitCode := m.Run()
-	c()
+	NewDbWrap(TestDb).Close()
 	// 退出
 	os.Exit(exitCode)
 

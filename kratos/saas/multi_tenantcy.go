@@ -60,7 +60,7 @@ func Server(ts common.TenantStore, options ...Option) middleware.Middleware {
 	}
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
-			trOpt := common.NewTenantResolveOption()
+			var trOpt []common.ResolveOption
 			if tr, ok := transport.FromServerContext(ctx); ok {
 				if ht, ok := tr.(*http.Transport); ok {
 					r := ht.Request()
@@ -74,16 +74,14 @@ func Server(ts common.TenantStore, options ...Option) middleware.Middleware {
 						df = append(df, shttp.NewDomainTenantResolveContributor(opt.hmtOpt.DomainFormat, r))
 					}
 					df = append(df, common.NewTenantNormalizerContributor(ts))
-					trOpt.AppendContributors(df...)
+					trOpt = append(trOpt, common.AppendContributors(df...))
 				} else {
-					trOpt.AppendContributors(NewHeaderTenantResolveContributor(opt.hmtOpt.TenantKey, tr))
+					trOpt = append(trOpt, common.AppendContributors(NewHeaderTenantResolveContributor(opt.hmtOpt.TenantKey, tr)))
 				}
-				for _, resolveOption := range opt.resolve {
-					resolveOption(trOpt)
-				}
+				trOpt = append(trOpt, opt.resolve...)
 
 				//get tenant config
-				tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt), common.NewCachedTenantStore(ts))
+				tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt...), ts)
 				tenantConfig, trCtx, err := tenantConfigProvider.Get(ctx)
 				if err != nil {
 					return opt.ef(err)

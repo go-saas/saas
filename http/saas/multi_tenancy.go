@@ -57,6 +57,7 @@ func Middleware(ts common.TenantStore, options ...Option) func(next http.Handler
 	}
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			var trOpt []common.ResolveOption
 			df := []common.TenantResolveContributor{
 				shttp.NewCookieTenantResolveContributor(opt.hmtOpt.TenantKey, r),
 				shttp.NewFormTenantResolveContributor(opt.hmtOpt.TenantKey, r),
@@ -68,12 +69,11 @@ func Middleware(ts common.TenantStore, options ...Option) func(next http.Handler
 				df = append(df, shttp.NewDomainTenantResolveContributor(opt.hmtOpt.DomainFormat, r))
 			}
 			df = append(df, common.NewTenantNormalizerContributor(ts))
-			trOpt := common.NewTenantResolveOption(df...)
-			for _, resolveOption := range opt.resolve {
-				resolveOption(trOpt)
-			}
+			trOpt = append(trOpt, common.AppendContributors(df...))
+			trOpt = append(trOpt, opt.resolve...)
+		
 			//get tenant config
-			tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt), common.NewCachedTenantStore(ts))
+			tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt...), ts)
 			tenantConfig, trCtx, err := tenantConfigProvider.Get(r.Context())
 			if err != nil {
 				opt.ef(w, err)
