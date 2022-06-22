@@ -2,9 +2,11 @@
 
 [English](./README.md) | [中文文档](./README_zh_Hans.md)
 
-headless go framework for saas(multi-tenancy). `go-saas` targets to provide saas solution for go
-this project suits for simple (web) project, which is also called monolithic. 
-if you are finding microservice solution, please refer to [go-saas-kit](https://github.com/Goxiaoy/go-saas-kit)
+headless go framework for saas(multi-tenancy).   
+`go-saas` targets to provide saas solution for go
+this project suits for simple (web) project, which is also called monolithic.  
+
+if you are finding complete solution which is microservice compatible, please refer to [go-saas-kit](https://github.com/Goxiaoy/go-saas-kit)
 
 # Overview
 
@@ -28,7 +30,7 @@ if you are finding microservice solution, please refer to [go-saas-kit](https://
     * [x] [gin](https://github.com/gin-gonic/gin)
     * [x] net/http
     * [x] [kratos](https://github.com/go-kratos/kratos)
-* Supported orm, which means all underlying database
+* Supported orm with data filter, which means all underlying database
     * [x] [gorm](https://github.com/go-gorm/gorm)
     * [x] [ent](https://entgo.io/)
 * Customizable tenant resolver
@@ -37,6 +39,8 @@ if you are finding microservice solution, please refer to [go-saas-kit](https://
     * [x] Header
     * [x] Cookie
     * [x] Domain format
+* Seed and Migration
+  * [x] Seed/Migrate tenant database after creation or upgrade to new version
 * Integration with gateway
   * [x] [apisix](https://github.com/apache/apisix)
 
@@ -56,10 +60,10 @@ graph TD
     D --> F(Tenant 2) --> J
     D --> G(Tenant 3) --> I(Tenant 3 Database)
 ```
- 
+
     
 # Sample Project
-* [example-gorm](https://github.com/Goxiaoy/go-saas/tree/main/examples/gorm) combination of `go-saas`,`gin`,`gorm(sqlite)`
+* [example-gorm](https://github.com/Goxiaoy/go-saas/tree/main/examples/gorm) combination of `go-saas`,`gin`,`gorm(sqlite/mysql)`
 * [example-ent](https://github.com/Goxiaoy/go-saas/tree/main/examples/ent) combination of `go-saas`,`gin`,`ent(sqlite)`
 * [go-saas-kit](https://github.com/Goxiaoy/go-saas-kit) Microservice architecture starter kit for golang sass project
 

@@ -3,7 +3,7 @@
 [English](./README.md) | [中文文档](./README_zh_Hans.md)
 
 无头(无UI)的go语言的多租户框架。
-本项目适合于简单的/单体(Web)项目，微服务版本可以看看[go-saas-kit](https://github.com/Goxiaoy/go-saas-kit)
+本项目适合于简单的/单体(Web)项目，完整版本（支持微服务）可以看看[go-saas-kit](https://github.com/Goxiaoy/go-saas-kit)
 
 # 概览
 ## 功能
@@ -25,7 +25,7 @@
   * [x] [gin](https://github.com/gin-gonic/gin)
   * [x] net/http
   * [x] [kratos](https://github.com/go-kratos/kratos)
-* 支持Orm, 包括Orm所支持的数据库
+* 共享数据库下，支持自动数据隔离的Orm, 包括Orm所支持的数据库
   * [x] [gorm](https://github.com/go-gorm/gorm)
 * 自定义租户解析
   * [x] Query String
@@ -33,6 +33,8 @@
   * [x] Header
   * [x] Cookie
   * [x] Domain format
+* 初始化和数据库迁移
+  * [x] 租户创建后初始化/迁移 数据库，或者以后升级到新的版本
 * 和网关集成
   * [x] [apisix](https://github.com/apache/apisix)
 
@@ -55,7 +57,7 @@ graph TD
 
 
 # 示例
-* [example](https://github.com/Goxiaoy/go-saas/tree/main/examples) 使用 `go-saas`,`gin`,`gorm(sqlite)`
+* [example](https://github.com/Goxiaoy/go-saas/tree/main/examples) 使用 `go-saas`,`gin`,`gorm(sqlite/mysql)`
 * [go-saas-kit](https://github.com/Goxiaoy/go-saas-kit) golang多租户微服务解决方案
 
 # 文档
