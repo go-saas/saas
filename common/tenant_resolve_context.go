@@ -23,7 +23,6 @@ func (t *TenantResolveContext) Context() context.Context {
 	return t.context
 }
 
-func (t *TenantResolveContext) WithContext(ctx context.Context) *TenantResolveContext {
+func (t *TenantResolveContext) WithContext(ctx context.Context) {
 	t.context = ctx
-	return t
 }
