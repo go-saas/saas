@@ -3,6 +3,7 @@ package saas
 import (
 	"container/list"
 	"fmt"
+	"io"
 	"sync"
 )
 
@@ -180,16 +181,12 @@ func (c *Cache[K, V]) deleteOldest() {
 	c.delete(e)
 }
 
-type closable interface {
-	Close() error
-}
-
 func (c *Cache[K, V]) delete(e *list.Element) error {
 	c.list.Remove(e)
 	entry := e.Value.(*entry[K, V])
 	delete(c.items, entry.key)
 
-	if f, ok := any(entry.val).(closable); ok {
+	if f, ok := any(entry.val).(io.Closer); ok {
 		return f.Close()
 	}
 	return nil

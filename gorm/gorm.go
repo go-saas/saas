@@ -29,7 +29,7 @@ type DbWrap struct {
 	*gorm.DB
 }
 
-// NewDbWrap wrap gorm.DB into closable
+// NewDbWrap wrap gorm.DB into io.Close
 func NewDbWrap(db *gorm.DB) *DbWrap {
 	return &DbWrap{db}
 }
