@@ -56,14 +56,14 @@ func main() {
 
 	var tenantStore common.TenantStore
 
-	mr := common.NewMultiTenancyConnStrResolver(func() common.TenantStore {
-		return tenantStore
-	}, conn)
-
-	sharedDbProvider := common.NewDbProvider[*ent.Client](mr, sharedClientProvider)
-	tenantDbProvider := common.NewDbProvider[*ent2.Client](mr, tenantClientProvider)
+	//host (shared) database use connection string from config
+	sharedDbProvider := common.NewDbProvider[*ent.Client](conn, sharedClientProvider)
 
 	tenantStore = &TenantStore{shared: sharedDbProvider}
+	
+	mr := common.NewMultiTenancyConnStrResolver(tenantStore, conn)
+	// tenant database use connection string from tenantStore
+	tenantDbProvider := common.NewDbProvider[*ent2.Client](mr, tenantClientProvider)
 
 	r.Use(saas.MultiTenancy(tenantStore))
 

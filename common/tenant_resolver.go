@@ -12,7 +12,7 @@ type DefaultTenantResolver struct {
 }
 
 func NewDefaultTenantResolver(opt ...ResolveOption) TenantResolver {
-	o := NewTenantResolveOption(&ContextContributor{})
+	o := NewTenantResolveOption(&ContextContrib{})
 	for _, resolveOption := range opt {
 		resolveOption(o)
 	}

@@ -5,23 +5,23 @@ import (
 	"net/http"
 )
 
-type FormTenantResolveContributor struct {
+type FormTenantResolveContrib struct {
 	key     string
 	request *http.Request
 }
 
-func NewFormTenantResolveContributor(key string, r *http.Request) *FormTenantResolveContributor {
-	return &FormTenantResolveContributor{
+func NewFormTenantResolveContrib(key string, r *http.Request) *FormTenantResolveContrib {
+	return &FormTenantResolveContrib{
 		key:     key,
 		request: r,
 	}
 }
 
-func (h *FormTenantResolveContributor) Name() string {
+func (h *FormTenantResolveContrib) Name() string {
 	return "Form"
 }
 
-func (h *FormTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) error {
+func (h *FormTenantResolveContrib) Resolve(trCtx *common.TenantResolveContext) error {
 	v := h.request.FormValue(h.key)
 	if v == "" {
 		return nil

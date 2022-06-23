@@ -57,16 +57,16 @@ func MultiTenancy(ts common.TenantStore, options ...Option) gin.HandlerFunc {
 	}
 	return func(context *gin.Context) {
 		var trOpt []common.ResolveOption
-		df := []common.TenantResolveContributor{
-			http.NewCookieTenantResolveContributor(opt.hmtOpt.TenantKey, context.Request),
-			http.NewFormTenantResolveContributor(opt.hmtOpt.TenantKey, context.Request),
-			http.NewHeaderTenantResolveContributor(opt.hmtOpt.TenantKey, context.Request),
-			http.NewQueryTenantResolveContributor(opt.hmtOpt.TenantKey, context.Request)}
+		df := []common.TenantResolveContrib{
+			http.NewCookieTenantResolveContrib(opt.hmtOpt.TenantKey, context.Request),
+			http.NewFormTenantResolveContrib(opt.hmtOpt.TenantKey, context.Request),
+			http.NewHeaderTenantResolveContrib(opt.hmtOpt.TenantKey, context.Request),
+			http.NewQueryTenantResolveContrib(opt.hmtOpt.TenantKey, context.Request)}
 		if opt.hmtOpt.DomainFormat != "" {
-			df = append(df, http.NewDomainTenantResolveContributor(opt.hmtOpt.DomainFormat, context.Request))
+			df = append(df, http.NewDomainTenantResolveContrib(opt.hmtOpt.DomainFormat, context.Request))
 		}
-		df = append(df, common.NewTenantNormalizerContributor(ts))
-		trOpt = append(trOpt, common.AppendContributors(df...))
+		df = append(df, common.NewTenantNormalizerContrib(ts))
+		trOpt = append(trOpt, common.AppendContribs(df...))
 		trOpt = append(trOpt, opt.resolve...)
 
 		//get tenant config

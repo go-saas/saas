@@ -86,12 +86,6 @@ func main() {
 	//default database
 	conn.SetDefault(sharedDsn)
 
-	var tenantStore common.TenantStore
-
-	mr := common.NewMultiTenancyConnStrResolver(func() common.TenantStore {
-		return tenantStore
-	}, conn)
-
 	clientProvider := sgorm.ClientProviderFunc(func(ctx context.Context, s string) (*gorm.DB, error) {
 		client, _, err := cache.GetOrSet(s, func() (*sgorm.DbWrap, error) {
 			if ensureDbExist != nil {
@@ -130,10 +124,13 @@ func main() {
 		return client.WithContext(ctx).Debug(), err
 
 	})
+	//tenantStore use connection string from conn
+	tenantStore := &TenantStore{dbProvider: sgorm.NewDbProvider(conn, clientProvider)}
 
+	mr := common.NewMultiTenancyConnStrResolver(tenantStore, conn)
+
+	//tenant dbProvider use connection string from tenant store
 	dbProvider := sgorm.NewDbProvider(mr, clientProvider)
-
-	tenantStore = &TenantStore{dbProvider: dbProvider}
 
 	r.Use(saas.MultiTenancy(tenantStore))
 

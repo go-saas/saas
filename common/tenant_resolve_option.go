@@ -1,35 +1,35 @@
 package common
 
 type TenantResolveOption struct {
-	Resolvers []TenantResolveContributor
+	Resolvers []TenantResolveContrib
 }
 
 type ResolveOption func(resolveOption *TenantResolveOption)
 
-func AppendContributors(c ...TenantResolveContributor) ResolveOption {
+func AppendContribs(c ...TenantResolveContrib) ResolveOption {
 	return func(resolveOption *TenantResolveOption) {
-		resolveOption.AppendContributors(c...)
+		resolveOption.AppendContribs(c...)
 	}
 }
 
-func RemoveContributors(c ...TenantResolveContributor) ResolveOption {
+func RemoveContribs(c ...TenantResolveContrib) ResolveOption {
 	return func(resolveOption *TenantResolveOption) {
-		resolveOption.RemoveContributors(c...)
+		resolveOption.RemoveContribs(c...)
 	}
 }
 
-func NewTenantResolveOption(c ...TenantResolveContributor) *TenantResolveOption {
+func NewTenantResolveOption(c ...TenantResolveContrib) *TenantResolveOption {
 	return &TenantResolveOption{
 		Resolvers: c,
 	}
 }
 
-func (opt *TenantResolveOption) AppendContributors(c ...TenantResolveContributor) {
+func (opt *TenantResolveOption) AppendContribs(c ...TenantResolveContrib) {
 	opt.Resolvers = append(opt.Resolvers, c...)
 }
 
-func (opt *TenantResolveOption) RemoveContributors(c ...TenantResolveContributor) {
-	var r []TenantResolveContributor
+func (opt *TenantResolveOption) RemoveContribs(c ...TenantResolveContrib) {
+	var r []TenantResolveContrib
 	for _, resolver := range opt.Resolvers {
 		if !contains(c, resolver) {
 			r = append(r, resolver)
@@ -38,7 +38,7 @@ func (opt *TenantResolveOption) RemoveContributors(c ...TenantResolveContributor
 	opt.Resolvers = r
 }
 
-func contains(a []TenantResolveContributor, b TenantResolveContributor) bool {
+func contains(a []TenantResolveContrib, b TenantResolveContrib) bool {
 	for i := 0; i < len(a); i++ {
 		if a[i] == b {
 			return true

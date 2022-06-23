@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/goxiaoy/go-saas/common"
-	gorm2 "github.com/goxiaoy/go-saas/gorm"
+	sgorm "github.com/goxiaoy/go-saas/gorm"
 	"gorm.io/gorm"
 	"time"
 )
@@ -38,7 +38,7 @@ type TenantConn struct {
 }
 
 type TenantStore struct {
-	dbProvider gorm2.DbProvider
+	dbProvider sgorm.DbProvider
 }
 
 func (t *TenantStore) GetByNameOrId(ctx context.Context, nameOrId string) (*common.TenantConfig, error) {

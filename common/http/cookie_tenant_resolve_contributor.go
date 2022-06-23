@@ -5,23 +5,23 @@ import (
 	"net/http"
 )
 
-type CookieTenantResolveContributor struct {
+type CookieTenantResolveContrib struct {
 	key     string
 	request *http.Request
 }
 
-func NewCookieTenantResolveContributor(key string, r *http.Request) *CookieTenantResolveContributor {
-	return &CookieTenantResolveContributor{
+func NewCookieTenantResolveContrib(key string, r *http.Request) *CookieTenantResolveContrib {
+	return &CookieTenantResolveContrib{
 		key:     key,
 		request: r,
 	}
 }
 
-func (h *CookieTenantResolveContributor) Name() string {
+func (h *CookieTenantResolveContrib) Name() string {
 	return "Cookie"
 }
 
-func (h *CookieTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) error {
+func (h *CookieTenantResolveContrib) Resolve(trCtx *common.TenantResolveContext) error {
 	v, err := h.request.Cookie(h.key)
 	if err != nil {
 		//no cookie

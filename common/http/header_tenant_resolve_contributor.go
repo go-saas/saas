@@ -5,23 +5,23 @@ import (
 	"net/http"
 )
 
-type HeaderTenantResolveContributor struct {
+type HeaderTenantResolveContrib struct {
 	key     string
 	request *http.Request
 }
 
-func NewHeaderTenantResolveContributor(key string, r *http.Request) *HeaderTenantResolveContributor {
-	return &HeaderTenantResolveContributor{
+func NewHeaderTenantResolveContrib(key string, r *http.Request) *HeaderTenantResolveContrib {
+	return &HeaderTenantResolveContrib{
 		key:     key,
 		request: r,
 	}
 }
 
-func (h *HeaderTenantResolveContributor) Name() string {
+func (h *HeaderTenantResolveContrib) Name() string {
 	return "Header"
 }
 
-func (h *HeaderTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) error {
+func (h *HeaderTenantResolveContrib) Resolve(trCtx *common.TenantResolveContext) error {
 	v := h.request.Header.Get(h.key)
 	if v == "" {
 		return nil

@@ -6,23 +6,23 @@ import (
 	"regexp"
 )
 
-type DomainTenantResolveContributor struct {
+type DomainTenantResolveContrib struct {
 	request *http.Request
 	format  string
 }
 
-func NewDomainTenantResolveContributor(f string, r *http.Request) *DomainTenantResolveContributor {
-	return &DomainTenantResolveContributor{
+func NewDomainTenantResolveContrib(f string, r *http.Request) *DomainTenantResolveContrib {
+	return &DomainTenantResolveContrib{
 		request: r,
 		format:  f,
 	}
 }
 
-func (h *DomainTenantResolveContributor) Name() string {
+func (h *DomainTenantResolveContrib) Name() string {
 	return "Domain"
 }
 
-func (h *DomainTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) error {
+func (h *DomainTenantResolveContrib) Resolve(trCtx *common.TenantResolveContext) error {
 	host := h.request.Host
 	r := regexp.MustCompile(h.format)
 	f := r.FindAllStringSubmatch(host, -1)

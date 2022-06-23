@@ -68,8 +68,6 @@ func GetConnStrResolver() *common.MultiTenancyConnStrResolver {
 		})
 	conn := make(data.ConnStrings, 1)
 	conn.SetDefault("file::memory:?cache=shared")
-	mr := common.NewMultiTenancyConnStrResolver(func() common.TenantStore {
-		return ts
-	}, conn)
+	mr := common.NewMultiTenancyConnStrResolver(ts, conn)
 	return mr
 }

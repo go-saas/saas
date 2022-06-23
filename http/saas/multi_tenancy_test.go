@@ -112,7 +112,7 @@ func TestTerminate(t *testing.T) {
 				http.Error(w, "Forbidden", 403)
 			}
 		}),
-		WithResolveOption(common.AppendContributors(&TerminateContributor{}))))
+		WithResolveOption(common.AppendContribs(&TerminateContrib{}))))
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 	})
@@ -129,13 +129,13 @@ var (
 	ErrForbidden = errors.New("forbidden")
 )
 
-type TerminateContributor struct {
+type TerminateContrib struct {
 }
 
-func (t *TerminateContributor) Name() string {
+func (t *TerminateContrib) Name() string {
 	return "Terminate"
 }
 
-func (t TerminateContributor) Resolve(_ *common.TenantResolveContext) error {
+func (t TerminateContrib) Resolve(_ *common.TenantResolveContext) error {
 	return ErrForbidden
 }

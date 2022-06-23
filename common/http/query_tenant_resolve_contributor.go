@@ -5,23 +5,23 @@ import (
 	"net/http"
 )
 
-type QueryTenantResolveContributor struct {
+type QueryTenantResolveContrib struct {
 	key     string
 	request *http.Request
 }
 
-func NewQueryTenantResolveContributor(key string, r *http.Request) *QueryTenantResolveContributor {
-	return &QueryTenantResolveContributor{
+func NewQueryTenantResolveContrib(key string, r *http.Request) *QueryTenantResolveContrib {
+	return &QueryTenantResolveContrib{
 		key:     key,
 		request: r,
 	}
 }
 
-func (h *QueryTenantResolveContributor) Name() string {
+func (h *QueryTenantResolveContrib) Name() string {
 	return "Query"
 }
 
-func (h *QueryTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) error {
+func (h *QueryTenantResolveContrib) Resolve(trCtx *common.TenantResolveContext) error {
 	v := h.request.URL.Query().Get(h.key)
 	if v == "" {
 		return nil

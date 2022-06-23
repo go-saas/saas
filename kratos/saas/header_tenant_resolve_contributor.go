@@ -5,22 +5,22 @@ import (
 	"github.com/goxiaoy/go-saas/common"
 )
 
-type HeaderTenantResolveContributor struct {
+type HeaderTenantResolveContrib struct {
 	key         string
 	transporter transport.Transporter
 }
 
-func NewHeaderTenantResolveContributor(key string, transporter transport.Transporter) *HeaderTenantResolveContributor {
-	return &HeaderTenantResolveContributor{
+func NewHeaderTenantResolveContrib(key string, transporter transport.Transporter) *HeaderTenantResolveContrib {
+	return &HeaderTenantResolveContrib{
 		key:         key,
 		transporter: transporter,
 	}
 }
-func (h *HeaderTenantResolveContributor) Name() string {
+func (h *HeaderTenantResolveContrib) Name() string {
 	return "KratosHeader"
 }
 
-func (h *HeaderTenantResolveContributor) Resolve(trCtx *common.TenantResolveContext) error {
+func (h *HeaderTenantResolveContrib) Resolve(trCtx *common.TenantResolveContext) error {
 	v := h.transporter.RequestHeader().Get(h.key)
 	if v == "" {
 		return nil

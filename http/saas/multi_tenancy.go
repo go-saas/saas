@@ -58,20 +58,20 @@ func Middleware(ts common.TenantStore, options ...Option) func(next http.Handler
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			var trOpt []common.ResolveOption
-			df := []common.TenantResolveContributor{
-				shttp.NewCookieTenantResolveContributor(opt.hmtOpt.TenantKey, r),
-				shttp.NewFormTenantResolveContributor(opt.hmtOpt.TenantKey, r),
-				shttp.NewHeaderTenantResolveContributor(opt.hmtOpt.TenantKey, r),
-				shttp.NewQueryTenantResolveContributor(opt.hmtOpt.TenantKey, r),
+			df := []common.TenantResolveContrib{
+				shttp.NewCookieTenantResolveContrib(opt.hmtOpt.TenantKey, r),
+				shttp.NewFormTenantResolveContrib(opt.hmtOpt.TenantKey, r),
+				shttp.NewHeaderTenantResolveContrib(opt.hmtOpt.TenantKey, r),
+				shttp.NewQueryTenantResolveContrib(opt.hmtOpt.TenantKey, r),
 			}
 
 			if opt.hmtOpt.DomainFormat != "" {
-				df = append(df, shttp.NewDomainTenantResolveContributor(opt.hmtOpt.DomainFormat, r))
+				df = append(df, shttp.NewDomainTenantResolveContrib(opt.hmtOpt.DomainFormat, r))
 			}
-			df = append(df, common.NewTenantNormalizerContributor(ts))
-			trOpt = append(trOpt, common.AppendContributors(df...))
+			df = append(df, common.NewTenantNormalizerContrib(ts))
+			trOpt = append(trOpt, common.AppendContribs(df...))
 			trOpt = append(trOpt, opt.resolve...)
-		
+
 			//get tenant config
 			tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt...), ts)
 			tenantConfig, trCtx, err := tenantConfigProvider.Get(r.Context())

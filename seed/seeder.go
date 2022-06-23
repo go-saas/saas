@@ -12,10 +12,10 @@ type Seeder interface {
 var _ Seeder = (*DefaultSeeder)(nil)
 
 type DefaultSeeder struct {
-	contrib []Contributor
+	contrib []Contrib
 }
 
-func NewDefaultSeeder(contrib ...Contributor) *DefaultSeeder {
+func NewDefaultSeeder(contrib ...Contrib) *DefaultSeeder {
 	return &DefaultSeeder{
 		contrib: contrib,
 	}
