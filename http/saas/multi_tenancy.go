@@ -74,13 +74,13 @@ func Middleware(ts common.TenantStore, options ...Option) func(next http.Handler
 
 			//get tenant config
 			tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt...), ts)
-			tenantConfig, trCtx, err := tenantConfigProvider.Get(r.Context())
+			tenantConfig, ctx, err := tenantConfigProvider.Get(r.Context())
 			if err != nil {
 				opt.ef(w, err)
 				return
 			}
 			//set current tenant
-			newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
+			newContext := common.NewCurrentTenant(ctx, tenantConfig.ID, tenantConfig.Name)
 			//data filter
 			newContext = data.NewMultiTenancyDataFilter(newContext)
 			next.ServeHTTP(w, r.WithContext(newContext))

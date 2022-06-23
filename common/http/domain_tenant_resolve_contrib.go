@@ -22,7 +22,7 @@ func (h *DomainTenantResolveContrib) Name() string {
 	return "Domain"
 }
 
-func (h *DomainTenantResolveContrib) Resolve(trCtx *common.TenantResolveContext) error {
+func (h *DomainTenantResolveContrib) Resolve(ctx *common.Context) error {
 	host := h.request.Host
 	r := regexp.MustCompile(h.format)
 	f := r.FindAllStringSubmatch(host, -1)
@@ -30,6 +30,6 @@ func (h *DomainTenantResolveContrib) Resolve(trCtx *common.TenantResolveContext)
 		//no match
 		return nil
 	}
-	trCtx.TenantIdOrName = f[0][1]
+	ctx.TenantIdOrName = f[0][1]
 	return nil
 }

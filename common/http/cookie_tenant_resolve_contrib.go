@@ -21,7 +21,7 @@ func (h *CookieTenantResolveContrib) Name() string {
 	return "Cookie"
 }
 
-func (h *CookieTenantResolveContrib) Resolve(trCtx *common.TenantResolveContext) error {
+func (h *CookieTenantResolveContrib) Resolve(ctx *common.Context) error {
 	v, err := h.request.Cookie(h.key)
 	if err != nil {
 		//no cookie
@@ -30,6 +30,6 @@ func (h *CookieTenantResolveContrib) Resolve(trCtx *common.TenantResolveContext)
 	if v.Value == "" {
 		return nil
 	}
-	trCtx.TenantIdOrName = v.Value
+	ctx.TenantIdOrName = v.Value
 	return nil
 }

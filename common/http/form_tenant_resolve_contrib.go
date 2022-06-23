@@ -21,11 +21,11 @@ func (h *FormTenantResolveContrib) Name() string {
 	return "Form"
 }
 
-func (h *FormTenantResolveContrib) Resolve(trCtx *common.TenantResolveContext) error {
+func (h *FormTenantResolveContrib) Resolve(ctx *common.Context) error {
 	v := h.request.FormValue(h.key)
 	if v == "" {
 		return nil
 	}
-	trCtx.TenantIdOrName = v
+	ctx.TenantIdOrName = v
 	return nil
 }

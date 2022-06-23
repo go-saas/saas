@@ -136,6 +136,6 @@ func (t *TerminateContrib) Name() string {
 	return "Terminate"
 }
 
-func (t TerminateContrib) Resolve(_ *common.TenantResolveContext) error {
+func (t TerminateContrib) Resolve(_ *common.Context) error {
 	return ErrForbidden
 }

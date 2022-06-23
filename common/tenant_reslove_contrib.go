@@ -4,7 +4,7 @@ type TenantResolveContrib interface {
 	// Name of resolver
 	Name() string
 	// Resolve tenant
-	Resolve(trCtx *TenantResolveContext) error
+	Resolve(ctx *Context) error
 }
 
 //TenantNormalizerContrib normalize tenant id or name into tenant id
@@ -23,15 +23,15 @@ func (t *TenantNormalizerContrib) Name() string {
 	return "TenantNormalizer"
 }
 
-func (t *TenantNormalizerContrib) Resolve(trCtx *TenantResolveContext) error {
-	if len(trCtx.TenantIdOrName) > 0 {
-		tenant, err := t.ts.GetByNameOrId(trCtx.Context(), trCtx.TenantIdOrName)
+func (t *TenantNormalizerContrib) Resolve(ctx *Context) error {
+	if len(ctx.TenantIdOrName) > 0 {
+		tenant, err := t.ts.GetByNameOrId(ctx.Context(), ctx.TenantIdOrName)
 		if err != nil {
 			return err
 		}
-		trCtx.TenantIdOrName = tenant.ID
+		ctx.TenantIdOrName = tenant.ID
 		//store for cache
-		trCtx.WithContext(NewTenantConfigContext(trCtx.Context(), tenant.ID, tenant))
+		ctx.WithContext(NewTenantConfigContext(ctx.Context(), tenant.ID, tenant))
 	}
 	return nil
 }
@@ -46,12 +46,12 @@ func (c *ContextContrib) Name() string {
 	return "ContextContrib"
 }
 
-func (c *ContextContrib) Resolve(trCtx *TenantResolveContext) error {
-	info, ok := FromCurrentTenant(trCtx.Context())
+func (c *ContextContrib) Resolve(ctx *Context) error {
+	info, ok := FromCurrentTenant(ctx.Context())
 	if ok {
-		trCtx.TenantIdOrName = info.GetId()
+		ctx.TenantIdOrName = info.GetId()
 		//terminate
-		trCtx.HasHandled = true
+		ctx.HasHandled = true
 	}
 	return nil
 }

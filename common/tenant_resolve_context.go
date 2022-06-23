@@ -2,27 +2,27 @@ package common
 
 import "context"
 
-type TenantResolveContext struct {
+type Context struct {
 	context        context.Context
 	TenantIdOrName string
 	// HasHandled field to handle host side unresolved or resolved
 	HasHandled bool
 }
 
-func NewTenantResolveContext(ctx context.Context) *TenantResolveContext {
-	return &TenantResolveContext{
+func NewTenantResolveContext(ctx context.Context) *Context {
+	return &Context{
 		context: ctx,
 	}
 }
 
-func (t *TenantResolveContext) HasResolved() bool {
+func (t *Context) HasResolved() bool {
 	return t.HasHandled
 }
 
-func (t *TenantResolveContext) Context() context.Context {
+func (t *Context) Context() context.Context {
 	return t.context
 }
 
-func (t *TenantResolveContext) WithContext(ctx context.Context) {
+func (t *Context) WithContext(ctx context.Context) {
 	t.context = ctx
 }

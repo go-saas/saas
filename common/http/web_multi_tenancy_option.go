@@ -1,13 +1,13 @@
 package http
 
-const defaultKey = "__tenant"
+const DefaultKey = "__tenant"
 
 func KeyOrDefault(key string) string {
 	if len(key) > 0 {
 		return key
 
 	}
-	return defaultKey
+	return DefaultKey
 }
 
 type WebMultiTenancyOption struct {

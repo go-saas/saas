@@ -20,11 +20,11 @@ func (h *HeaderTenantResolveContrib) Name() string {
 	return "KratosHeader"
 }
 
-func (h *HeaderTenantResolveContrib) Resolve(trCtx *common.TenantResolveContext) error {
+func (h *HeaderTenantResolveContrib) Resolve(ctx *common.Context) error {
 	v := h.transporter.RequestHeader().Get(h.key)
 	if v == "" {
 		return nil
 	}
-	trCtx.TenantIdOrName = v
+	ctx.TenantIdOrName = v
 	return nil
 }

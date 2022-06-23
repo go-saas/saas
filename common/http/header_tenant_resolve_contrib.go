@@ -21,11 +21,11 @@ func (h *HeaderTenantResolveContrib) Name() string {
 	return "Header"
 }
 
-func (h *HeaderTenantResolveContrib) Resolve(trCtx *common.TenantResolveContext) error {
+func (h *HeaderTenantResolveContrib) Resolve(ctx *common.Context) error {
 	v := h.request.Header.Get(h.key)
 	if v == "" {
 		return nil
 	}
-	trCtx.TenantIdOrName = v
+	ctx.TenantIdOrName = v
 	return nil
 }

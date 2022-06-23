@@ -71,13 +71,13 @@ func MultiTenancy(ts common.TenantStore, options ...Option) gin.HandlerFunc {
 
 		//get tenant config
 		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt...), ts)
-		tenantConfig, trCtx, err := tenantConfigProvider.Get(context)
+		tenantConfig, ctx, err := tenantConfigProvider.Get(context)
 		if err != nil {
 			opt.ef(context, err)
 			return
 		}
 		//set current tenant
-		newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
+		newContext := common.NewCurrentTenant(ctx, tenantConfig.ID, tenantConfig.Name)
 		//data filter
 		newContext = data.NewMultiTenancyDataFilter(newContext)
 

@@ -82,11 +82,11 @@ func Server(ts common.TenantStore, options ...Option) middleware.Middleware {
 
 				//get tenant config
 				tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt...), ts)
-				tenantConfig, trCtx, err := tenantConfigProvider.Get(ctx)
+				tenantConfig, ctx, err := tenantConfigProvider.Get(ctx)
 				if err != nil {
 					return opt.ef(err)
 				}
-				newContext := common.NewCurrentTenant(trCtx, tenantConfig.ID, tenantConfig.Name)
+				newContext := common.NewCurrentTenant(ctx, tenantConfig.ID, tenantConfig.Name)
 				//data filter
 				dataFilterCtx := data.NewMultiTenancyDataFilter(newContext)
 				return handler(dataFilterCtx, req)

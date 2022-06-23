@@ -20,6 +20,7 @@ func NewDefaultTenantConfigProvider(tr TenantResolver, ts TenantStore) TenantCon
 	}
 }
 
+// Get read from context FromTenantConfigContext first, fallback with TenantStore and return new context with cached value
 func (d *DefaultTenantConfigProvider) Get(ctx context.Context) (TenantConfig, context.Context, error) {
 	rr, ctx, err := d.tr.Resolve(ctx)
 	if err != nil {
