@@ -1,10 +1,10 @@
-package saas
+package http
 
 import (
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -15,16 +15,16 @@ import (
 func SetUp() *mux.Router {
 	r := mux.NewRouter()
 
-	r.Use(Middleware(common.NewMemoryTenantStore(
-		[]common.TenantConfig{
+	r.Use(Middleware(saas.NewMemoryTenantStore(
+		[]saas.TenantConfig{
 			{ID: "1", Name: "Test1"},
 			{ID: "2", Name: "Test3"},
 		})))
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// an example API handler
-		tenantInfo, _ := common.FromCurrentTenant(r.Context())
-		trR := common.FromTenantResolveRes(r.Context())
+		tenantInfo, _ := saas.FromCurrentTenant(r.Context())
+		trR := saas.FromTenantResolveRes(r.Context())
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"tenantId":  tenantInfo.GetId(),
 			"resolvers": trR.AppliedResolvers,
@@ -102,8 +102,8 @@ func TestHeaderMultiTenancy(t *testing.T) {
 func TestTerminate(t *testing.T) {
 	r := mux.NewRouter()
 
-	r.Use(Middleware(common.NewMemoryTenantStore(
-		[]common.TenantConfig{
+	r.Use(Middleware(saas.NewMemoryTenantStore(
+		[]saas.TenantConfig{
 			{ID: "1", Name: "Test1"},
 			{ID: "2", Name: "Test3"},
 		}),
@@ -112,7 +112,7 @@ func TestTerminate(t *testing.T) {
 				http.Error(w, "Forbidden", 403)
 			}
 		}),
-		WithResolveOption(common.AppendContribs(&TerminateContrib{}))))
+		WithResolveOption(saas.AppendContribs(&TerminateContrib{}))))
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 	})
@@ -136,6 +136,6 @@ func (t *TerminateContrib) Name() string {
 	return "Terminate"
 }
 
-func (t TerminateContrib) Resolve(_ *common.Context) error {
+func (t TerminateContrib) Resolve(_ *saas.Context) error {
 	return ErrForbidden
 }

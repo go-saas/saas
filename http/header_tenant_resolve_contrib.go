@@ -1,7 +1,7 @@
 package http
 
 import (
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
 	"net/http"
 )
 
@@ -21,7 +21,7 @@ func (h *HeaderTenantResolveContrib) Name() string {
 	return "Header"
 }
 
-func (h *HeaderTenantResolveContrib) Resolve(ctx *common.Context) error {
+func (h *HeaderTenantResolveContrib) Resolve(ctx *saas.Context) error {
 	v := h.request.Header.Get(h.key)
 	if v == "" {
 		return nil

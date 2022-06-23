@@ -1,7 +1,7 @@
 package http
 
 import (
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
 	"net/http"
 	"regexp"
 )
@@ -22,7 +22,7 @@ func (h *DomainTenantResolveContrib) Name() string {
 	return "Domain"
 }
 
-func (h *DomainTenantResolveContrib) Resolve(ctx *common.Context) error {
+func (h *DomainTenantResolveContrib) Resolve(ctx *saas.Context) error {
 	host := h.request.Host
 	r := regexp.MustCompile(h.format)
 	f := r.FindAllStringSubmatch(host, -1)

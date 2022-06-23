@@ -8,9 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	mysql2 "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
+	sgin "github.com/goxiaoy/go-saas/gin"
+
 	"github.com/goxiaoy/go-saas/data"
-	"github.com/goxiaoy/go-saas/gin/saas"
 	sgorm "github.com/goxiaoy/go-saas/gorm"
 	"github.com/goxiaoy/go-saas/seed"
 	"gorm.io/driver/mysql"
@@ -38,14 +39,14 @@ func init() {
 func main() {
 	flag.Parse()
 
-	cache := common.NewCache[string, *sgorm.DbWrap]()
+	cache := saas.NewCache[string, *sgorm.DbWrap]()
 	defer cache.Flush()
 
-	var connStrGen common.ConnStrGenerator
+	var connStrGen saas.ConnStrGenerator
 	switch driver {
 	case sqlite.DriverName:
 		sharedDsn = defaultSqliteSharedDsn
-		connStrGen = common.NewConnStrGenerator("./example-%s.db")
+		connStrGen = saas.NewConnStrGenerator("./example-%s.db")
 	case "mysql":
 		if len(sharedDsn) == 0 {
 			sharedDsn = defaultMysqlSharedDsn
@@ -56,7 +57,7 @@ func main() {
 		}
 		hostDbName := dd.DBName
 		dd.DBName = hostDbName + "-%s"
-		connStrGen = common.NewConnStrGenerator(dd.FormatDSN())
+		connStrGen = saas.NewConnStrGenerator(dd.FormatDSN())
 
 		ensureDbExist = func(s string) error {
 			dsn, err := mysql2.ParseDSN(s)
@@ -127,18 +128,18 @@ func main() {
 	//tenantStore use connection string from conn
 	tenantStore := &TenantStore{dbProvider: sgorm.NewDbProvider(conn, clientProvider)}
 
-	mr := common.NewMultiTenancyConnStrResolver(tenantStore, conn)
+	mr := saas.NewMultiTenancyConnStrResolver(tenantStore, conn)
 
 	//tenant dbProvider use connection string from tenant store
 	dbProvider := sgorm.NewDbProvider(mr, clientProvider)
 
-	r.Use(saas.MultiTenancy(tenantStore))
+	r.Use(sgin.MultiTenancy(tenantStore))
 
 	//return current tenant
 	r.GET("/tenant/current", func(c *gin.Context) {
 		rCtx := c.Request.Context()
-		tenantInfo, _ := common.FromCurrentTenant(rCtx)
-		trR := common.FromTenantResolveRes(rCtx)
+		tenantInfo, _ := saas.FromCurrentTenant(rCtx)
+		trR := saas.FromTenantResolveRes(rCtx)
 		c.JSON(200, gin.H{
 			"tenantId":  tenantInfo.GetId(),
 			"resolvers": trR.AppliedResolvers,
@@ -175,7 +176,7 @@ func main() {
 		}
 		ctx := c.Request.Context()
 		//change to host side
-		ctx = common.NewCurrentTenant(ctx, "", "")
+		ctx = saas.NewCurrentTenant(ctx, "", "")
 		db := dbProvider.Get(ctx, "")
 		t := &Tenant{
 			ID:          uuid.New().String(),
@@ -183,7 +184,7 @@ func main() {
 			DisplayName: json.Name,
 		}
 		if json.SeparateDb {
-			t3Conn, _ := connStrGen.Gen(ctx, common.NewBasicTenantInfo(t.ID, t.Name))
+			t3Conn, _ := connStrGen.Gen(ctx, saas.NewBasicTenantInfo(t.ID, t.Name))
 			t.Conn = []TenantConn{
 				{Key: data.Default, Value: t3Conn}, // use tenant3.db
 			}

@@ -1,4 +1,4 @@
-package common
+package saas
 
 type TenantResolveContrib interface {
 	// Name of resolver

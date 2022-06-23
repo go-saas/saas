@@ -1,8 +1,8 @@
-package saas
+package kratos
 
 import (
 	"github.com/go-kratos/kratos/v2/transport"
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
 )
 
 type HeaderTenantResolveContrib struct {
@@ -20,7 +20,7 @@ func (h *HeaderTenantResolveContrib) Name() string {
 	return "KratosHeader"
 }
 
-func (h *HeaderTenantResolveContrib) Resolve(ctx *common.Context) error {
+func (h *HeaderTenantResolveContrib) Resolve(ctx *saas.Context) error {
 	v := h.transporter.RequestHeader().Get(h.key)
 	if v == "" {
 		return nil

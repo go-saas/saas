@@ -3,7 +3,8 @@ package apisix
 import (
 	"context"
 	pkgHTTP "github.com/apache/apisix-go-plugin-runner/pkg/http"
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
+
 	"regexp"
 )
 
@@ -21,9 +22,9 @@ func NewResolver(r pkgHTTP.Request, key, pathRegex string) *Resolver {
 	}
 }
 
-var _ common.TenantResolver = (*Resolver)(nil)
+var _ saas.TenantResolver = (*Resolver)(nil)
 
-func (r *Resolver) Resolve(ctx context.Context) (common.TenantResolveResult, context.Context, error) {
+func (r *Resolver) Resolve(ctx context.Context) (saas.TenantResolveResult, context.Context, error) {
 	// default host side
 	var t = ""
 	if v := r.r.Header().Get(r.key); len(v) > 0 {
@@ -40,5 +41,5 @@ func (r *Resolver) Resolve(ctx context.Context) (common.TenantResolveResult, con
 		}
 	}
 
-	return common.TenantResolveResult{TenantIdOrName: t}, ctx, nil
+	return saas.TenantResolveResult{TenantIdOrName: t}, ctx, nil
 }

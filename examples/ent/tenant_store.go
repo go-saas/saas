@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
+
 	"github.com/goxiaoy/go-saas/examples/ent/shared/ent"
 	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/tenant"
 	"strconv"
@@ -12,8 +13,8 @@ type TenantStore struct {
 	shared SharedDbProvider
 }
 
-func (t *TenantStore) GetByNameOrId(ctx context.Context, nameOrId string) (*common.TenantConfig, error) {
-	ctx = common.NewCurrentTenant(ctx, "", "")
+func (t *TenantStore) GetByNameOrId(ctx context.Context, nameOrId string) (*saas.TenantConfig, error) {
+	ctx = saas.NewCurrentTenant(ctx, "", "")
 	db := t.shared.Get(ctx, "")
 	i, err := strconv.Atoi(nameOrId)
 	var te *ent.Tenant
@@ -24,10 +25,10 @@ func (t *TenantStore) GetByNameOrId(ctx context.Context, nameOrId string) (*comm
 	}
 	if err != nil {
 		if ent.IsNotFound(err) {
-			return nil, common.ErrTenantNotFound
+			return nil, saas.ErrTenantNotFound
 		}
 	}
-	ret := common.NewTenantConfig(strconv.Itoa(te.ID), te.Name, te.Region)
+	ret := saas.NewTenantConfig(strconv.Itoa(te.ID), te.Name, te.Region)
 	conns, err := te.QueryConn().All(ctx)
 	if err != nil {
 		return nil, err

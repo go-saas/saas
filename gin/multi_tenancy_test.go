@@ -1,9 +1,9 @@
-package saas
+package gin
 
 import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -13,15 +13,15 @@ import (
 
 func SetUp() *gin.Engine {
 	r := gin.Default()
-	r.Use(MultiTenancy(common.NewMemoryTenantStore(
-		[]common.TenantConfig{
+	r.Use(MultiTenancy(saas.NewMemoryTenantStore(
+		[]saas.TenantConfig{
 			{ID: "1", Name: "Test1"},
 			{ID: "2", Name: "Test3"},
 		})))
 	r.GET("/", func(c *gin.Context) {
 		rCtx := c.Request.Context()
-		tenantInfo, _ := common.FromCurrentTenant(rCtx)
-		trR := common.FromTenantResolveRes(rCtx)
+		tenantInfo, _ := saas.FromCurrentTenant(rCtx)
+		trR := saas.FromTenantResolveRes(rCtx)
 		c.JSON(200, gin.H{
 			"tenantId":  tenantInfo.GetId(),
 			"resolvers": trR.AppliedResolvers,

@@ -1,4 +1,4 @@
-package common
+package saas
 
 type DatabaseStyleType int32
 

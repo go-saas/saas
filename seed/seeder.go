@@ -2,7 +2,7 @@ package seed
 
 import (
 	"context"
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
 )
 
 type Seeder interface {
@@ -24,7 +24,7 @@ func NewDefaultSeeder(contrib ...Contrib) *DefaultSeeder {
 func (d *DefaultSeeder) Seed(ctx context.Context, option *Option) error {
 	for _, tenant := range option.TenantIds {
 		// change to next tenant
-		ctx = common.NewCurrentTenant(ctx, tenant, "")
+		ctx = saas.NewCurrentTenant(ctx, tenant, "")
 
 		seedFn := func(ctx context.Context) error {
 			sCtx := NewSeedContext(tenant, option.Extra)

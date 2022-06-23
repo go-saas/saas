@@ -4,8 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/goxiaoy/go-saas/common"
-	shttp "github.com/goxiaoy/go-saas/common/http"
+	"github.com/goxiaoy/go-saas"
+
+	shttp "github.com/goxiaoy/go-saas/http"
 	"net/http"
 
 	pkgHTTP "github.com/apache/apisix-go-plugin-runner/pkg/http"
@@ -35,19 +36,19 @@ type FormatError func(err error, w http.ResponseWriter)
 
 //global variable to store tenants
 var (
-	tenantStore          common.TenantStore
+	tenantStore          saas.TenantStore
 	nextTenantHeader     string
 	nextTenantInfoHeader string
 )
 
 var errFormat FormatError = func(err error, w http.ResponseWriter) {
-	if errors.Is(err, common.ErrTenantNotFound) {
+	if errors.Is(err, saas.ErrTenantNotFound) {
 		w.WriteHeader(404)
 	}
 	w.WriteHeader(500)
 }
 
-func Init(t common.TenantStore, nextHeader, nextInfoHeader string, format FormatError) {
+func Init(t saas.TenantStore, nextHeader, nextInfoHeader string, format FormatError) {
 	tenantStore = t
 	errFormat = format
 	nextTenantHeader = nextHeader
@@ -80,13 +81,13 @@ func (p *Saas) Filter(conf interface{}, w http.ResponseWriter, r pkgHTTP.Request
 	}
 	ctx := r.Context()
 	//get tenant config
-	tenantConfigProvider := common.NewDefaultTenantConfigProvider(NewResolver(r, key, cfg.PathRegex), tenantStore)
+	tenantConfigProvider := saas.NewDefaultTenantConfigProvider(NewResolver(r, key, cfg.PathRegex), tenantStore)
 	tenantConfig, ctx, err := tenantConfigProvider.Get(ctx)
 	if err != nil {
 		errFormat(err, w)
 		return
 	}
-	resolveValue := common.FromTenantResolveRes(ctx)
+	resolveValue := saas.FromTenantResolveRes(ctx)
 	idOrName := ""
 	if resolveValue != nil {
 		idOrName = resolveValue.TenantIdOrName

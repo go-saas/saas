@@ -3,30 +3,30 @@ package main
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
 	"github.com/goxiaoy/go-saas/data"
 	sent "github.com/goxiaoy/go-saas/ent"
 	"github.com/goxiaoy/go-saas/examples/ent/shared/ent"
 	_ "github.com/goxiaoy/go-saas/examples/ent/shared/ent/runtime"
 	ent2 "github.com/goxiaoy/go-saas/examples/ent/tenant/ent"
 	_ "github.com/goxiaoy/go-saas/examples/ent/tenant/ent/runtime"
-	"github.com/goxiaoy/go-saas/gin/saas"
+	sgin "github.com/goxiaoy/go-saas/gin"
 	"github.com/goxiaoy/go-saas/seed"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type SharedDbProvider common.DbProvider[*ent.Client]
-type TenantDbProvider common.DbProvider[*ent2.Client]
+type SharedDbProvider saas.DbProvider[*ent.Client]
+type TenantDbProvider saas.DbProvider[*ent2.Client]
 
 func main() {
 	r := gin.Default()
 
-	cache := common.NewCache[string, *ent.Client]()
+	cache := saas.NewCache[string, *ent.Client]()
 	defer cache.Flush()
-	cache2 := common.NewCache[string, *ent2.Client]()
+	cache2 := saas.NewCache[string, *ent2.Client]()
 	defer cache.Flush()
 
-	sharedClientProvider := common.ClientProviderFunc[*ent.Client](func(ctx context.Context, s string) (*ent.Client, error) {
+	sharedClientProvider := saas.ClientProviderFunc[*ent.Client](func(ctx context.Context, s string) (*ent.Client, error) {
 		v, _, err := cache.GetOrSet(s, func() (*ent.Client, error) {
 			client, err := ent.Open("sqlite3", s, ent.Debug())
 			if err != nil {
@@ -37,7 +37,7 @@ func main() {
 		})
 		return v, err
 	})
-	tenantClientProvider := common.ClientProviderFunc[*ent2.Client](func(ctx context.Context, s string) (*ent2.Client, error) {
+	tenantClientProvider := saas.ClientProviderFunc[*ent2.Client](func(ctx context.Context, s string) (*ent2.Client, error) {
 
 		v, _, err := cache2.GetOrSet(s, func() (*ent2.Client, error) {
 			client, err := ent2.Open("sqlite3", s, ent2.Debug())
@@ -54,24 +54,24 @@ func main() {
 	//default database
 	conn.SetDefault("./shared.db?_fk=1")
 
-	var tenantStore common.TenantStore
+	var tenantStore saas.TenantStore
 
 	//host (shared) database use connection string from config
-	sharedDbProvider := common.NewDbProvider[*ent.Client](conn, sharedClientProvider)
+	sharedDbProvider := saas.NewDbProvider[*ent.Client](conn, sharedClientProvider)
 
 	tenantStore = &TenantStore{shared: sharedDbProvider}
-	
-	mr := common.NewMultiTenancyConnStrResolver(tenantStore, conn)
-	// tenant database use connection string from tenantStore
-	tenantDbProvider := common.NewDbProvider[*ent2.Client](mr, tenantClientProvider)
 
-	r.Use(saas.MultiTenancy(tenantStore))
+	mr := saas.NewMultiTenancyConnStrResolver(tenantStore, conn)
+	// tenant database use connection string from tenantStore
+	tenantDbProvider := saas.NewDbProvider[*ent2.Client](mr, tenantClientProvider)
+
+	r.Use(sgin.MultiTenancy(tenantStore))
 
 	//return current tenant
 	r.GET("/tenant/current", func(c *gin.Context) {
 		rCtx := c.Request.Context()
-		tenantInfo, _ := common.FromCurrentTenant(rCtx)
-		trR := common.FromTenantResolveRes(rCtx)
+		tenantInfo, _ := saas.FromCurrentTenant(rCtx)
+		trR := saas.FromTenantResolveRes(rCtx)
 		c.JSON(200, gin.H{
 			"tenantId":  tenantInfo.GetId(),
 			"resolvers": trR.AppliedResolvers,
@@ -80,7 +80,7 @@ func main() {
 
 	r.GET("/posts", func(c *gin.Context) {
 		ctx := c.Request.Context()
-		tenantInfo, _ := common.FromCurrentTenant(ctx)
+		tenantInfo, _ := saas.FromCurrentTenant(ctx)
 		if tenantInfo.GetId() == "" {
 			db := sharedDbProvider.Get(ctx, "")
 			e, err := db.Post.Query().All(ctx)

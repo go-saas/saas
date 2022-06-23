@@ -1,18 +1,19 @@
-package saas
+package gin
 
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/goxiaoy/go-saas/common"
-	"github.com/goxiaoy/go-saas/common/http"
+	"github.com/goxiaoy/go-saas"
+
 	"github.com/goxiaoy/go-saas/data"
+	"github.com/goxiaoy/go-saas/http"
 )
 
 type ErrorFormatter func(context *gin.Context, err error)
 
 var (
 	DefaultErrorFormatter ErrorFormatter = func(context *gin.Context, err error) {
-		if errors.Is(err, common.ErrTenantNotFound) {
+		if errors.Is(err, saas.ErrTenantNotFound) {
 			context.AbortWithError(404, err)
 		} else {
 			context.AbortWithError(500, err)
@@ -23,7 +24,7 @@ var (
 type option struct {
 	hmtOpt  *http.WebMultiTenancyOption
 	ef      ErrorFormatter
-	resolve []common.ResolveOption
+	resolve []saas.ResolveOption
 }
 
 type Option func(*option)
@@ -40,13 +41,13 @@ func WithErrorFormatter(e ErrorFormatter) Option {
 	}
 }
 
-func WithResolveOption(opt ...common.ResolveOption) Option {
+func WithResolveOption(opt ...saas.ResolveOption) Option {
 	return func(o *option) {
 		o.resolve = opt
 	}
 }
 
-func MultiTenancy(ts common.TenantStore, options ...Option) gin.HandlerFunc {
+func MultiTenancy(ts saas.TenantStore, options ...Option) gin.HandlerFunc {
 	opt := &option{
 		hmtOpt:  http.NewDefaultWebMultiTenancyOption(),
 		ef:      DefaultErrorFormatter,
@@ -56,8 +57,8 @@ func MultiTenancy(ts common.TenantStore, options ...Option) gin.HandlerFunc {
 		o(opt)
 	}
 	return func(context *gin.Context) {
-		var trOpt []common.ResolveOption
-		df := []common.TenantResolveContrib{
+		var trOpt []saas.ResolveOption
+		df := []saas.TenantResolveContrib{
 			http.NewCookieTenantResolveContrib(opt.hmtOpt.TenantKey, context.Request),
 			http.NewFormTenantResolveContrib(opt.hmtOpt.TenantKey, context.Request),
 			http.NewHeaderTenantResolveContrib(opt.hmtOpt.TenantKey, context.Request),
@@ -65,19 +66,19 @@ func MultiTenancy(ts common.TenantStore, options ...Option) gin.HandlerFunc {
 		if opt.hmtOpt.DomainFormat != "" {
 			df = append(df, http.NewDomainTenantResolveContrib(opt.hmtOpt.DomainFormat, context.Request))
 		}
-		df = append(df, common.NewTenantNormalizerContrib(ts))
-		trOpt = append(trOpt, common.AppendContribs(df...))
+		df = append(df, saas.NewTenantNormalizerContrib(ts))
+		trOpt = append(trOpt, saas.AppendContribs(df...))
 		trOpt = append(trOpt, opt.resolve...)
 
 		//get tenant config
-		tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt...), ts)
+		tenantConfigProvider := saas.NewDefaultTenantConfigProvider(saas.NewDefaultTenantResolver(trOpt...), ts)
 		tenantConfig, ctx, err := tenantConfigProvider.Get(context)
 		if err != nil {
 			opt.ef(context, err)
 			return
 		}
 		//set current tenant
-		newContext := common.NewCurrentTenant(ctx, tenantConfig.ID, tenantConfig.Name)
+		newContext := saas.NewCurrentTenant(ctx, tenantConfig.ID, tenantConfig.Name)
 		//data filter
 		newContext = data.NewMultiTenancyDataFilter(newContext)
 

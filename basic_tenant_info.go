@@ -1,4 +1,4 @@
-package common
+package saas
 
 type TenantInfo interface {
 	GetId() string

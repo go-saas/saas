@@ -7,7 +7,8 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
+
 	"github.com/goxiaoy/go-saas/data"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -30,7 +31,7 @@ func NewTenantId(s string) HasTenant {
 }
 
 func (t HasTenant) GormValue(ctx context.Context, db *gorm.DB) (expr clause.Expr) {
-	ct, _ := common.FromCurrentTenant(ctx)
+	ct, _ := saas.FromCurrentTenant(ctx)
 	at := data.FromAutoSetTenantId(ctx)
 	if at {
 		if ct.GetId() != t.String {
@@ -106,7 +107,7 @@ func (sd HasTenantQueryClause) MergeClause(*clause.Clause) {
 }
 
 func (sd HasTenantQueryClause) ModifyStatement(stmt *gorm.Statement) {
-	t, _ := common.FromCurrentTenant(stmt.Context)
+	t, _ := saas.FromCurrentTenant(stmt.Context)
 	e := data.FromMultiTenancyDataFilter(stmt.Context)
 	if _, ok := stmt.Clauses["multi_tenancy_enabled"]; !ok {
 		if c, ok := stmt.Clauses["WHERE"]; ok {

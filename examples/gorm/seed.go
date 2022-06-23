@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
+
 	"github.com/goxiaoy/go-saas/data"
 	"github.com/goxiaoy/go-saas/gorm"
 	"github.com/goxiaoy/go-saas/seed"
@@ -13,10 +14,10 @@ import (
 
 type Seed struct {
 	dbProvider gorm.DbProvider
-	connStrGen common.ConnStrGenerator
+	connStrGen saas.ConnStrGenerator
 }
 
-func NewSeed(dbProvider gorm.DbProvider, connStrGen common.ConnStrGenerator) *Seed {
+func NewSeed(dbProvider gorm.DbProvider, connStrGen saas.ConnStrGenerator) *Seed {
 	return &Seed{dbProvider: dbProvider, connStrGen: connStrGen}
 }
 
@@ -26,7 +27,7 @@ func (s *Seed) Seed(ctx context.Context, sCtx *seed.Context) error {
 	if sCtx.TenantId == "" {
 		//seed host
 		t3 := Tenant{ID: "3", Name: "Test3"}
-		t3Conn, _ := s.connStrGen.Gen(ctx, common.NewBasicTenantInfo(t3.ID, t3.Name))
+		t3Conn, _ := s.connStrGen.Gen(ctx, saas.NewBasicTenantInfo(t3.ID, t3.Name))
 		t3.Conn = []TenantConn{
 			{Key: data.Default, Value: t3Conn}, // use tenant3.db
 		}

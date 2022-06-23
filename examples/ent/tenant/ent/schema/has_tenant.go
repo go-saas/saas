@@ -5,11 +5,12 @@ import (
 	"database/sql"
 	"entgo.io/ent"
 	"entgo.io/ent/entql"
+	"github.com/goxiaoy/go-saas"
 	"github.com/goxiaoy/go-saas/examples/ent/tenant/ent/privacy"
 
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
-	"github.com/goxiaoy/go-saas/common"
+
 	"github.com/goxiaoy/go-saas/data"
 )
 
@@ -37,7 +38,7 @@ func FilterTenantRule() privacy.QueryMutationRule {
 		WhereTenantID(p entql.StringP)
 	}
 	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
-		ct, _ := common.FromCurrentTenant(ctx)
+		ct, _ := saas.FromCurrentTenant(ctx)
 		e := data.FromMultiTenancyDataFilter(ctx)
 		hf, ok := f.(hasTenant)
 		if e && ok {

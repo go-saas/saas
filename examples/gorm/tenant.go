@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
+
 	sgorm "github.com/goxiaoy/go-saas/gorm"
 	"gorm.io/gorm"
 	"time"
@@ -41,24 +42,24 @@ type TenantStore struct {
 	dbProvider sgorm.DbProvider
 }
 
-func (t *TenantStore) GetByNameOrId(ctx context.Context, nameOrId string) (*common.TenantConfig, error) {
+func (t *TenantStore) GetByNameOrId(ctx context.Context, nameOrId string) (*saas.TenantConfig, error) {
 	//change to host side
-	ctx = common.NewCurrentTenant(ctx, "", "")
+	ctx = saas.NewCurrentTenant(ctx, "", "")
 	db := t.dbProvider.Get(ctx, "")
 	var tenant Tenant
 	err := db.Model(&Tenant{}).Preload("Conn").Where("id = ? OR name = ?", nameOrId, nameOrId).First(&tenant).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, common.ErrTenantNotFound
+			return nil, saas.ErrTenantNotFound
 		} else {
 			return nil, err
 		}
 	}
-	ret := common.NewTenantConfig(tenant.ID, tenant.Name, tenant.Region)
+	ret := saas.NewTenantConfig(tenant.ID, tenant.Name, tenant.Region)
 	for _, conn := range tenant.Conn {
 		ret.Conn[conn.Key] = conn.Value
 	}
 	return ret, nil
 }
 
-var _ common.TenantStore = (*TenantStore)(nil)
+var _ saas.TenantStore = (*TenantStore)(nil)

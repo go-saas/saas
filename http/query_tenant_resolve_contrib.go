@@ -1,7 +1,7 @@
 package http
 
 import (
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
 	"net/http"
 )
 
@@ -21,7 +21,7 @@ func (h *QueryTenantResolveContrib) Name() string {
 	return "Query"
 }
 
-func (h *QueryTenantResolveContrib) Resolve(ctx *common.Context) error {
+func (h *QueryTenantResolveContrib) Resolve(ctx *saas.Context) error {
 	v := h.request.URL.Query().Get(h.key)
 	if v == "" {
 		return nil

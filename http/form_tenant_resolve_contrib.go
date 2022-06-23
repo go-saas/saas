@@ -1,7 +1,7 @@
 package http
 
 import (
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
 	"net/http"
 )
 
@@ -21,7 +21,7 @@ func (h *FormTenantResolveContrib) Name() string {
 	return "Form"
 }
 
-func (h *FormTenantResolveContrib) Resolve(ctx *common.Context) error {
+func (h *FormTenantResolveContrib) Resolve(ctx *saas.Context) error {
 	v := h.request.FormValue(h.key)
 	if v == "" {
 		return nil

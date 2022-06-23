@@ -3,7 +3,8 @@ package gorm
 import (
 	"context"
 	"github.com/google/uuid"
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
+
 	"github.com/goxiaoy/go-saas/data"
 	"github.com/stretchr/testify/assert"
 	g "gorm.io/gorm"
@@ -58,7 +59,7 @@ func TestCustomField(t *testing.T) {
 	assert.Equal(t, int64(len(i)), count)
 
 	t.Run("Host", func(t *testing.T) {
-		ctx := common.NewCurrentTenant(context.Background(), "", "")
+		ctx := saas.NewCurrentTenant(context.Background(), "", "")
 		var count int64
 		tx := TestDb.WithContext(ctx).Model(&TestEntity{}).Count(&count)
 		assert.NoError(t, tx.Error)
@@ -67,14 +68,14 @@ func TestCustomField(t *testing.T) {
 
 	t.Run("Tenant", func(t *testing.T) {
 		{
-			ctx := common.NewCurrentTenant(context.Background(), "A", "")
+			ctx := saas.NewCurrentTenant(context.Background(), "A", "")
 			var count int64
 			tx := TestDb.WithContext(ctx).Model(&TestEntity{}).Count(&count)
 			assert.NoError(t, tx.Error)
 			assert.Equal(t, int64(2), count)
 		}
 		{
-			ctx := common.NewCurrentTenant(context.Background(), "B", "")
+			ctx := saas.NewCurrentTenant(context.Background(), "B", "")
 			var count int64
 			tx := TestDb.WithContext(ctx).Model(&TestEntity{}).Count(&count)
 			assert.NoError(t, tx.Error)
@@ -117,7 +118,7 @@ func TestAutoSetTenant(t *testing.T) {
 	t.Run("TenantAutoSet", func(t *testing.T) {
 		tenantId := uuid.New().String()
 		tenantId2 := uuid.New().String()
-		ctx := common.NewCurrentTenant(context.Background(), tenantId, "")
+		ctx := saas.NewCurrentTenant(context.Background(), tenantId, "")
 		i := TestEntity{ID: "TenantAutoSetTenant1", MultiTenancy: MultiTenancy{NewTenantId("")}}
 		err := TestDb.WithContext(ctx).Model(&TestEntity{}).Create(&i).Error
 		assert.NoError(t, err)

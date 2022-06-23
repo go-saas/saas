@@ -4,7 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"github.com/google/uuid"
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
+
 	"github.com/goxiaoy/go-saas/data"
 	"gorm.io/driver/sqlite"
 	g "gorm.io/gorm"
@@ -56,11 +57,11 @@ func TestMain(m *testing.M) {
 
 }
 
-func GetConnStrResolver() *common.MultiTenancyConnStrResolver {
+func GetConnStrResolver() *saas.MultiTenancyConnStrResolver {
 	//use memory store
 
-	ts := common.NewMemoryTenantStore(
-		[]common.TenantConfig{
+	ts := saas.NewMemoryTenantStore(
+		[]saas.TenantConfig{
 			{ID: TenantId1, Name: "Test1"},
 			{ID: TenantId2, Name: "Test2", Conn: map[string]string{
 				data.Default: ":memory:?cache=shared",
@@ -68,6 +69,6 @@ func GetConnStrResolver() *common.MultiTenancyConnStrResolver {
 		})
 	conn := make(data.ConnStrings, 1)
 	conn.SetDefault("file::memory:?cache=shared")
-	mr := common.NewMultiTenancyConnStrResolver(ts, conn)
+	mr := saas.NewMultiTenancyConnStrResolver(ts, conn)
 	return mr
 }

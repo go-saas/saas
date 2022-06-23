@@ -1,4 +1,4 @@
-package common
+package saas
 
 import "github.com/goxiaoy/go-saas/data"
 

@@ -1,4 +1,4 @@
-package saas
+package kratos
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/goxiaoy/go-saas/common"
-	shttp "github.com/goxiaoy/go-saas/common/http"
+	"github.com/goxiaoy/go-saas"
 	"github.com/goxiaoy/go-saas/data"
+	shttp "github.com/goxiaoy/go-saas/http"
 )
 
 type ErrorFormatter func(err error) (interface{}, error)
@@ -16,7 +16,7 @@ type ErrorFormatter func(err error) (interface{}, error)
 var (
 	DefaultErrorFormatter ErrorFormatter = func(err error) (interface{}, error) {
 		//not found
-		if errors.Is(err, common.ErrTenantNotFound) {
+		if errors.Is(err, saas.ErrTenantNotFound) {
 			return nil, errors.NotFound("TENANT", err.Error())
 		}
 		return nil, err
@@ -26,7 +26,7 @@ var (
 type option struct {
 	hmtOpt  *shttp.WebMultiTenancyOption
 	ef      ErrorFormatter
-	resolve []common.ResolveOption
+	resolve []saas.ResolveOption
 }
 
 type Option func(*option)
@@ -43,13 +43,13 @@ func WithErrorFormatter(e ErrorFormatter) Option {
 	}
 }
 
-func WithResolveOption(opt ...common.ResolveOption) Option {
+func WithResolveOption(opt ...saas.ResolveOption) Option {
 	return func(o *option) {
 		o.resolve = opt
 	}
 }
 
-func Server(ts common.TenantStore, options ...Option) middleware.Middleware {
+func Server(ts saas.TenantStore, options ...Option) middleware.Middleware {
 	opt := &option{
 		hmtOpt:  shttp.NewDefaultWebMultiTenancyOption(),
 		ef:      DefaultErrorFormatter,
@@ -60,11 +60,11 @@ func Server(ts common.TenantStore, options ...Option) middleware.Middleware {
 	}
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
-			var trOpt []common.ResolveOption
+			var trOpt []saas.ResolveOption
 			if tr, ok := transport.FromServerContext(ctx); ok {
 				if ht, ok := tr.(*http.Transport); ok {
 					r := ht.Request()
-					df := []common.TenantResolveContrib{
+					df := []saas.TenantResolveContrib{
 						shttp.NewCookieTenantResolveContrib(opt.hmtOpt.TenantKey, r),
 						shttp.NewFormTenantResolveContrib(opt.hmtOpt.TenantKey, r),
 						shttp.NewHeaderTenantResolveContrib(opt.hmtOpt.TenantKey, r),
@@ -73,20 +73,20 @@ func Server(ts common.TenantStore, options ...Option) middleware.Middleware {
 					if opt.hmtOpt.DomainFormat != "" {
 						df = append(df, shttp.NewDomainTenantResolveContrib(opt.hmtOpt.DomainFormat, r))
 					}
-					df = append(df, common.NewTenantNormalizerContrib(ts))
-					trOpt = append(trOpt, common.AppendContribs(df...))
+					df = append(df, saas.NewTenantNormalizerContrib(ts))
+					trOpt = append(trOpt, saas.AppendContribs(df...))
 				} else {
-					trOpt = append(trOpt, common.AppendContribs(NewHeaderTenantResolveContrib(opt.hmtOpt.TenantKey, tr)))
+					trOpt = append(trOpt, saas.AppendContribs(NewHeaderTenantResolveContrib(opt.hmtOpt.TenantKey, tr)))
 				}
 				trOpt = append(trOpt, opt.resolve...)
 
 				//get tenant config
-				tenantConfigProvider := common.NewDefaultTenantConfigProvider(common.NewDefaultTenantResolver(trOpt...), ts)
+				tenantConfigProvider := saas.NewDefaultTenantConfigProvider(saas.NewDefaultTenantResolver(trOpt...), ts)
 				tenantConfig, ctx, err := tenantConfigProvider.Get(ctx)
 				if err != nil {
 					return opt.ef(err)
 				}
-				newContext := common.NewCurrentTenant(ctx, tenantConfig.ID, tenantConfig.Name)
+				newContext := saas.NewCurrentTenant(ctx, tenantConfig.ID, tenantConfig.Name)
 				//data filter
 				dataFilterCtx := data.NewMultiTenancyDataFilter(newContext)
 				return handler(dataFilterCtx, req)
@@ -99,7 +99,7 @@ func Server(ts common.TenantStore, options ...Option) middleware.Middleware {
 func Client(hmtOpt *shttp.WebMultiTenancyOption) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
-			ti, _ := common.FromCurrentTenant(ctx)
+			ti, _ := saas.FromCurrentTenant(ctx)
 			if tr, ok := transport.FromClientContext(ctx); ok {
 				if tr.Kind() == transport.KindHTTP {
 					if ht, ok := tr.(*http.Transport); ok {

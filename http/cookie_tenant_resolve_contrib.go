@@ -1,7 +1,7 @@
 package http
 
 import (
-	"github.com/goxiaoy/go-saas/common"
+	"github.com/goxiaoy/go-saas"
 	"net/http"
 )
 
@@ -21,7 +21,7 @@ func (h *CookieTenantResolveContrib) Name() string {
 	return "Cookie"
 }
 
-func (h *CookieTenantResolveContrib) Resolve(ctx *common.Context) error {
+func (h *CookieTenantResolveContrib) Resolve(ctx *saas.Context) error {
 	v, err := h.request.Cookie(h.key)
 	if err != nil {
 		//no cookie
