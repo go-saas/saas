@@ -100,8 +100,7 @@ func main() {
 
 	//seed data into db
 	seeder := seed.NewDefaultSeeder(NewMigrationSeeder(sharedDbProvider, tenantDbProvider), NewSeed(sharedDbProvider, tenantDbProvider))
-	seedOpt := seed.NewSeedOption().WithTenantId("", "1", "2", "3").WithExtra(map[string]interface{}{})
-	err := seeder.Seed(context.Background(), seedOpt)
+	err := seeder.Seed(context.Background(), seed.AddHost(), seed.AddTenant("1", "2", "3"))
 	if err != nil {
 		panic(err)
 	}

@@ -6,7 +6,7 @@ import (
 )
 
 type Seeder interface {
-	Seed(ctx context.Context, option *Option) error
+	Seed(ctx context.Context, option ...Option) error
 }
 
 var _ Seeder = (*DefaultSeeder)(nil)
@@ -21,13 +21,17 @@ func NewDefaultSeeder(contrib ...Contrib) *DefaultSeeder {
 	}
 }
 
-func (d *DefaultSeeder) Seed(ctx context.Context, option *Option) error {
-	for _, tenant := range option.TenantIds {
+func (d *DefaultSeeder) Seed(ctx context.Context, options ...Option) error {
+	opt := NewOption()
+	for _, option := range options {
+		option(opt)
+	}
+	for _, tenant := range opt.TenantIds {
 		// change to next tenant
 		ctx = saas.NewCurrentTenant(ctx, tenant, "")
 
 		seedFn := func(ctx context.Context) error {
-			sCtx := NewSeedContext(tenant, option.Extra)
+			sCtx := NewSeedContext(tenant, opt.Extra)
 			//create seeder
 			for _, contributor := range d.contrib {
 				if err := contributor.Seed(ctx, sCtx); err != nil {

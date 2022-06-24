@@ -158,8 +158,7 @@ func main() {
 
 	//seed data into db
 	seeder := seed.NewDefaultSeeder(NewMigrationSeeder(dbProvider), NewSeed(dbProvider, connStrGen))
-	seedOpt := seed.NewSeedOption().WithTenantId("", "1", "2", "3").WithExtra(map[string]interface{}{})
-	err := seeder.Seed(context.Background(), seedOpt)
+	err := seeder.Seed(context.Background(), seed.AddHost(), seed.AddTenant("1", "2", "3"))
 	if err != nil {
 		panic(err)
 	}
@@ -194,7 +193,7 @@ func main() {
 			c.AbortWithError(500, err)
 			return
 		}
-		err = seeder.Seed(context.Background(), seed.NewSeedOption().WithTenantId(t.ID))
+		err = seeder.Seed(context.Background(), seed.AddTenant(t.ID))
 		if err != nil {
 			panic(err)
 		}

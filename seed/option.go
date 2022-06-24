@@ -1,25 +1,41 @@
 package seed
 
-type Option struct {
+type SeedOption struct {
 	TenantIds []string
 	Extra     map[string]interface{}
 }
 
-func NewSeedOption() *Option {
-	return &Option{}
+func NewOption() *SeedOption {
+	return &SeedOption{Extra: map[string]interface{}{}}
 }
 
-func (opt *Option) WithTenantId(tenants ...string) *Option {
-	opt.TenantIds = tenants
-	return opt
+type Option func(opt *SeedOption)
+
+func WithTenantId(tenants ...string) Option {
+	return func(opt *SeedOption) {
+		opt.TenantIds = tenants
+	}
 }
 
-func (opt *Option) AddTenantId(tenants ...string) *Option {
-	opt.TenantIds = append(opt.TenantIds, tenants...)
-	return opt
+func AddHost() Option {
+	return func(opt *SeedOption) {
+		opt.TenantIds = append(opt.TenantIds, "")
+	}
+}
+func AddTenant(tenants ...string) Option {
+	return func(opt *SeedOption) {
+		opt.TenantIds = append(opt.TenantIds, tenants...)
+	}
 }
 
-func (opt *Option) WithExtra(extra map[string]interface{}) *Option {
-	opt.Extra = extra
-	return opt
+func WithExtra(extra map[string]interface{}) Option {
+	return func(opt *SeedOption) {
+		opt.Extra = extra
+	}
+}
+
+func SetExtra(key string, v interface{}) Option {
+	return func(opt *SeedOption) {
+		opt.Extra[key] = v
+	}
 }
