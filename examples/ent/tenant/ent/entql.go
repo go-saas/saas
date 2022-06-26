@@ -3,7 +3,7 @@
 package ent
 
 import (
-	"github.com/goxiaoy/go-saas/examples/ent/tenant/ent/post"
+	"github.com/go-saas/saas/examples/ent/tenant/ent/post"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"

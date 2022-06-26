@@ -3,7 +3,7 @@ package apisix
 import (
 	"context"
 	pkgHTTP "github.com/apache/apisix-go-plugin-runner/pkg/http"
-	"github.com/goxiaoy/go-saas"
+	"github.com/go-saas/saas"
 
 	"regexp"
 )

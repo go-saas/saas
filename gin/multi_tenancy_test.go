@@ -3,7 +3,7 @@ package gin
 import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"github.com/goxiaoy/go-saas"
+	"github.com/go-saas/saas"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"

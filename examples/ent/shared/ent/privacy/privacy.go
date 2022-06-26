@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent"
+	"github.com/go-saas/saas/examples/ent/shared/ent"
 
 	"entgo.io/ent/entql"
 	"entgo.io/ent/privacy"

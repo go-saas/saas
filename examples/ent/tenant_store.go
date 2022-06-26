@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"github.com/goxiaoy/go-saas"
+	"github.com/go-saas/saas"
 
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent"
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/tenant"
+	"github.com/go-saas/saas/examples/ent/shared/ent"
+	"github.com/go-saas/saas/examples/ent/shared/ent/tenant"
 	"strconv"
 )
 

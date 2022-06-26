@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/tenant"
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/tenantconn"
+	"github.com/go-saas/saas/examples/ent/shared/ent/tenant"
+	"github.com/go-saas/saas/examples/ent/shared/ent/tenantconn"
 )
 
 // TenantCreate is the builder for creating a Tenant entity.

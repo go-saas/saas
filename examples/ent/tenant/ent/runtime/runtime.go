@@ -5,8 +5,8 @@ package runtime
 import (
 	"context"
 
-	"github.com/goxiaoy/go-saas/examples/ent/tenant/ent/post"
-	"github.com/goxiaoy/go-saas/examples/ent/tenant/ent/schema"
+	"github.com/go-saas/saas/examples/ent/tenant/ent/post"
+	"github.com/go-saas/saas/examples/ent/tenant/ent/schema"
 
 	"entgo.io/ent"
 	"entgo.io/ent/privacy"

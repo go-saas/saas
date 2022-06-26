@@ -6,14 +6,14 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/go-saas/saas"
+	sgin "github.com/go-saas/saas/gin"
 	mysql2 "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
-	"github.com/goxiaoy/go-saas"
-	sgin "github.com/goxiaoy/go-saas/gin"
 
-	"github.com/goxiaoy/go-saas/data"
-	sgorm "github.com/goxiaoy/go-saas/gorm"
-	"github.com/goxiaoy/go-saas/seed"
+	"github.com/go-saas/saas/data"
+	sgorm "github.com/go-saas/saas/gorm"
+	"github.com/go-saas/saas/seed"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -200,5 +200,5 @@ func main() {
 
 	})
 
-	r.Run(":8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.Run(":8090") // listen and serve on 0.0.0.0:8090 (for windows "localhost:8090")
 }

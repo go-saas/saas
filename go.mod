@@ -1,4 +1,4 @@
-module github.com/goxiaoy/go-saas
+module github.com/go-saas/saas
 
 go 1.18
 

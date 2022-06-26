@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/tenant"
+	"github.com/go-saas/saas/examples/ent/shared/ent/tenant"
 )
 
 // Tenant is the model entity for the Tenant schema.

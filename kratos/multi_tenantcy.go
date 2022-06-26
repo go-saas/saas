@@ -6,9 +6,9 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/goxiaoy/go-saas"
-	"github.com/goxiaoy/go-saas/data"
-	shttp "github.com/goxiaoy/go-saas/http"
+	"github.com/go-saas/saas"
+	"github.com/go-saas/saas/data"
+	shttp "github.com/go-saas/saas/http"
 )
 
 type ErrorFormatter func(err error) (interface{}, error)

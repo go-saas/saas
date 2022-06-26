@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/predicate"
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/tenantconn"
+	"github.com/go-saas/saas/examples/ent/shared/ent/predicate"
+	"github.com/go-saas/saas/examples/ent/shared/ent/tenantconn"
 )
 
 // TenantConnDelete is the builder for deleting a TenantConn entity.

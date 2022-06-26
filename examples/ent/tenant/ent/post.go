@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/goxiaoy/go-saas/examples/ent/tenant/ent/post"
+	"github.com/go-saas/saas/examples/ent/tenant/ent/post"
 )
 
 // Post is the model entity for the Post schema.

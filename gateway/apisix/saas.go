@@ -4,9 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/goxiaoy/go-saas"
+	"github.com/go-saas/saas"
 
-	shttp "github.com/goxiaoy/go-saas/http"
+	shttp "github.com/go-saas/saas/http"
 	"net/http"
 
 	pkgHTTP "github.com/apache/apisix-go-plugin-runner/pkg/http"

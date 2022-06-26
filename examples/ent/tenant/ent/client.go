@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/goxiaoy/go-saas/examples/ent/tenant/ent/migrate"
+	"github.com/go-saas/saas/examples/ent/tenant/ent/migrate"
 
-	"github.com/goxiaoy/go-saas/examples/ent/tenant/ent/post"
+	"github.com/go-saas/saas/examples/ent/tenant/ent/post"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"

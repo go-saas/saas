@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/goxiaoy/go-saas/gorm"
-	"github.com/goxiaoy/go-saas/seed"
+	"github.com/go-saas/saas/gorm"
+	"github.com/go-saas/saas/seed"
 )
 
 type MigrationSeeder struct {

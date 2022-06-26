@@ -3,10 +3,10 @@ package gin
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/goxiaoy/go-saas"
+	"github.com/go-saas/saas"
 
-	"github.com/goxiaoy/go-saas/data"
-	"github.com/goxiaoy/go-saas/http"
+	"github.com/go-saas/saas/data"
+	"github.com/go-saas/saas/http"
 )
 
 type ErrorFormatter func(context *gin.Context, err error)

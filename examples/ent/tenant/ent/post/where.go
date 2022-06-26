@@ -4,7 +4,7 @@ package post
 
 import (
 	"entgo.io/ent/dialect/sql"
-	"github.com/goxiaoy/go-saas/examples/ent/tenant/ent/predicate"
+	"github.com/go-saas/saas/examples/ent/tenant/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.

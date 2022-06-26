@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/post"
+	"github.com/go-saas/saas/examples/ent/shared/ent/post"
 )
 
 // PostCreate is the builder for creating a Post entity.

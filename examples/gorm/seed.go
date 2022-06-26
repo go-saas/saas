@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/goxiaoy/go-saas"
+	"github.com/go-saas/saas"
 
-	"github.com/goxiaoy/go-saas/data"
-	"github.com/goxiaoy/go-saas/gorm"
-	"github.com/goxiaoy/go-saas/seed"
+	"github.com/go-saas/saas/data"
+	"github.com/go-saas/saas/gorm"
+	"github.com/go-saas/saas/seed"
 	gorm2 "gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

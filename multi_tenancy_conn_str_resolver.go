@@ -2,7 +2,7 @@ package saas
 
 import (
 	"context"
-	"github.com/goxiaoy/go-saas/data"
+	"github.com/go-saas/saas/data"
 )
 
 type MultiTenancyConnStrResolver struct {

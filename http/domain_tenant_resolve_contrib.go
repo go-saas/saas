@@ -1,7 +1,7 @@
 package http
 
 import (
-	"github.com/goxiaoy/go-saas"
+	"github.com/go-saas/saas"
 	"net/http"
 	"regexp"
 )

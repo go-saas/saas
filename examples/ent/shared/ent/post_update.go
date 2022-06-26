@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/post"
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/predicate"
+	"github.com/go-saas/saas/examples/ent/shared/ent/post"
+	"github.com/go-saas/saas/examples/ent/shared/ent/predicate"
 )
 
 // PostUpdate is the builder for updating Post entities.

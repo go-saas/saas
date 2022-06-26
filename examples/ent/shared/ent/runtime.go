@@ -2,4 +2,4 @@
 
 package ent
 
-// The schema-stitching logic is generated in github.com/goxiaoy/go-saas/examples/ent/shared/ent/runtime/runtime.go
+// The schema-stitching logic is generated in github.com/go-saas/saas/examples/ent/shared/ent/runtime/runtime.go

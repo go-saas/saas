@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"entgo.io/ent"
-	"github.com/goxiaoy/go-saas"
+	"github.com/go-saas/saas"
 
-	"github.com/goxiaoy/go-saas/data"
+	"github.com/go-saas/saas/data"
 )
 
 func Saas(next ent.Mutator) ent.Mutator {

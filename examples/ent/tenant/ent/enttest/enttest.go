@@ -5,9 +5,9 @@ package enttest
 import (
 	"context"
 
-	"github.com/goxiaoy/go-saas/examples/ent/tenant/ent"
+	"github.com/go-saas/saas/examples/ent/tenant/ent"
 	// required by schema hooks.
-	_ "github.com/goxiaoy/go-saas/examples/ent/tenant/ent/runtime"
+	_ "github.com/go-saas/saas/examples/ent/tenant/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
 )

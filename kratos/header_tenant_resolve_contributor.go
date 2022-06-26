@@ -2,7 +2,7 @@ package kratos
 
 import (
 	"github.com/go-kratos/kratos/v2/transport"
-	"github.com/goxiaoy/go-saas"
+	"github.com/go-saas/saas"
 )
 
 type HeaderTenantResolveContrib struct {

@@ -1,7 +1,7 @@
 package main
 
 import (
-	gorm2 "github.com/goxiaoy/go-saas/gorm"
+	gorm2 "github.com/go-saas/saas/gorm"
 	"gorm.io/gorm"
 )
 

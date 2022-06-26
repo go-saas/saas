@@ -5,13 +5,13 @@ import (
 	"database/sql"
 	"entgo.io/ent"
 	"entgo.io/ent/entql"
-	"github.com/goxiaoy/go-saas"
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/privacy"
+	"github.com/go-saas/saas"
+	"github.com/go-saas/saas/examples/ent/shared/ent/privacy"
 
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
 
-	"github.com/goxiaoy/go-saas/data"
+	"github.com/go-saas/saas/data"
 )
 
 type HasTenant struct {

@@ -2,7 +2,7 @@ package seed
 
 import (
 	"context"
-	"github.com/goxiaoy/go-saas"
+	"github.com/go-saas/saas"
 )
 
 type Seeder interface {

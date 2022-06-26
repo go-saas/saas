@@ -7,7 +7,7 @@
   ```
 - Add global runtime hook to your client
   ```go
-  import sent "github.com/goxiaoy/go-saas/ent"
+  import sent "github.com/go-saas/saas/ent"
   client.use(sent.Saas)
   ```
 - Copy mixin into your schema

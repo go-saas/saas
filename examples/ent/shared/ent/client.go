@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/migrate"
+	"github.com/go-saas/saas/examples/ent/shared/ent/migrate"
 
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/post"
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/tenant"
-	"github.com/goxiaoy/go-saas/examples/ent/shared/ent/tenantconn"
+	"github.com/go-saas/saas/examples/ent/shared/ent/post"
+	"github.com/go-saas/saas/examples/ent/shared/ent/tenant"
+	"github.com/go-saas/saas/examples/ent/shared/ent/tenantconn"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"

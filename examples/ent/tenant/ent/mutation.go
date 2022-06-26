@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/goxiaoy/go-saas/examples/ent/tenant/ent/post"
-	"github.com/goxiaoy/go-saas/examples/ent/tenant/ent/predicate"
+	"github.com/go-saas/saas/examples/ent/tenant/ent/post"
+	"github.com/go-saas/saas/examples/ent/tenant/ent/predicate"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
