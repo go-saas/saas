@@ -12,7 +12,7 @@ import (
 // Discards the least recently used items first. This algorithm requires
 // keeping track of what was used when, which is expensive if one wants
 // to make sure the algorithm always discards the least recently used item.
-type Cache[K comparable, V any] struct {
+type Cache[K comparable, V io.Closer] struct {
 	cap   int
 	list  *list.List
 	items map[K]*list.Element
@@ -45,7 +45,7 @@ func WithCapacity(cap int) Option {
 }
 
 // NewCache creates a new thread safe LRU cache whose capacity is the default size (128).
-func NewCache[K comparable, V any](opts ...Option) *Cache[K, V] {
+func NewCache[K comparable, V io.Closer](opts ...Option) *Cache[K, V] {
 	o := newOptions()
 	for _, optFunc := range opts {
 		optFunc(o)
@@ -186,8 +186,5 @@ func (c *Cache[K, V]) delete(e *list.Element) error {
 	entry := e.Value.(*entry[K, V])
 	delete(c.items, entry.key)
 
-	if f, ok := any(entry.val).(io.Closer); ok {
-		return f.Close()
-	}
-	return nil
+	return entry.val.Close()
 }
