@@ -19,7 +19,7 @@ func TestSaas(t *testing.T) {
 	assert.Nil(t, err)
 
 	w := httptest.NewRecorder()
-	saas.Filter(conf, w, nil)
+	saas.RequestFilter(conf, w, nil)
 	resp := w.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
 	assert.Equal(t, 200, resp.StatusCode)

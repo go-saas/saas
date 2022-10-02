@@ -23,6 +23,7 @@ func init() {
 
 //Saas resolve and validate tenant information
 type Saas struct {
+	plugin.DefaultPlugin
 }
 
 type SaasConf struct {
@@ -65,10 +66,10 @@ func (p *Saas) ParseConf(in []byte) (interface{}, error) {
 	return conf, err
 }
 
-func (p *Saas) Filter(conf interface{}, w http.ResponseWriter, r pkgHTTP.Request) {
+func (p *Saas) RequestFilter(conf interface{}, w http.ResponseWriter, r pkgHTTP.Request) {
 	cfg := conf.(SaasConf)
 	if tenantStore == nil {
-		log.Warnf("fail to find tenant store. please call InitTenantStore first")
+		log.Warnf("fail to find tenant store. please call Init first")
 		return
 	}
 	key := shttp.KeyOrDefault(cfg.TenantKey)
