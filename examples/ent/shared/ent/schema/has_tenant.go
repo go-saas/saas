@@ -2,15 +2,14 @@ package schema
 
 import (
 	"context"
-	"database/sql"
 	"entgo.io/ent"
-	"entgo.io/ent/entql"
-	"github.com/go-saas/saas"
-	"github.com/go-saas/saas/examples/ent/shared/ent/privacy"
+	"entgo.io/ent/dialect/sql"
+	"github.com/go-saas/saas/examples/ent/shared/ent/hook"
+	"github.com/go-saas/saas/examples/ent/shared/ent/intercept"
 
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
-
+	"github.com/go-saas/saas"
 	"github.com/go-saas/saas/data"
 )
 
@@ -24,33 +23,58 @@ func (HasTenant) Fields() []ent.Field {
 	}
 }
 
-func (HasTenant) Policy() ent.Policy {
-	return privacy.Policy{
-		Query: privacy.QueryPolicy{
-			FilterTenantRule(),
-		},
+func (h HasTenant) Interceptors() []ent.Interceptor {
+	return []ent.Interceptor{
+		intercept.TraverseFunc(func(ctx context.Context, q intercept.Query) error {
+			e := data.FromMultiTenancyDataFilter(ctx)
+			if !e {
+				// Skip tenant filter
+				return nil
+			}
+			ct, _ := saas.FromCurrentTenant(ctx)
+			h.P(ct, q)
+			return nil
+		}),
 	}
 }
 
-func FilterTenantRule() privacy.QueryMutationRule {
-	type hasTenant interface {
-		Where(p entql.P)
-		WhereTenantID(p entql.StringP)
+func (h HasTenant) P(t saas.TenantInfo, w interface{ WhereP(...func(*sql.Selector)) }) {
+	if len(t.GetId()) == 0 {
+		w.WhereP(
+			sql.FieldIsNull(h.Fields()[0].Descriptor().Name))
+		return
 	}
-	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
-		ct, _ := saas.FromCurrentTenant(ctx)
-		e := data.FromMultiTenancyDataFilter(ctx)
-		hf, ok := f.(hasTenant)
-		if e && ok {
-			//apply data filter
-			if ct.GetId() == "" {
-				//host side
-				hf.Where(entql.FieldNil("tenant_id"))
-			} else {
-				hf.WhereTenantID(entql.StringEQ(ct.GetId()))
-			}
-		}
+	w.WhereP(
+		sql.FieldEQ(h.Fields()[0].Descriptor().Name, t.GetId()))
+}
 
-		return privacy.Skip
-	})
+func (h HasTenant) Hooks() []ent.Hook {
+	return []ent.Hook{
+		hook.On(
+			func(next ent.Mutator) ent.Mutator {
+				type hasTenant interface {
+					SetOp(ent.Op)
+					SetTenantID(ss *sql.NullString)
+					WhereP(...func(*sql.Selector))
+				}
+				return ent.MutateFunc(func(ctx context.Context, mutation ent.Mutation) (ent.Value, error) {
+					if hf, ok := mutation.(hasTenant); ok {
+						ct, _ := saas.FromCurrentTenant(ctx)
+						at := data.FromAutoSetTenantId(ctx)
+						if ok && at {
+							if ct.GetId() != "" {
+								//normalize tenant side only
+								hf.SetTenantID(&sql.NullString{
+									String: ct.GetId(),
+									Valid:  true,
+								})
+							}
+						}
+					}
+					return next.Mutate(ctx, mutation)
+				})
+			},
+			ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne,
+		),
+	}
 }

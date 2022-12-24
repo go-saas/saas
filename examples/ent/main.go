@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-saas/saas"
 	"github.com/go-saas/saas/data"
-	sent "github.com/go-saas/saas/ent"
 	"github.com/go-saas/saas/examples/ent/shared/ent"
 	_ "github.com/go-saas/saas/examples/ent/shared/ent/runtime"
 	ent2 "github.com/go-saas/saas/examples/ent/tenant/ent"
@@ -32,7 +31,6 @@ func main() {
 			if err != nil {
 				return nil, err
 			}
-			client.Use(sent.Saas)
 			return client, nil
 		})
 		return v, err
@@ -44,7 +42,6 @@ func main() {
 			if err != nil {
 				return nil, err
 			}
-			client.Use(sent.Saas)
 			return client, nil
 		})
 		return v, err

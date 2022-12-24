@@ -3,14 +3,11 @@
 - Enable [EntQL Filtering](https://entgo.io/docs/feature-flags/#entql-filtering) and [Privacy Layer](https://entgo.io/docs/feature-flags/#privacy-layer) features
   Modify your `ent/generate.go`
   ```
-  go generate ... --feature privacy --feature entql ...
+  go generate ... --feature intercept,schema/snapshot ...
   ```
-- Add global runtime hook to your client
-  ```go
-  import sent "github.com/go-saas/saas/ent"
-  client.use(sent.Saas)
-  ```
-- Copy mixin into your schema
+
+
+- Copy following codes to your schema folder
   ```go
   type HasTenant struct {
       mixin.Schema
@@ -22,38 +19,63 @@
       }
   }
   
-  func (HasTenant) Policy() ent.Policy {
-      return privacy.Policy{
-          Query: privacy.QueryPolicy{
-              FilterTenantRule(),
-          },
-      }
-  }
-  
-  func FilterTenantRule() privacy.QueryMutationRule {
-      type hasTenant interface {
-          Where(p entql.P)
-          WhereTenantID(p entql.StringP)
-      }
-      return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
-          ct, _ := common.FromCurrentTenant(ctx)
-          e := data.FromMultiTenancyDataFilter(ctx)
-          hf, ok := f.(hasTenant)
-          if e && ok {
-              //apply data filter
-              if ct.GetId() == "" {
-                  //host side
-                  hf.Where(entql.FieldNil("tenant_id"))
-              } else {
-                  hf.WhereTenantID(entql.StringEQ(ct.GetId()))
+  func (h HasTenant) Interceptors() []ent.Interceptor {
+      return []ent.Interceptor{
+          intercept.TraverseFunc(func(ctx context.Context, q intercept.Query) error {
+              e := data.FromMultiTenancyDataFilter(ctx)
+              if !e {
+                  // Skip tenant filter
+                  return nil
               }
-          }
-  
-          return privacy.Skip
-      })
+              ct, _ := saas.FromCurrentTenant(ctx)
+              h.P(ct, q)
+              return nil
+          }),
+      }
   }
-    
+  
+  func (h HasTenant) P(t saas.TenantInfo, w interface{ WhereP(...func(*sql.Selector)) }) {
+      if len(t.GetId()) == 0 {
+          w.WhereP(
+              sql.FieldIsNull(h.Fields()[0].Descriptor().Name))
+          return
+      }
+      w.WhereP(
+          sql.FieldEQ(h.Fields()[0].Descriptor().Name, t.GetId()))
+  }
+  
+  func (h HasTenant) Hooks() []ent.Hook {
+      return []ent.Hook{
+          hook.On(
+              func(next ent.Mutator) ent.Mutator {
+                  type hasTenant interface {
+                      SetOp(ent.Op)
+                      SetTenantID(ss *sql.NullString)
+                      WhereP(...func(*sql.Selector))
+                  }
+                  return ent.MutateFunc(func(ctx context.Context, mutation ent.Mutation) (ent.Value, error) {
+                      if hf, ok := mutation.(hasTenant); ok {
+                          ct, _ := saas.FromCurrentTenant(ctx)
+                          at := data.FromAutoSetTenantId(ctx)
+                          if ok && at {
+                              if ct.GetId() != "" {
+                                  //normalize tenant side only
+                                  hf.SetTenantID(&sql.NullString{
+                                      String: ct.GetId(),
+                                      Valid:  true,
+                                  })
+                              }
+                          }
+                      }
+                      return next.Mutate(ctx, mutation)
+                  })
+              },
+              ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne,
+          ),
+      }
+  }
   ```
+
 - Embed mixin into your schema
   ```go
   // Post holds the schema definition for the Post entity.
