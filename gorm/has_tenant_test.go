@@ -8,7 +8,6 @@ import (
 	"github.com/go-saas/saas/data"
 	"github.com/stretchr/testify/assert"
 	g "gorm.io/gorm"
-	"sync"
 	"testing"
 )
 
@@ -29,7 +28,7 @@ func AutoMigrate(f func(*g.DB), db *g.DB) error {
 	)
 }
 
-func TestCustomField(t *testing.T) {
+func TestQuery(t *testing.T) {
 
 	//insert records
 	i := []TestEntity{
@@ -40,15 +39,8 @@ func TestCustomField(t *testing.T) {
 		{ID: "TenantB1", MultiTenancy: MultiTenancy{NewTenantId("B")}},
 		{ID: "TenantB2", MultiTenancy: MultiTenancy{NewTenantId("B")}},
 	}
-	wg := sync.WaitGroup{}
-	wg.Add(len(i))
-	for _, entity := range i {
-		go func(entity TestEntity) {
-			TestDb.Create(&entity)
-			wg.Done()
-		}(entity)
-	}
-	wg.Wait()
+	err := TestDb.CreateInBatches(&i, 100).Error
+	assert.NoError(t, err)
 
 	disableCtx := data.NewMultiTenancyDataFilter(context.Background(), false)
 
@@ -82,6 +74,76 @@ func TestCustomField(t *testing.T) {
 			assert.Equal(t, int64(2), count)
 		}
 	})
+}
+
+func TestDelete(t *testing.T) {
+	ctx := context.Background()
+	i := []TestEntity{
+		{ID: "Delete_Host", MultiTenancy: MultiTenancy{NewTenantId("")}},
+		{ID: "Delete_TenantA", MultiTenancy: MultiTenancy{NewTenantId("A")}},
+		{ID: "Delete_TenantB", MultiTenancy: MultiTenancy{NewTenantId("B")}},
+	}
+	err := TestDb.CreateInBatches(&i, 100).Error
+	assert.NoError(t, err)
+
+	//host delete tenant
+	t.Run("Host", func(t *testing.T) {
+		ctx := saas.NewCurrentTenant(ctx, "", "")
+		tx := TestDb.WithContext(ctx).Model(&TestEntity{}).Where("id = ?", "Delete_TenantA").Delete(&TestEntity{})
+		assert.NoError(t, tx.Error)
+		assert.Equal(t, int64(0), tx.RowsAffected)
+
+		tx = TestDb.WithContext(ctx).Model(&TestEntity{}).Where("id = ?", "Delete_Host").Delete(&TestEntity{})
+		assert.NoError(t, tx.Error)
+		assert.Equal(t, int64(1), tx.RowsAffected)
+	})
+
+	t.Run("Tenant", func(t *testing.T) {
+		ctx := saas.NewCurrentTenant(ctx, "A", "")
+		tx := TestDb.WithContext(ctx).Model(&TestEntity{}).Where("id = ?", "Delete_TenantB").Delete(&TestEntity{})
+		assert.NoError(t, tx.Error)
+		assert.Equal(t, int64(0), tx.RowsAffected)
+
+		tx = TestDb.WithContext(ctx).Model(&TestEntity{}).Where("id = ?", "Delete_TenantA").Delete(&TestEntity{})
+		assert.NoError(t, tx.Error)
+		assert.Equal(t, int64(1), tx.RowsAffected)
+	})
+
+}
+
+func TestUpdate(t *testing.T) {
+	ctx := context.Background()
+	i := []TestEntity{
+		{ID: "Update_Host", MultiTenancy: MultiTenancy{NewTenantId("")}},
+		{ID: "Update_TenantA", MultiTenancy: MultiTenancy{NewTenantId("A")}},
+		{ID: "Update_TenantB", MultiTenancy: MultiTenancy{NewTenantId("B")}},
+	}
+	err := TestDb.CreateInBatches(&i, 100).Error
+	assert.NoError(t, err)
+
+	//host delete tenant
+	t.Run("Host", func(t *testing.T) {
+		ctx := saas.NewCurrentTenant(ctx, "", "")
+		tx := TestDb.WithContext(ctx).Model(&TestEntity{}).Where("id = ?", "Update_TenantA").Update("id", "Update_TenantA_Updated")
+		assert.NoError(t, tx.Error)
+		assert.Equal(t, int64(0), tx.RowsAffected)
+
+		tx = TestDb.WithContext(ctx).Model(&TestEntity{}).Where("id = ?", "Update_Host").Update("id", "Update_Host_Updated")
+		assert.NoError(t, tx.Error)
+		assert.Equal(t, int64(1), tx.RowsAffected)
+	})
+
+	t.Run("Tenant", func(t *testing.T) {
+		ctx := saas.NewCurrentTenant(ctx, "A", "")
+		tx := TestDb.WithContext(ctx).Model(&TestEntity{}).Where("id = ?", "Update_TenantB").Update("id", "Update_TenantB_Updated")
+		assert.NoError(t, tx.Error)
+		assert.Equal(t, int64(0), tx.RowsAffected)
+
+		tx = TestDb.WithContext(ctx).Model(&TestEntity{}).Where("id = ?", "Update_TenantA").Update("id", "Update_TenantA_Updated")
+		assert.NoError(t, tx.Error)
+		assert.Equal(t, int64(1), tx.RowsAffected)
+	})
+
 }
 
 func TestAutoSetTenant(t *testing.T) {

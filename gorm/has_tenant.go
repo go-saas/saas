@@ -76,7 +76,7 @@ func (t HasTenant) MarshalJSON() ([]byte, error) {
 	return json.Marshal(nil)
 }
 
-func (t *HasTenant) UnmarshalJSON(b []byte) error {
+func (t HasTenant) UnmarshalJSON(b []byte) error {
 	if string(b) == "null" {
 		t.Valid = false
 		return nil
@@ -135,5 +135,53 @@ func (sd HasTenantQueryClause) ModifyStatement(stmt *gorm.Statement) {
 			clause.Eq{Column: clause.Column{Table: clause.CurrentTable, Name: sd.Field.DBName}, Value: v},
 		}})
 		stmt.Clauses["multi_tenancy_enabled"] = clause.Clause{}
+	}
+}
+
+func (HasTenant) DeleteClauses(f *schema.Field) []clause.Interface {
+	return []clause.Interface{HasTenantDeleteClause{Field: f}}
+}
+
+type HasTenantDeleteClause struct {
+	Field *schema.Field
+}
+
+func (sd HasTenantDeleteClause) Name() string {
+	return ""
+}
+
+func (sd HasTenantDeleteClause) Build(clause.Builder) {
+}
+
+func (sd HasTenantDeleteClause) MergeClause(*clause.Clause) {
+}
+
+func (sd HasTenantDeleteClause) ModifyStatement(stmt *gorm.Statement) {
+	if stmt.SQL.Len() == 0 {
+		HasTenantQueryClause(sd).ModifyStatement(stmt)
+	}
+}
+
+func (HasTenant) UpdateClauses(f *schema.Field) []clause.Interface {
+	return []clause.Interface{HasTenantUpdateClause{Field: f}}
+}
+
+type HasTenantUpdateClause struct {
+	Field *schema.Field
+}
+
+func (sd HasTenantUpdateClause) Name() string {
+	return ""
+}
+
+func (sd HasTenantUpdateClause) Build(clause.Builder) {
+}
+
+func (sd HasTenantUpdateClause) MergeClause(*clause.Clause) {
+}
+
+func (sd HasTenantUpdateClause) ModifyStatement(stmt *gorm.Statement) {
+	if stmt.SQL.Len() == 0 {
+		HasTenantQueryClause(sd).ModifyStatement(stmt)
 	}
 }
