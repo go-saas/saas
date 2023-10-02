@@ -28,6 +28,7 @@ if you are finding complete solution which is microservice compatible, please re
 
 * Support multiple web framework
     * [x] [gin](https://github.com/gin-gonic/gin)
+    * [x] [iris](https://github.com/kataras/iris)
     * [x] net/http
     * [x] [kratos](https://github.com/go-kratos/kratos)
 * Supported orm with data filter, which means all underlying database
