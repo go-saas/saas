@@ -1,6 +1,6 @@
 module github.com/go-saas/saas
 
-go 1.18
+go 1.20
 
 require (
 	github.com/apache/apisix-go-plugin-runner v0.4.0

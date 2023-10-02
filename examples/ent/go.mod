@@ -1,6 +1,6 @@
 module github.com/go-saas/saas/examples/ent
 
-go 1.18
+go 1.20
 
 replace github.com/go-saas/saas => ../../
 
