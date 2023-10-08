@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/go-saas/saas/examples/ent/tenant/ent/post"
 )
@@ -22,7 +23,8 @@ type Post struct {
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// Dsn holds the value of the "dsn" field.
-	Dsn string `json:"dsn,omitempty"`
+	Dsn          string `json:"dsn,omitempty"`
+	selectValues sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -35,7 +37,7 @@ func (*Post) scanValues(columns []string) ([]any, error) {
 		case post.FieldTenantID, post.FieldTitle, post.FieldDescription, post.FieldDsn:
 			values[i] = new(sql.NullString)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Post", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -79,16 +81,24 @@ func (po *Post) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				po.Dsn = value.String
 			}
+		default:
+			po.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// Value returns the ent.Value that was dynamically selected and assigned to the Post.
+// This includes values selected through modifiers, order, etc.
+func (po *Post) Value(name string) (ent.Value, error) {
+	return po.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this Post.
 // Note that you need to call Post.Unwrap() before calling this method if this Post
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (po *Post) Update() *PostUpdateOne {
-	return (&PostClient{config: po.config}).UpdateOne(po)
+	return NewPostClient(po.config).UpdateOne(po)
 }
 
 // Unwrap unwraps the Post entity that was returned from a transaction after it was closed,
@@ -124,9 +134,3 @@ func (po *Post) String() string {
 
 // Posts is a parsable slice of Post.
 type Posts []*Post
-
-func (po Posts) config(cfg config) {
-	for _i := range po {
-		po[_i].config = cfg
-	}
-}

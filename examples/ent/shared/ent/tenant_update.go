@@ -125,7 +125,7 @@ func (tu *TenantUpdate) RemoveConn(t ...*TenantConn) *TenantUpdate {
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (tu *TenantUpdate) Save(ctx context.Context) (int, error) {
 	tu.defaults()
-	return withHooks[int, TenantMutation](ctx, tu.sqlSave, tu.mutation, tu.hooks)
+	return withHooks(ctx, tu.sqlSave, tu.mutation, tu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -159,16 +159,7 @@ func (tu *TenantUpdate) defaults() {
 }
 
 func (tu *TenantUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   tenant.Table,
-			Columns: tenant.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: tenant.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewUpdateSpec(tenant.Table, tenant.Columns, sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt))
 	if ps := tu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -202,10 +193,7 @@ func (tu *TenantUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{tenant.ConnColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tenantconn.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(tenantconn.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -218,10 +206,7 @@ func (tu *TenantUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{tenant.ConnColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tenantconn.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(tenantconn.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -237,10 +222,7 @@ func (tu *TenantUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{tenant.ConnColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tenantconn.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(tenantconn.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -361,6 +343,12 @@ func (tuo *TenantUpdateOne) RemoveConn(t ...*TenantConn) *TenantUpdateOne {
 	return tuo.RemoveConnIDs(ids...)
 }
 
+// Where appends a list predicates to the TenantUpdate builder.
+func (tuo *TenantUpdateOne) Where(ps ...predicate.Tenant) *TenantUpdateOne {
+	tuo.mutation.Where(ps...)
+	return tuo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (tuo *TenantUpdateOne) Select(field string, fields ...string) *TenantUpdateOne {
@@ -371,7 +359,7 @@ func (tuo *TenantUpdateOne) Select(field string, fields ...string) *TenantUpdate
 // Save executes the query and returns the updated Tenant entity.
 func (tuo *TenantUpdateOne) Save(ctx context.Context) (*Tenant, error) {
 	tuo.defaults()
-	return withHooks[*Tenant, TenantMutation](ctx, tuo.sqlSave, tuo.mutation, tuo.hooks)
+	return withHooks(ctx, tuo.sqlSave, tuo.mutation, tuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -405,16 +393,7 @@ func (tuo *TenantUpdateOne) defaults() {
 }
 
 func (tuo *TenantUpdateOne) sqlSave(ctx context.Context) (_node *Tenant, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   tenant.Table,
-			Columns: tenant.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: tenant.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewUpdateSpec(tenant.Table, tenant.Columns, sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt))
 	id, ok := tuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Tenant.id" for update`)}
@@ -465,10 +444,7 @@ func (tuo *TenantUpdateOne) sqlSave(ctx context.Context) (_node *Tenant, err err
 			Columns: []string{tenant.ConnColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tenantconn.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(tenantconn.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -481,10 +457,7 @@ func (tuo *TenantUpdateOne) sqlSave(ctx context.Context) (_node *Tenant, err err
 			Columns: []string{tenant.ConnColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tenantconn.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(tenantconn.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -500,10 +473,7 @@ func (tuo *TenantUpdateOne) sqlSave(ctx context.Context) (_node *Tenant, err err
 			Columns: []string{tenant.ConnColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tenantconn.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(tenantconn.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

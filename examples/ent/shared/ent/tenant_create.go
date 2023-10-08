@@ -114,7 +114,7 @@ func (tc *TenantCreate) Mutation() *TenantMutation {
 // Save creates the Tenant in the database.
 func (tc *TenantCreate) Save(ctx context.Context) (*Tenant, error) {
 	tc.defaults()
-	return withHooks[*Tenant, TenantMutation](ctx, tc.sqlSave, tc.mutation, tc.hooks)
+	return withHooks(ctx, tc.sqlSave, tc.mutation, tc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -188,13 +188,7 @@ func (tc *TenantCreate) sqlSave(ctx context.Context) (*Tenant, error) {
 func (tc *TenantCreate) createSpec() (*Tenant, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Tenant{config: tc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: tenant.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: tenant.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(tenant.Table, sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt))
 	)
 	_spec.OnConflict = tc.conflict
 	if id, ok := tc.mutation.ID(); ok {
@@ -229,10 +223,7 @@ func (tc *TenantCreate) createSpec() (*Tenant, *sqlgraph.CreateSpec) {
 			Columns: []string{tenant.ConnColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tenantconn.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(tenantconn.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -509,12 +500,16 @@ func (u *TenantUpsertOne) IDX(ctx context.Context) int {
 // TenantCreateBulk is the builder for creating many Tenant entities in bulk.
 type TenantCreateBulk struct {
 	config
+	err      error
 	builders []*TenantCreate
 	conflict []sql.ConflictOption
 }
 
 // Save creates the Tenant entities in the database.
 func (tcb *TenantCreateBulk) Save(ctx context.Context) ([]*Tenant, error) {
+	if tcb.err != nil {
+		return nil, tcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(tcb.builders))
 	nodes := make([]*Tenant, len(tcb.builders))
 	mutators := make([]Mutator, len(tcb.builders))
@@ -531,8 +526,8 @@ func (tcb *TenantCreateBulk) Save(ctx context.Context) ([]*Tenant, error) {
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, tcb.builders[i+1].mutation)
 				} else {
@@ -758,6 +753,9 @@ func (u *TenantUpsertBulk) ClearRegion() *TenantUpsertBulk {
 
 // Exec executes the query.
 func (u *TenantUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
 	for i, b := range u.create.builders {
 		if len(b.conflict) != 0 {
 			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the TenantCreateBulk instead", i)

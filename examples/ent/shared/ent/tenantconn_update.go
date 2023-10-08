@@ -54,7 +54,7 @@ func (tcu *TenantConnUpdate) Mutation() *TenantConnMutation {
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (tcu *TenantConnUpdate) Save(ctx context.Context) (int, error) {
 	tcu.defaults()
-	return withHooks[int, TenantConnMutation](ctx, tcu.sqlSave, tcu.mutation, tcu.hooks)
+	return withHooks(ctx, tcu.sqlSave, tcu.mutation, tcu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -88,16 +88,7 @@ func (tcu *TenantConnUpdate) defaults() {
 }
 
 func (tcu *TenantConnUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   tenantconn.Table,
-			Columns: tenantconn.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: tenantconn.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewUpdateSpec(tenantconn.Table, tenantconn.Columns, sqlgraph.NewFieldSpec(tenantconn.FieldID, field.TypeInt))
 	if ps := tcu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -157,6 +148,12 @@ func (tcuo *TenantConnUpdateOne) Mutation() *TenantConnMutation {
 	return tcuo.mutation
 }
 
+// Where appends a list predicates to the TenantConnUpdate builder.
+func (tcuo *TenantConnUpdateOne) Where(ps ...predicate.TenantConn) *TenantConnUpdateOne {
+	tcuo.mutation.Where(ps...)
+	return tcuo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (tcuo *TenantConnUpdateOne) Select(field string, fields ...string) *TenantConnUpdateOne {
@@ -167,7 +164,7 @@ func (tcuo *TenantConnUpdateOne) Select(field string, fields ...string) *TenantC
 // Save executes the query and returns the updated TenantConn entity.
 func (tcuo *TenantConnUpdateOne) Save(ctx context.Context) (*TenantConn, error) {
 	tcuo.defaults()
-	return withHooks[*TenantConn, TenantConnMutation](ctx, tcuo.sqlSave, tcuo.mutation, tcuo.hooks)
+	return withHooks(ctx, tcuo.sqlSave, tcuo.mutation, tcuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -201,16 +198,7 @@ func (tcuo *TenantConnUpdateOne) defaults() {
 }
 
 func (tcuo *TenantConnUpdateOne) sqlSave(ctx context.Context) (_node *TenantConn, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   tenantconn.Table,
-			Columns: tenantconn.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: tenantconn.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewUpdateSpec(tenantconn.Table, tenantconn.Columns, sqlgraph.NewFieldSpec(tenantconn.FieldID, field.TypeInt))
 	id, ok := tcuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "TenantConn.id" for update`)}

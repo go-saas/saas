@@ -26,6 +26,8 @@ func (t *TenantStore) GetByNameOrId(ctx context.Context, nameOrId string) (*saas
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, saas.ErrTenantNotFound
+		} else {
+			return nil, err
 		}
 	}
 	ret := saas.NewTenantConfig(strconv.Itoa(te.ID), te.Name, te.Region)

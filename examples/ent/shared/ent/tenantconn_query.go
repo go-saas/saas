@@ -17,11 +17,8 @@ import (
 // TenantConnQuery is the builder for querying TenantConn entities.
 type TenantConnQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
+	ctx        *QueryContext
+	order      []tenantconn.OrderOption
 	inters     []Interceptor
 	predicates []predicate.TenantConn
 	withFKs    bool
@@ -38,25 +35,25 @@ func (tcq *TenantConnQuery) Where(ps ...predicate.TenantConn) *TenantConnQuery {
 
 // Limit the number of records to be returned by this query.
 func (tcq *TenantConnQuery) Limit(limit int) *TenantConnQuery {
-	tcq.limit = &limit
+	tcq.ctx.Limit = &limit
 	return tcq
 }
 
 // Offset to start from.
 func (tcq *TenantConnQuery) Offset(offset int) *TenantConnQuery {
-	tcq.offset = &offset
+	tcq.ctx.Offset = &offset
 	return tcq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (tcq *TenantConnQuery) Unique(unique bool) *TenantConnQuery {
-	tcq.unique = &unique
+	tcq.ctx.Unique = &unique
 	return tcq
 }
 
 // Order specifies how the records should be ordered.
-func (tcq *TenantConnQuery) Order(o ...OrderFunc) *TenantConnQuery {
+func (tcq *TenantConnQuery) Order(o ...tenantconn.OrderOption) *TenantConnQuery {
 	tcq.order = append(tcq.order, o...)
 	return tcq
 }
@@ -64,7 +61,7 @@ func (tcq *TenantConnQuery) Order(o ...OrderFunc) *TenantConnQuery {
 // First returns the first TenantConn entity from the query.
 // Returns a *NotFoundError when no TenantConn was found.
 func (tcq *TenantConnQuery) First(ctx context.Context) (*TenantConn, error) {
-	nodes, err := tcq.Limit(1).All(newQueryContext(ctx, TypeTenantConn, "First"))
+	nodes, err := tcq.Limit(1).All(setContextOp(ctx, tcq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +84,7 @@ func (tcq *TenantConnQuery) FirstX(ctx context.Context) *TenantConn {
 // Returns a *NotFoundError when no TenantConn ID was found.
 func (tcq *TenantConnQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = tcq.Limit(1).IDs(newQueryContext(ctx, TypeTenantConn, "FirstID")); err != nil {
+	if ids, err = tcq.Limit(1).IDs(setContextOp(ctx, tcq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -110,7 +107,7 @@ func (tcq *TenantConnQuery) FirstIDX(ctx context.Context) int {
 // Returns a *NotSingularError when more than one TenantConn entity is found.
 // Returns a *NotFoundError when no TenantConn entities are found.
 func (tcq *TenantConnQuery) Only(ctx context.Context) (*TenantConn, error) {
-	nodes, err := tcq.Limit(2).All(newQueryContext(ctx, TypeTenantConn, "Only"))
+	nodes, err := tcq.Limit(2).All(setContextOp(ctx, tcq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +135,7 @@ func (tcq *TenantConnQuery) OnlyX(ctx context.Context) *TenantConn {
 // Returns a *NotFoundError when no entities are found.
 func (tcq *TenantConnQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = tcq.Limit(2).IDs(newQueryContext(ctx, TypeTenantConn, "OnlyID")); err != nil {
+	if ids, err = tcq.Limit(2).IDs(setContextOp(ctx, tcq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -163,7 +160,7 @@ func (tcq *TenantConnQuery) OnlyIDX(ctx context.Context) int {
 
 // All executes the query and returns a list of TenantConns.
 func (tcq *TenantConnQuery) All(ctx context.Context) ([]*TenantConn, error) {
-	ctx = newQueryContext(ctx, TypeTenantConn, "All")
+	ctx = setContextOp(ctx, tcq.ctx, "All")
 	if err := tcq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
@@ -181,10 +178,12 @@ func (tcq *TenantConnQuery) AllX(ctx context.Context) []*TenantConn {
 }
 
 // IDs executes the query and returns a list of TenantConn IDs.
-func (tcq *TenantConnQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
-	ctx = newQueryContext(ctx, TypeTenantConn, "IDs")
-	if err := tcq.Select(tenantconn.FieldID).Scan(ctx, &ids); err != nil {
+func (tcq *TenantConnQuery) IDs(ctx context.Context) (ids []int, err error) {
+	if tcq.ctx.Unique == nil && tcq.path != nil {
+		tcq.Unique(true)
+	}
+	ctx = setContextOp(ctx, tcq.ctx, "IDs")
+	if err = tcq.Select(tenantconn.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -201,7 +200,7 @@ func (tcq *TenantConnQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (tcq *TenantConnQuery) Count(ctx context.Context) (int, error) {
-	ctx = newQueryContext(ctx, TypeTenantConn, "Count")
+	ctx = setContextOp(ctx, tcq.ctx, "Count")
 	if err := tcq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
@@ -219,7 +218,7 @@ func (tcq *TenantConnQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (tcq *TenantConnQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = newQueryContext(ctx, TypeTenantConn, "Exist")
+	ctx = setContextOp(ctx, tcq.ctx, "Exist")
 	switch _, err := tcq.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
@@ -247,14 +246,13 @@ func (tcq *TenantConnQuery) Clone() *TenantConnQuery {
 	}
 	return &TenantConnQuery{
 		config:     tcq.config,
-		limit:      tcq.limit,
-		offset:     tcq.offset,
-		order:      append([]OrderFunc{}, tcq.order...),
+		ctx:        tcq.ctx.Clone(),
+		order:      append([]tenantconn.OrderOption{}, tcq.order...),
+		inters:     append([]Interceptor{}, tcq.inters...),
 		predicates: append([]predicate.TenantConn{}, tcq.predicates...),
 		// clone intermediate query.
-		sql:    tcq.sql.Clone(),
-		path:   tcq.path,
-		unique: tcq.unique,
+		sql:  tcq.sql.Clone(),
+		path: tcq.path,
 	}
 }
 
@@ -273,9 +271,9 @@ func (tcq *TenantConnQuery) Clone() *TenantConnQuery {
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (tcq *TenantConnQuery) GroupBy(field string, fields ...string) *TenantConnGroupBy {
-	tcq.fields = append([]string{field}, fields...)
+	tcq.ctx.Fields = append([]string{field}, fields...)
 	grbuild := &TenantConnGroupBy{build: tcq}
-	grbuild.flds = &tcq.fields
+	grbuild.flds = &tcq.ctx.Fields
 	grbuild.label = tenantconn.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -294,10 +292,10 @@ func (tcq *TenantConnQuery) GroupBy(field string, fields ...string) *TenantConnG
 //		Select(tenantconn.FieldCreateTime).
 //		Scan(ctx, &v)
 func (tcq *TenantConnQuery) Select(fields ...string) *TenantConnSelect {
-	tcq.fields = append(tcq.fields, fields...)
+	tcq.ctx.Fields = append(tcq.ctx.Fields, fields...)
 	sbuild := &TenantConnSelect{TenantConnQuery: tcq}
 	sbuild.label = tenantconn.Label
-	sbuild.flds, sbuild.scan = &tcq.fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &tcq.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
@@ -317,7 +315,7 @@ func (tcq *TenantConnQuery) prepareQuery(ctx context.Context) error {
 			}
 		}
 	}
-	for _, f := range tcq.fields {
+	for _, f := range tcq.ctx.Fields {
 		if !tenantconn.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
@@ -363,30 +361,22 @@ func (tcq *TenantConnQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 
 func (tcq *TenantConnQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := tcq.querySpec()
-	_spec.Node.Columns = tcq.fields
-	if len(tcq.fields) > 0 {
-		_spec.Unique = tcq.unique != nil && *tcq.unique
+	_spec.Node.Columns = tcq.ctx.Fields
+	if len(tcq.ctx.Fields) > 0 {
+		_spec.Unique = tcq.ctx.Unique != nil && *tcq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, tcq.driver, _spec)
 }
 
 func (tcq *TenantConnQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   tenantconn.Table,
-			Columns: tenantconn.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: tenantconn.FieldID,
-			},
-		},
-		From:   tcq.sql,
-		Unique: true,
-	}
-	if unique := tcq.unique; unique != nil {
+	_spec := sqlgraph.NewQuerySpec(tenantconn.Table, tenantconn.Columns, sqlgraph.NewFieldSpec(tenantconn.FieldID, field.TypeInt))
+	_spec.From = tcq.sql
+	if unique := tcq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if tcq.path != nil {
+		_spec.Unique = true
 	}
-	if fields := tcq.fields; len(fields) > 0 {
+	if fields := tcq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, tenantconn.FieldID)
 		for i := range fields {
@@ -402,10 +392,10 @@ func (tcq *TenantConnQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := tcq.limit; limit != nil {
+	if limit := tcq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := tcq.offset; offset != nil {
+	if offset := tcq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := tcq.order; len(ps) > 0 {
@@ -421,7 +411,7 @@ func (tcq *TenantConnQuery) querySpec() *sqlgraph.QuerySpec {
 func (tcq *TenantConnQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(tcq.driver.Dialect())
 	t1 := builder.Table(tenantconn.Table)
-	columns := tcq.fields
+	columns := tcq.ctx.Fields
 	if len(columns) == 0 {
 		columns = tenantconn.Columns
 	}
@@ -430,7 +420,7 @@ func (tcq *TenantConnQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector = tcq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if tcq.unique != nil && *tcq.unique {
+	if tcq.ctx.Unique != nil && *tcq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, p := range tcq.predicates {
@@ -439,12 +429,12 @@ func (tcq *TenantConnQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	for _, p := range tcq.order {
 		p(selector)
 	}
-	if offset := tcq.offset; offset != nil {
+	if offset := tcq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := tcq.limit; limit != nil {
+	if limit := tcq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -464,7 +454,7 @@ func (tcgb *TenantConnGroupBy) Aggregate(fns ...AggregateFunc) *TenantConnGroupB
 
 // Scan applies the selector query and scans the result into the given value.
 func (tcgb *TenantConnGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = newQueryContext(ctx, TypeTenantConn, "GroupBy")
+	ctx = setContextOp(ctx, tcgb.build.ctx, "GroupBy")
 	if err := tcgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -512,7 +502,7 @@ func (tcs *TenantConnSelect) Aggregate(fns ...AggregateFunc) *TenantConnSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (tcs *TenantConnSelect) Scan(ctx context.Context, v any) error {
-	ctx = newQueryContext(ctx, TypeTenantConn, "Select")
+	ctx = setContextOp(ctx, tcs.ctx, "Select")
 	if err := tcs.prepareQuery(ctx); err != nil {
 		return err
 	}

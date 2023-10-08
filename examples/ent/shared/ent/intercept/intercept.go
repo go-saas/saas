@@ -8,7 +8,10 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/go-saas/saas/examples/ent/shared/ent"
+	"github.com/go-saas/saas/examples/ent/shared/ent/post"
 	"github.com/go-saas/saas/examples/ent/shared/ent/predicate"
+	"github.com/go-saas/saas/examples/ent/shared/ent/tenant"
+	"github.com/go-saas/saas/examples/ent/shared/ent/tenantconn"
 )
 
 // The Query interface represents an operation that queries a graph.
@@ -24,7 +27,7 @@ type Query interface {
 	// Unique configures the query builder to filter duplicate records.
 	Unique(bool)
 	// Order specifies how the records should be ordered.
-	Order(...ent.OrderFunc)
+	Order(...func(*sql.Selector))
 	// WhereP appends storage-level predicates to the query builder. Using this method, users
 	// can use type-assertion to append predicates that do not depend on any generated package.
 	WhereP(...func(*sql.Selector))
@@ -152,48 +155,52 @@ func (f TraverseTenantConn) Traverse(ctx context.Context, q ent.Query) error {
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
 	case *ent.PostQuery:
-		return &query[*ent.PostQuery, predicate.Post]{typ: ent.TypePost, tq: q}, nil
+		return &query[*ent.PostQuery, predicate.Post, post.OrderOption]{typ: ent.TypePost, tq: q}, nil
 	case *ent.TenantQuery:
-		return &query[*ent.TenantQuery, predicate.Tenant]{typ: ent.TypeTenant, tq: q}, nil
+		return &query[*ent.TenantQuery, predicate.Tenant, tenant.OrderOption]{typ: ent.TypeTenant, tq: q}, nil
 	case *ent.TenantConnQuery:
-		return &query[*ent.TenantConnQuery, predicate.TenantConn]{typ: ent.TypeTenantConn, tq: q}, nil
+		return &query[*ent.TenantConnQuery, predicate.TenantConn, tenantconn.OrderOption]{typ: ent.TypeTenantConn, tq: q}, nil
 	default:
 		return nil, fmt.Errorf("unknown query type %T", q)
 	}
 }
 
-type query[T any, P ~func(*sql.Selector)] struct {
+type query[T any, P ~func(*sql.Selector), R ~func(*sql.Selector)] struct {
 	typ string
 	tq  interface {
 		Limit(int) T
 		Offset(int) T
 		Unique(bool) T
-		Order(...ent.OrderFunc) T
+		Order(...R) T
 		Where(...P) T
 	}
 }
 
-func (q query[T, P]) Type() string {
+func (q query[T, P, R]) Type() string {
 	return q.typ
 }
 
-func (q query[T, P]) Limit(limit int) {
+func (q query[T, P, R]) Limit(limit int) {
 	q.tq.Limit(limit)
 }
 
-func (q query[T, P]) Offset(offset int) {
+func (q query[T, P, R]) Offset(offset int) {
 	q.tq.Offset(offset)
 }
 
-func (q query[T, P]) Unique(unique bool) {
+func (q query[T, P, R]) Unique(unique bool) {
 	q.tq.Unique(unique)
 }
 
-func (q query[T, P]) Order(orders ...ent.OrderFunc) {
-	q.tq.Order(orders...)
+func (q query[T, P, R]) Order(orders ...func(*sql.Selector)) {
+	rs := make([]R, len(orders))
+	for i := range orders {
+		rs[i] = orders[i]
+	}
+	q.tq.Order(rs...)
 }
 
-func (q query[T, P]) WhereP(ps ...func(*sql.Selector)) {
+func (q query[T, P, R]) WhereP(ps ...func(*sql.Selector)) {
 	p := make([]P, len(ps))
 	for i := range ps {
 		p[i] = ps[i]

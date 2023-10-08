@@ -27,7 +27,7 @@ func (tcd *TenantConnDelete) Where(ps ...predicate.TenantConn) *TenantConnDelete
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (tcd *TenantConnDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks[int, TenantConnMutation](ctx, tcd.sqlExec, tcd.mutation, tcd.hooks)
+	return withHooks(ctx, tcd.sqlExec, tcd.mutation, tcd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -40,15 +40,7 @@ func (tcd *TenantConnDelete) ExecX(ctx context.Context) int {
 }
 
 func (tcd *TenantConnDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: tenantconn.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
-				Column: tenantconn.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(tenantconn.Table, sqlgraph.NewFieldSpec(tenantconn.FieldID, field.TypeInt))
 	if ps := tcd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -69,6 +61,12 @@ type TenantConnDeleteOne struct {
 	tcd *TenantConnDelete
 }
 
+// Where appends a list predicates to the TenantConnDelete builder.
+func (tcdo *TenantConnDeleteOne) Where(ps ...predicate.TenantConn) *TenantConnDeleteOne {
+	tcdo.tcd.mutation.Where(ps...)
+	return tcdo
+}
+
 // Exec executes the deletion query.
 func (tcdo *TenantConnDeleteOne) Exec(ctx context.Context) error {
 	n, err := tcdo.tcd.Exec(ctx)
@@ -84,5 +82,7 @@ func (tcdo *TenantConnDeleteOne) Exec(ctx context.Context) error {
 
 // ExecX is like Exec, but panics if an error occurs.
 func (tcdo *TenantConnDeleteOne) ExecX(ctx context.Context) {
-	tcdo.tcd.ExecX(ctx)
+	if err := tcdo.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/go-saas/saas/examples/ent/shared/ent/tenant"
 )
@@ -28,7 +29,8 @@ type Tenant struct {
 	Region string `json:"region,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TenantQuery when eager-loading is set.
-	Edges TenantEdges `json:"edges"`
+	Edges        TenantEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // TenantEdges holds the relations/edges for other nodes in the graph.
@@ -61,7 +63,7 @@ func (*Tenant) scanValues(columns []string) ([]any, error) {
 		case tenant.FieldCreateTime, tenant.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Tenant", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -111,21 +113,29 @@ func (t *Tenant) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.Region = value.String
 			}
+		default:
+			t.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
+// Value returns the ent.Value that was dynamically selected and assigned to the Tenant.
+// This includes values selected through modifiers, order, etc.
+func (t *Tenant) Value(name string) (ent.Value, error) {
+	return t.selectValues.Get(name)
+}
+
 // QueryConn queries the "conn" edge of the Tenant entity.
 func (t *Tenant) QueryConn() *TenantConnQuery {
-	return (&TenantClient{config: t.config}).QueryConn(t)
+	return NewTenantClient(t.config).QueryConn(t)
 }
 
 // Update returns a builder for updating this Tenant.
 // Note that you need to call Tenant.Unwrap() before calling this method if this Tenant
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (t *Tenant) Update() *TenantUpdateOne {
-	return (&TenantClient{config: t.config}).UpdateOne(t)
+	return NewTenantClient(t.config).UpdateOne(t)
 }
 
 // Unwrap unwraps the Tenant entity that was returned from a transaction after it was closed,
@@ -164,9 +174,3 @@ func (t *Tenant) String() string {
 
 // Tenants is a parsable slice of Tenant.
 type Tenants []*Tenant
-
-func (t Tenants) config(cfg config) {
-	for _i := range t {
-		t[_i].config = cfg
-	}
-}

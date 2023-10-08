@@ -4,6 +4,7 @@ package post
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/sql"
 )
 
 const (
@@ -51,3 +52,31 @@ var (
 	Hooks        [1]ent.Hook
 	Interceptors [1]ent.Interceptor
 )
+
+// OrderOption defines the ordering options for the Post queries.
+type OrderOption func(*sql.Selector)
+
+// ByID orders the results by the id field.
+func ByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
+// ByTitle orders the results by the title field.
+func ByTitle(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTitle, opts...).ToFunc()
+}
+
+// ByDescription orders the results by the description field.
+func ByDescription(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByDsn orders the results by the dsn field.
+func ByDsn(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDsn, opts...).ToFunc()
+}

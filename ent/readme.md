@@ -7,77 +7,13 @@
   ```
 
 
-- Copy following codes to your schema folder
-  ```go
-  type HasTenant struct {
-      mixin.Schema
-  }
-  
-  func (HasTenant) Fields() []ent.Field {
-      return []ent.Field{
-          field.String("tenant_id").Optional().GoType(&sql.NullString{}),
-      }
-  }
-  
-  func (h HasTenant) Interceptors() []ent.Interceptor {
-      return []ent.Interceptor{
-          intercept.TraverseFunc(func(ctx context.Context, q intercept.Query) error {
-              e := data.FromMultiTenancyDataFilter(ctx)
-              if !e {
-                  // Skip tenant filter
-                  return nil
-              }
-              ct, _ := saas.FromCurrentTenant(ctx)
-              h.P(ct, q)
-              return nil
-          }),
-      }
-  }
-  
-  func (h HasTenant) P(t saas.TenantInfo, w interface{ WhereP(...func(*sql.Selector)) }) {
-      if len(t.GetId()) == 0 {
-          w.WhereP(
-              sql.FieldIsNull(h.Fields()[0].Descriptor().Name))
-          return
-      }
-      w.WhereP(
-          sql.FieldEQ(h.Fields()[0].Descriptor().Name, t.GetId()))
-  }
-  
-  func (h HasTenant) Hooks() []ent.Hook {
-      return []ent.Hook{
-          hook.On(
-              func(next ent.Mutator) ent.Mutator {
-                  type hasTenant interface {
-                      SetOp(ent.Op)
-                      SetTenantID(ss *sql.NullString)
-                      WhereP(...func(*sql.Selector))
-                  }
-                  return ent.MutateFunc(func(ctx context.Context, mutation ent.Mutation) (ent.Value, error) {
-                      if hf, ok := mutation.(hasTenant); ok {
-                          ct, _ := saas.FromCurrentTenant(ctx)
-                          at := data.FromAutoSetTenantId(ctx)
-                          if ok && at {
-                              if ct.GetId() != "" {
-                                  //normalize tenant side only
-                                  hf.SetTenantID(&sql.NullString{
-                                      String: ct.GetId(),
-                                      Valid:  true,
-                                  })
-                              }
-                          }
-                      }
-                      return next.Mutate(ctx, mutation)
-                  })
-              },
-              ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne,
-          ),
-      }
-  }
-  ```
-
 - Embed mixin into your schema
+
   ```go
+  import (
+  	sent "github.com/go-saas/saas/ent"
+  )
+  ...
   // Post holds the schema definition for the Post entity.
   type Post struct {
       ent.Schema
@@ -85,7 +21,7 @@
   
   func (Post) Mixin() []ent.Mixin {
       return []ent.Mixin{
-          HasTenant{},
+          sent.HasTenant{},
       }
   }
   ```

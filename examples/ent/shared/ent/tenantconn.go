@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/go-saas/saas/examples/ent/shared/ent/tenantconn"
 )
@@ -23,8 +24,9 @@ type TenantConn struct {
 	// Key holds the value of the "key" field.
 	Key string `json:"key,omitempty"`
 	// Value holds the value of the "value" field.
-	Value       string `json:"value,omitempty"`
-	tenant_conn *int
+	Value        string `json:"value,omitempty"`
+	tenant_conn  *int
+	selectValues sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -41,7 +43,7 @@ func (*TenantConn) scanValues(columns []string) ([]any, error) {
 		case tenantconn.ForeignKeys[0]: // tenant_conn
 			values[i] = new(sql.NullInt64)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type TenantConn", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -92,16 +94,24 @@ func (tc *TenantConn) assignValues(columns []string, values []any) error {
 				tc.tenant_conn = new(int)
 				*tc.tenant_conn = int(value.Int64)
 			}
+		default:
+			tc.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
+}
+
+// GetValue returns the ent.Value that was dynamically selected and assigned to the TenantConn.
+// This includes values selected through modifiers, order, etc.
+func (tc *TenantConn) GetValue(name string) (ent.Value, error) {
+	return tc.selectValues.Get(name)
 }
 
 // Update returns a builder for updating this TenantConn.
 // Note that you need to call TenantConn.Unwrap() before calling this method if this TenantConn
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (tc *TenantConn) Update() *TenantConnUpdateOne {
-	return (&TenantConnClient{config: tc.config}).UpdateOne(tc)
+	return NewTenantConnClient(tc.config).UpdateOne(tc)
 }
 
 // Unwrap unwraps the TenantConn entity that was returned from a transaction after it was closed,
@@ -137,9 +147,3 @@ func (tc *TenantConn) String() string {
 
 // TenantConns is a parsable slice of TenantConn.
 type TenantConns []*TenantConn
-
-func (tc TenantConns) config(cfg config) {
-	for _i := range tc {
-		tc[_i].config = cfg
-	}
-}

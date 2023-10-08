@@ -3,6 +3,7 @@ module github.com/go-saas/saas
 go 1.20
 
 require (
+	entgo.io/ent v0.12.4
 	github.com/apache/apisix-go-plugin-runner v0.4.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-kratos/kratos/v2 v2.5.0

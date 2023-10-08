@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
+	sent "github.com/go-saas/saas/ent"
 )
 
 // Post holds the schema definition for the Post entity.
@@ -27,6 +28,6 @@ func (Post) Edges() []ent.Edge {
 
 func (Post) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		HasTenant{},
+		sent.HasTenant{},
 	}
 }

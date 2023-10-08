@@ -5,14 +5,14 @@ go 1.20
 replace github.com/go-saas/saas => ../../
 
 require (
-	entgo.io/ent v0.11.5-0.20221222102126-038cc0cace07
+	entgo.io/ent v0.12.4
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-saas/saas v0.0.0-00010101000000-000000000000
 	github.com/mattn/go-sqlite3 v1.14.16
 )
 
 require (
-	ariga.io/atlas v0.8.4-0.20221212165942-e53dd27a603d // indirect
+	ariga.io/atlas v0.14.1-0.20230918065911-83ad451a4935 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
@@ -34,7 +34,7 @@ require (
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	github.com/zclconf/go-cty v1.8.0 // indirect
 	golang.org/x/crypto v0.13.0 // indirect
-	golang.org/x/mod v0.8.0 // indirect
+	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.15.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.13.0 // indirect

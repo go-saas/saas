@@ -7,16 +7,17 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 
 	"github.com/go-saas/saas/examples/ent/shared/ent/migrate"
 
-	"github.com/go-saas/saas/examples/ent/shared/ent/post"
-	"github.com/go-saas/saas/examples/ent/shared/ent/tenant"
-	"github.com/go-saas/saas/examples/ent/shared/ent/tenantconn"
-
+	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/go-saas/saas/examples/ent/shared/ent/post"
+	"github.com/go-saas/saas/examples/ent/shared/ent/tenant"
+	"github.com/go-saas/saas/examples/ent/shared/ent/tenantconn"
 )
 
 // Client is the client that holds all ent builders.
@@ -48,6 +49,55 @@ func (c *Client) init() {
 	c.TenantConn = NewTenantConnClient(c.config)
 }
 
+type (
+	// config is the configuration for the client and its builder.
+	config struct {
+		// driver used for executing database requests.
+		driver dialect.Driver
+		// debug enable a debug logging.
+		debug bool
+		// log used for logging on debug mode.
+		log func(...any)
+		// hooks to execute on mutations.
+		hooks *hooks
+		// interceptors to execute on queries.
+		inters *inters
+	}
+	// Option function to configure the client.
+	Option func(*config)
+)
+
+// options applies the options on the config object.
+func (c *config) options(opts ...Option) {
+	for _, opt := range opts {
+		opt(c)
+	}
+	if c.debug {
+		c.driver = dialect.Debug(c.driver, c.log)
+	}
+}
+
+// Debug enables debug logging on the ent.Driver.
+func Debug() Option {
+	return func(c *config) {
+		c.debug = true
+	}
+}
+
+// Log sets the logging function for debug mode.
+func Log(fn func(...any)) Option {
+	return func(c *config) {
+		c.log = fn
+	}
+}
+
+// Driver configures the client driver.
+func Driver(driver dialect.Driver) Option {
+	return func(c *config) {
+		c.driver = driver
+	}
+}
+
 // Open opens a database/sql.DB specified by the driver name and
 // the data source name, and returns a new client attached to it.
 // Optional parameters can be added for configuring the client.
@@ -64,11 +114,14 @@ func Open(driverName, dataSourceName string, options ...Option) (*Client, error)
 	}
 }
 
+// ErrTxStarted is returned when trying to start a new transaction from a transactional client.
+var ErrTxStarted = errors.New("ent: cannot start a transaction within a transaction")
+
 // Tx returns a new transactional client. The provided context
 // is used until the transaction is committed or rolled back.
 func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	if _, ok := c.driver.(*txDriver); ok {
-		return nil, errors.New("ent: cannot start a transaction within a transaction")
+		return nil, ErrTxStarted
 	}
 	tx, err := newTx(ctx, c.driver)
 	if err != nil {
@@ -175,7 +228,7 @@ func (c *PostClient) Use(hooks ...Hook) {
 	c.hooks.Post = append(c.hooks.Post, hooks...)
 }
 
-// Use adds a list of query interceptors to the interceptors stack.
+// Intercept adds a list of query interceptors to the interceptors stack.
 // A call to `Intercept(f, g, h)` equals to `post.Intercept(f(g(h())))`.
 func (c *PostClient) Intercept(interceptors ...Interceptor) {
 	c.inters.Post = append(c.inters.Post, interceptors...)
@@ -189,6 +242,21 @@ func (c *PostClient) Create() *PostCreate {
 
 // CreateBulk returns a builder for creating a bulk of Post entities.
 func (c *PostClient) CreateBulk(builders ...*PostCreate) *PostCreateBulk {
+	return &PostCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PostClient) MapCreateBulk(slice any, setFunc func(*PostCreate, int)) *PostCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PostCreateBulk{err: fmt.Errorf("calling to PostClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PostCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
 	return &PostCreateBulk{config: c.config, builders: builders}
 }
 
@@ -233,6 +301,7 @@ func (c *PostClient) DeleteOneID(id int) *PostDeleteOne {
 func (c *PostClient) Query() *PostQuery {
 	return &PostQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypePost},
 		inters: c.Interceptors(),
 	}
 }
@@ -294,7 +363,7 @@ func (c *TenantClient) Use(hooks ...Hook) {
 	c.hooks.Tenant = append(c.hooks.Tenant, hooks...)
 }
 
-// Use adds a list of query interceptors to the interceptors stack.
+// Intercept adds a list of query interceptors to the interceptors stack.
 // A call to `Intercept(f, g, h)` equals to `tenant.Intercept(f(g(h())))`.
 func (c *TenantClient) Intercept(interceptors ...Interceptor) {
 	c.inters.Tenant = append(c.inters.Tenant, interceptors...)
@@ -308,6 +377,21 @@ func (c *TenantClient) Create() *TenantCreate {
 
 // CreateBulk returns a builder for creating a bulk of Tenant entities.
 func (c *TenantClient) CreateBulk(builders ...*TenantCreate) *TenantCreateBulk {
+	return &TenantCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TenantClient) MapCreateBulk(slice any, setFunc func(*TenantCreate, int)) *TenantCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TenantCreateBulk{err: fmt.Errorf("calling to TenantClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TenantCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
 	return &TenantCreateBulk{config: c.config, builders: builders}
 }
 
@@ -352,6 +436,7 @@ func (c *TenantClient) DeleteOneID(id int) *TenantDeleteOne {
 func (c *TenantClient) Query() *TenantQuery {
 	return &TenantQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeTenant},
 		inters: c.Interceptors(),
 	}
 }
@@ -427,7 +512,7 @@ func (c *TenantConnClient) Use(hooks ...Hook) {
 	c.hooks.TenantConn = append(c.hooks.TenantConn, hooks...)
 }
 
-// Use adds a list of query interceptors to the interceptors stack.
+// Intercept adds a list of query interceptors to the interceptors stack.
 // A call to `Intercept(f, g, h)` equals to `tenantconn.Intercept(f(g(h())))`.
 func (c *TenantConnClient) Intercept(interceptors ...Interceptor) {
 	c.inters.TenantConn = append(c.inters.TenantConn, interceptors...)
@@ -441,6 +526,21 @@ func (c *TenantConnClient) Create() *TenantConnCreate {
 
 // CreateBulk returns a builder for creating a bulk of TenantConn entities.
 func (c *TenantConnClient) CreateBulk(builders ...*TenantConnCreate) *TenantConnCreateBulk {
+	return &TenantConnCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TenantConnClient) MapCreateBulk(slice any, setFunc func(*TenantConnCreate, int)) *TenantConnCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TenantConnCreateBulk{err: fmt.Errorf("calling to TenantConnClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TenantConnCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
 	return &TenantConnCreateBulk{config: c.config, builders: builders}
 }
 
@@ -485,6 +585,7 @@ func (c *TenantConnClient) DeleteOneID(id int) *TenantConnDeleteOne {
 func (c *TenantConnClient) Query() *TenantConnQuery {
 	return &TenantConnQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeTenantConn},
 		inters: c.Interceptors(),
 	}
 }
@@ -527,3 +628,13 @@ func (c *TenantConnClient) mutate(ctx context.Context, m *TenantConnMutation) (V
 		return nil, fmt.Errorf("ent: unknown TenantConn mutation op: %q", m.Op())
 	}
 }
+
+// hooks and interceptors per client, for fast access.
+type (
+	hooks struct {
+		Post, Tenant, TenantConn []ent.Hook
+	}
+	inters struct {
+		Post, Tenant, TenantConn []ent.Interceptor
+	}
+)

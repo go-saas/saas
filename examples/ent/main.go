@@ -36,7 +36,6 @@ func main() {
 		return v, err
 	})
 	tenantClientProvider := saas.ClientProviderFunc[*ent2.Client](func(ctx context.Context, s string) (*ent2.Client, error) {
-
 		v, _, err := cache2.GetOrSet(s, func() (*ent2.Client, error) {
 			client, err := ent2.Open("sqlite3", s, ent2.Debug())
 			if err != nil {
