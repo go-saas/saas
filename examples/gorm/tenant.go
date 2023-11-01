@@ -55,7 +55,7 @@ func (t *TenantStore) GetByNameOrId(ctx context.Context, nameOrId string) (*saas
 			return nil, err
 		}
 	}
-	ret := saas.NewTenantConfig(tenant.ID, tenant.Name, tenant.Region)
+	ret := saas.NewTenantConfig(tenant.ID, tenant.Name, tenant.Region, "")
 	for _, conn := range tenant.Conn {
 		ret.Conn[conn.Key] = conn.Value
 	}

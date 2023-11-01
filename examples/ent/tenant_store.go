@@ -30,7 +30,7 @@ func (t *TenantStore) GetByNameOrId(ctx context.Context, nameOrId string) (*saas
 			return nil, err
 		}
 	}
-	ret := saas.NewTenantConfig(strconv.Itoa(te.ID), te.Name, te.Region)
+	ret := saas.NewTenantConfig(strconv.Itoa(te.ID), te.Name, te.Region, "")
 	conns, err := te.QueryConn().All(ctx)
 	if err != nil {
 		return nil, err

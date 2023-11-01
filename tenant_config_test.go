@@ -7,7 +7,7 @@ import (
 )
 
 func TestTenantConfig(t *testing.T) {
-	in := []byte(`{"id":"1","name":"1","region":"1","conn":{"a":"a","b":"b"}}`)
+	in := []byte(`{"id":"1","name":"1","region":"1","planKey":"","conn":{"a":"a","b":"b"}}`)
 	conf := &TenantConfig{}
 	err := json.Unmarshal(in, &conf)
 	assert.NoError(t, err)
